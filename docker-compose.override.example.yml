@@ -1,0 +1,32 @@
+# Local development overrides. Copy to docker-compose.override.yml (git-ignored).
+# Docker Compose picks it up automatically. Never deploy this file to a server.
+services:
+  postgres:
+    ports:
+      - "5432:5432"
+  redis:
+    ports:
+      - "6379:6379"
+  backend:
+    environment:
+      CORS_ORIGINS: '["http://localhost:3000"]'
+      ENVIRONMENT: development
+    ports:
+      - "8000:8000"
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        NEXT_PUBLIC_API_URL: http://localhost:8000
+        # Cloudflare's public test site key: always passes. Local development only.
+        NEXT_PUBLIC_TURNSTILE_SITE_KEY: "1x00000000000000000000AA"
+    ports:
+      - "3000:3000"
+  recheck-worker:
+    environment:
+      REDIS_URL: redis://redis:6379/0
+      ENVIRONMENT: development
+  mailpit:
+    ports:
+      - "8025:8025"
+      - "1025:1025"

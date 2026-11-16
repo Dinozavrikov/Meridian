@@ -1,0 +1,10 @@
+[Unit]
+Description=Ежемесячная проверка восстановимости бэкапа Meridian
+
+[Timer]
+OnCalendar=*-*-01 05:00:00
+Persistent=true
+RandomizedDelaySec=600
+
+[Install]
+WantedBy=timers.target

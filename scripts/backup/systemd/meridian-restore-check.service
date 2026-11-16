@@ -1,0 +1,6 @@
+[Unit]
+Description=Проверка восстановимости бэкапа Meridian (restore-check)
+
+[Service]
+Type=oneshot
+ExecStart=%h/Документы/meridian-web/scripts/backup/restore-check.sh

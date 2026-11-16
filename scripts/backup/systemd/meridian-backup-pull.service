@@ -1,0 +1,6 @@
+[Unit]
+Description=Забор бэкапов Meridian с прода
+
+[Service]
+Type=oneshot
+ExecStart=%h/Документы/meridian-web/scripts/backup/pull-backups.sh
