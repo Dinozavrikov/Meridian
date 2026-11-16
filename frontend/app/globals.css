@@ -1,0 +1,593 @@
+@import "tailwindcss";
+
+/* ВАЖНО: правило вне слоя всегда сильнее слоя Tailwind (utilities) — без @layer base все p-*, m-*, px-* молча
+   не работали (lib/css-layers.test.ts). Сам сброс остаётся, просто в слое base, как и preflight Tailwind. */
+@layer base {
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+}
+
+:root {
+  --accent:     #4A90D9;
+  --accent2:    #3070B9;
+  --bg:         #0b0d14;
+  --bg2:        #111420;
+  --bg3:        #161928;
+  --border:     rgba(255,255,255,0.07);
+  --border2:    rgba(255,255,255,0.13);
+  --text:       #f2efe9;
+  --text2:      rgba(242,239,233,0.65);
+  --text3:      #8b92b5;
+  --sidebar:    #080a10;
+
+  /* ── Meridian v2 — дашборд ────────────────────────────────────── */
+  --v2-bg:     #0b0d14;
+  --v2-surf:   #111420;
+  --v2-surf2:  #161928;
+  --v2-bd:     rgba(255,255,255,0.07);
+  --v2-bd2:    rgba(255,255,255,0.13);
+  --v2-t1:     #f2efe9;
+  --v2-t2:     rgba(242,239,233,0.65);
+  --v2-t3:     #8b92b5;
+  --v2-teal:   #4dcfa6;
+  --v2-amber:  #e8a84e;
+  --v2-red:    #e05b5b;
+  --v2-violet: #8b80f0;
+  --font-sans: var(--font-inter), "Inter", "Segoe UI", system-ui, sans-serif;
+  --font-mono: var(--font-jbmono), "JetBrains Mono", "Fira Code", monospace;
+}
+
+html, body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+  font-size: 15px;
+  font-weight: 400;
+  line-height: 1.6;
+  letter-spacing: -0.005em;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+::selection { background: #4A90D933; color: #fff; }
+
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #2a2a2a; border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: #383838; }
+
+input, textarea, select {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.09);
+  border-radius: 8px;
+  color: var(--text);
+  padding: 9px 13px;
+  font-size: 15px;
+  outline: none;
+  width: 100%;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  font-family: inherit;
+}
+input:focus, textarea:focus, select:focus {
+  border-color: rgba(77,207,166,0.4);
+  box-shadow: 0 0 0 3px rgba(77,207,166,0.08);
+}
+input::placeholder, textarea::placeholder { color: var(--text3); }
+
+button { cursor: pointer; font-family: inherit; }
+a { color: inherit; text-decoration: none; }
+
+/* ── Dashboard adaptive ───────────────────────────────────────── */
+.hero-grid {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 8px;
+}
+@media (max-width: 768px) {
+  .hero-grid { grid-template-columns: repeat(3, 1fr); }
+}
+@media (max-width: 480px) {
+  .hero-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+.status-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+@media (max-width: 640px) {
+  .status-grid { grid-template-columns: 1fr; }
+}
+
+.attention-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+@media (max-width: 900px) {
+  .attention-grid { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 560px) {
+  .attention-grid { grid-template-columns: 1fr; }
+}
+
+.activity-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 24px;
+  align-items: start;
+}
+.activity-grid > * {
+  min-width: 0;
+}
+@media (max-width: 640px) {
+  .activity-grid { grid-template-columns: 1fr; }
+}
+
+/* ── Dashboard two-column sections ───────────────────────────── */
+.sections-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 12px;
+  align-items: start;
+}
+.sections-grid > * {
+  min-width: 0;
+}
+@media (max-width: 1200px) {
+  .sections-grid { grid-template-columns: minmax(0, 1fr); }
+}
+
+
+
+/* ── Universal tooltip ───────────────────────────────────────── */
+[data-tooltip] {
+  position: relative;
+}
+[data-tooltip]::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: #1a1a2e;
+  border: 1px solid #2a2a40;
+  color: #c0c0d8;
+  font-size: 11px;
+  line-height: 1.4;
+  padding: 5px 9px;
+  border-radius: 6px;
+  white-space: pre-wrap;
+  max-width: 280px;
+  width: max-content;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s;
+  z-index: 9999;
+  box-shadow: 0 4px 16px #00000066;
+}
+[data-tooltip]:hover::after {
+  opacity: 1;
+}
+
+/* ── Dashboard responsive padding ───────────────────────────── */
+.dashboard-content {
+  padding: 24px 28px 48px;
+  min-width: 0;
+  overflow-x: hidden;
+}
+@media (max-width: 640px) {
+  .dashboard-content {
+    padding: 16px 12px 32px;
+  }
+}
+
+
+/* ── Predictions split layout ───────────────────────────────── */
+.predictions-split {
+  grid-template-columns: 340px 1fr;
+}
+@media (max-width: 768px) {
+  .predictions-split {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* ── Loops grid ─────────────────────────────────────────────── */
+.loops-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+.loops-grid > * {
+  min-width: 0;
+  overflow: hidden;
+}
+@media (max-width: 640px) {
+  .loops-grid { grid-template-columns: 1fr; }
+}
+
+/* ── Диалог: дуга-меридиан (шапка / таймлайн / отправка) ─────── */
+/* Только то, что нельзя инлайн-стилями: keyframes, псевдоэлементы, :hover.
+   Расположение/цвета — как везде в проекте, через inline style + v2. */
+
+.meridian-link svg { width: 100%; height: 100%; overflow: visible; }
+.meridian-pulse {
+  r: 2.6;
+  filter: drop-shadow(0 0 5px var(--v2-teal));
+  offset-path: path('M0,20 C 90,-14 210,54 300,20');
+  animation-name: meridian-travel;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+.meridian-link[data-presence="typing"] .meridian-pulse {
+  fill: var(--v2-violet);
+  filter: drop-shadow(0 0 6px var(--v2-violet));
+}
+.meridian-link[data-presence="offline"] .meridian-pulse { display: none; }
+@keyframes meridian-travel {
+  0%   { offset-distance: 0%;   opacity: 0; }
+  8%   { opacity: 1; }
+  92%  { opacity: 1; }
+  100% { offset-distance: 100%; opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .meridian-pulse { animation: none; opacity: 0.6; }
+}
+
+.conv-thread { position: relative; }
+.conv-thread::before {
+  content: ''; position: absolute; left: 50%; top: 8px; bottom: 8px; width: 1px;
+  background: linear-gradient(180deg, transparent, var(--v2-bd2) 8%, var(--v2-bd2) 92%, transparent);
+  transform: translateX(-0.5px);
+}
+.conv-entry-row { position: relative; }
+.conv-entry-row::after {
+  content: ''; position: absolute; top: 16px; left: 50%; width: 7px; height: 7px;
+  border-radius: 50%; transform: translate(-50%, 0); border: 1.5px solid var(--v2-bg); z-index: 1;
+}
+.conv-entry-row.them::after { background: var(--v2-violet); }
+.conv-entry-row.you::after  { background: var(--v2-teal); }
+
+/* Пузырь не заходит за центральную линию: у каждой стороны своя половина колонки */
+.conv-entry { max-width: calc(50% - 18px); }
+
+.conv-typing-dot {
+  width: 5px; height: 5px; border-radius: 50%; background: var(--v2-violet);
+  opacity: 0.4; animation: conv-typing-blink 1.2s ease-in-out infinite;
+}
+.conv-typing-dot:nth-child(2) { animation-delay: 0.15s; }
+.conv-typing-dot:nth-child(3) { animation-delay: 0.3s; }
+@keyframes conv-typing-blink {
+  0%, 60%, 100% { opacity: 0.25; }
+  30% { opacity: 0.9; }
+}
+
+.conv-send-arc { position: relative; overflow: hidden; }
+.conv-send-arc .arc-fill {
+  fill: none; stroke: var(--v2-teal); stroke-width: 1.6; stroke-linecap: round;
+  stroke-dasharray: 34; stroke-dashoffset: 34;
+  transition: stroke-dashoffset 0.2s cubic-bezier(.4,0,.2,1);
+}
+.conv-send-arc:hover .arc-fill,
+.conv-send-arc[data-firing="true"] .arc-fill { stroke-dashoffset: 0; }
+.conv-send-arc[data-firing="true"] svg { animation: conv-send-fire 0.35s ease-out; }
+@keyframes conv-send-fire {
+  0%   { opacity: 1; transform: translateX(0); }
+  70%  { opacity: 0.3; transform: translateX(6px); }
+  100% { opacity: 1; transform: translateX(0); }
+}
+
+/* ── Диалог: адаптивная верстка ───────────────────────────────── */
+@media (max-width: 640px) {
+  .conv-header { padding: 16px 16px 14px !important; gap: 8px !important; }
+  .conv-head-name { max-width: 72px !important; font-size: 11.5px !important; }
+  .conv-head-role { display: none; }
+  .meridian-link { min-width: 32px !important; height: 32px !important; }
+  .conv-thread { padding: 20px 14px 16px !important; }
+  .conv-thread::before, .conv-entry-row::after { display: none; }
+  .conv-entry { max-width: 82% !important; padding: 10px 12px 9px !important; }
+  .conv-composer { padding: 12px 14px !important; gap: 8px !important; }
+  .conv-send-arc { width: 40px !important; height: 36px !important; }
+}
+@media (max-width: 380px) {
+  .conv-head-name { display: none; }
+}
+
+/* ── Диалоги: фоновая сетка параллелей-меридианов ─────────────── */
+.meridian-grid-bg {
+  position: absolute; inset: 0; pointer-events: none; z-index: 0;
+  background-image:
+    repeating-linear-gradient(0deg, rgba(255,255,255,0.012) 0px, rgba(255,255,255,0.012) 1px, transparent 1px, transparent 64px),
+    repeating-linear-gradient(90deg, rgba(255,255,255,0.012) 0px, rgba(255,255,255,0.012) 1px, transparent 1px, transparent 96px);
+  -webkit-mask-image: radial-gradient(ellipse 80% 60% at 50% 30%, black 0%, transparent 75%);
+          mask-image: radial-gradient(ellipse 80% 60% at 50% 30%, black 0%, transparent 75%);
+}
+
+.conv-header a:hover .conv-head-name,
+.conv-header a.conv-head-name:hover { opacity: 0.75; }
+
+/* ── Диалог: точка-вложение в composer ─────────────────────────
+   Не скрепка из чужого чат-словаря — та же точка, что засечка на оси
+   ленты, тот же teal. В покое статична, во время загрузки пульсирует
+   тем же ритмом, что и "канал живой" в шапке. */
+.attach-dot {
+  width: 9px; height: 9px; border-radius: 50%;
+  background: var(--v2-teal); flex-shrink: 0; cursor: pointer; border: none; padding: 0;
+  transition: box-shadow 0.15s, transform 0.15s;
+}
+.attach-dot:hover { box-shadow: 0 0 6px rgba(77,207,166,0.5); transform: scale(1.15); }
+.attach-dot[data-uploading="true"] { animation: attach-pulse 1.1s ease-in-out infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes attach-pulse {
+  0%, 100% { opacity: 0.5; transform: scale(0.85); box-shadow: 0 0 0 rgba(77,207,166,0); }
+  50%      { opacity: 1;   transform: scale(1.25); box-shadow: 0 0 10px rgba(77,207,166,0.7); }
+}
+
+/* Превью прикреплённого файла внутри строки ввода — бирка, не отдельный блок */
+.attach-chip {
+  display: flex; align-items: center; gap: 6px; flex-shrink: 0;
+  background: rgba(77,207,166,0.08); border: 1px solid rgba(77,207,166,0.25);
+  border-radius: 8px; padding: 3px 6px 3px 3px;
+}
+.attach-chip img { width: 24px; height: 24px; border-radius: 5px; object-fit: cover; display: block; }
+.attach-chip button {
+  background: none; border: none; color: var(--v2-t3); cursor: pointer;
+  display: flex; align-items: center; padding: 0;
+}
+.attach-chip button:hover { color: var(--v2-red); }
+
+/* Приложенный к записи снимок — "пришпилен", а не вставлен как обычная картинка чата */
+.conv-attachment-pin { display: inline-block; transform: rotate(-1.4deg); }
+.conv-entry-row.you .conv-attachment-pin { transform: rotate(1.2deg); }
+
+/* ── Диалог: точка-вложение в composer ─────────────────────────
+   Не скрепка из чужого чат-словаря — та же точка, что засечка на оси
+   ленты, тот же teal. В покое статична, во время загрузки пульсирует
+   тем же ритмом, что и "канал живой" в шапке. */
+
+
+/* ── Лайтбокс: "фиксация координаты" — фирменный жест открытия снимка ── */
+.lightbox-frame { position: relative; display: inline-block; }
+.lightbox-corner {
+  position: absolute; width: 22px; height: 22px;
+  border: 2px solid var(--v2-teal);
+  opacity: 0; transition: none;
+}
+.lightbox-corner.tl { top: -8px; left: -8px; border-right: none; border-bottom: none; transform: translate(-14px, -14px); }
+.lightbox-corner.tr { top: -8px; right: -8px; border-left: none; border-bottom: none; transform: translate(14px, -14px); }
+.lightbox-corner.bl { bottom: -8px; left: -8px; border-right: none; border-top: none; transform: translate(-14px, 14px); }
+.lightbox-corner.br { bottom: -8px; right: -8px; border-left: none; border-top: none; transform: translate(14px, 14px); }
+.lightbox-corner.locked {
+  opacity: 1; transform: translate(0, 0);
+  transition: transform 0.32s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.2s ease-out;
+}
+.lightbox-caption {
+  position: absolute; left: 0; bottom: -30px;
+  display: flex; align-items: center; gap: 7px;
+  font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.02em;
+  color: var(--v2-t2); opacity: 0; transform: translateY(-4px);
+  transition: opacity 0.25s ease-out 0.15s, transform 0.25s ease-out 0.15s;
+  white-space: nowrap;
+}
+.lightbox-caption.visible { opacity: 1; transform: translateY(0); }
+.lightbox-caption .dot {
+  width: 5px; height: 5px; border-radius: 50%; background: var(--v2-teal);
+  box-shadow: 0 0 5px var(--v2-teal); flex-shrink: 0;
+}
+
+.conv-author-link:hover { text-decoration: underline; opacity: 0.85; }
+
+/* Явный сброс браузерного отступа body — устраняет зазор между футером и краем окна.
+   100vh, а не 100%: проценты по высоте требуют явной высоты родителя (html),
+   которая нигде не задана — vh не зависит от родителя вообще.
+   ВАЖНО: overflow:hidden убран — раньше это было безвредно, пока PageContent
+   скроллился сам внутри height:100vh колонки (см. page-shell.tsx). Теперь
+   колонка растёт вместе с контентом (min-height:100vh), и скроллить длинную
+   страницу должен именно body/html — overflow:hidden здесь полностью
+   блокировал прокрутку документа на всех "документных" страницах. */
+html, body {
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+}
+
+/* ── Список диалогов: миниатюра-"пин" вместо сырой ссылки на файл ─────
+   Тот же наклон, что и у вложения в ленте/лайтбоксе — один и тот же
+   визуальный сигнал "здесь снимок" проведён через весь путь: список →
+   лента → полный просмотр. */
+.conv-list-thumb {
+  width: 16px; height: 16px; border-radius: 3px; object-fit: cover;
+  flex-shrink: 0; transform: rotate(-6deg);
+  border: 1px solid rgba(255,255,255,0.15);
+}
+
+/* ── Дашборд v3: обсерватория калибровки ─────────────────────────────
+   .hero-grid/.status-grid/.attention-grid/.activity-grid новой версией
+   дашборда больше не используются — можно оставить (используются другими
+   страницами?) либо удалить: `grep -rn "hero-grid" frontend/app`
+*/
+
+.dash-hero-row {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.dash-cols {
+  display: grid;
+  grid-template-columns: 1.45fr 1fr;
+  gap: 22px;
+  align-items: start;
+}
+.dash-cols > * { min-width: 0; }
+@media (max-width: 980px) {
+  .dash-cols { grid-template-columns: 1fr; }
+}
+
+.dash-col {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  min-width: 0;
+}
+
+.dash-instrument-row {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+  flex-wrap: wrap;
+}
+@media (max-width: 720px) {
+  .dash-instrument-row { flex-direction: column; align-items: stretch; }
+}
+
+.loop-rings-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+.loop-rings-grid > * { min-width: 0; }
+.loop-rings-grid > *:last-child:nth-child(odd) { grid-column: 1 / -1; }
+@media (max-width: 380px) {
+  .loop-rings-grid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 720px) {
+  .dash-instrument-row { flex-direction: column; align-items: stretch; gap: 18px; }
+}
+
+/* ── Ядро орбит: hover-свечение ──────────────────────────────────────── */
+.orbit-core-ring { transition: stroke 0.2s, filter 0.2s; }
+.orbit-core-glow { transition: opacity 0.2s; opacity: 0.6; }
+.orbit-core:hover .orbit-core-ring {
+  stroke: var(--v2-teal);
+  filter: drop-shadow(0 0 6px rgba(77,207,166,0.5));
+}
+.orbit-core:hover .orbit-core-glow { opacity: 1; }
+
+/* ── Карта функций (/features) ──────────────────────────────────────── */
+/* Страница «Функции» (/features). Состояния узлов и линий задает data-state, цвет узла приходит из --node-color. */
+.feat-map-scroll { overflow-x: auto; border: 1px solid rgba(255,255,255,0.07); border-radius: 16px; background: #0b0d14; }
+.feat-map { position: relative; min-width: 1000px; }
+.feat-svg { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; }
+.feat-colhead { position: absolute; top: 22px; transform: translateX(-50%); font-size: 11px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: #8b92b5; white-space: nowrap; }
+.feat-colhead--static { position: static; transform: none; margin-bottom: 8px; }
+.feat-rail { fill: rgba(255,255,255,0.015); stroke: rgba(255,255,255,0.1); stroke-width: 1; stroke-dasharray: 3 5; transition: stroke 0.2s, fill 0.2s; }
+.feat-rail[data-state="live"] { stroke: rgba(255,255,255,0.3); fill: rgba(255,255,255,0.03); }
+.feat-edge { stroke-width: 1.2; transition: stroke-opacity 0.2s, stroke-width 0.2s; }
+.feat-edge[data-kind="scope"] { stroke-dasharray: 2 5; }
+.feat-edge[data-state="hidden"] { stroke-opacity: 0; }
+.feat-edge[data-state="core"] { stroke-opacity: 0.28; }
+.feat-edge[data-state="all"] { stroke-opacity: 0.18; }
+.feat-edge[data-state="live"] { stroke-opacity: 0.9; stroke-width: 1.8; }
+.feat-edge[data-state="dim"] { stroke-opacity: 0.06; }
+.feat-legend { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 210px), 1fr)); gap: 10px; margin-top: 12px; }
+.feat-legend-item { --kind-color: #8b92b5; display: flex; flex-direction: column; align-items: flex-start; gap: 8px; padding: 14px 16px; text-align: left; font-family: inherit; color: #f2efe9; background: #111420; border: 1px solid rgba(255,255,255,0.07); border-radius: 12px; cursor: pointer; transition: border-color 0.2s, background 0.2s; }
+.feat-legend-item:hover, .feat-legend-item:focus-visible, .feat-legend-item[aria-pressed="true"] { border-color: var(--kind-color); background: #161928; }
+.feat-legend-item:focus-visible { outline: 2px solid #f2efe9; outline-offset: 2px; }
+.feat-tip { cursor: help; transition: filter 0.2s; }
+.feat-tip:hover { filter: brightness(1.18); }
+.feat-tip:focus-visible { outline: 2px solid #f2efe9; outline-offset: -2px; border-radius: inherit; }
+.feat-tip-name { text-decoration: underline dotted rgba(255,255,255,0.3); text-underline-offset: 4px; }
+.feat-tipcard { animation: feat-tip-in 0.16s ease-out; }
+@keyframes feat-tip-in { from { opacity: 0; scale: 0.96; } to { opacity: 1; scale: 1; } }
+.feat-inv-row { display: grid; grid-template-columns: 190px 1fr; gap: 32px; padding: 30px 0; border-top: 1px solid rgba(255,255,255,0.07); }
+.feat-inv-row:last-child { border-bottom: 1px solid rgba(255,255,255,0.07); }
+.feat-inv-head { display: flex; flex-direction: column; gap: 8px; align-self: start; position: sticky; top: 24px; }
+.feat-inv-count { font-size: 38px; font-weight: 600; letter-spacing: -0.04em; line-height: 1; font-variant-numeric: tabular-nums; }
+.feat-inv-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; }
+.feat-inv-tile { position: relative; box-sizing: border-box; flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px; padding: 16px 16px 16px 20px; background: linear-gradient(180deg, #14172a 0%, #0f121e 100%); border: 1px solid rgba(255,255,255,0.07); border-radius: 12px; transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s; }
+.feat-inv-tile[tabindex] { cursor: help; }
+.feat-inv-tile::before { content: ""; position: absolute; left: 0; top: 16px; bottom: 16px; width: 2px; border-radius: 2px; background: var(--tile-color, #8b92b5); opacity: 0.55; transition: opacity 0.2s; }
+.feat-inv-tile:hover, .feat-inv-tile:focus-visible { border-color: color-mix(in srgb, var(--tile-color, #8b92b5) 50%, transparent); box-shadow: 0 14px 34px -20px var(--tile-color, #8b92b5); transform: translateY(-1px); }
+.feat-inv-tile:hover::before, .feat-inv-tile:focus-visible::before { opacity: 1; }
+.feat-inv-tile:focus-visible { outline: 2px solid #f2efe9; outline-offset: 2px; }
+.road-seg { cursor: help; transition: filter 0.2s, transform 0.2s; }
+.road-seg:hover, .road-seg:focus-visible { filter: brightness(1.35); transform: scaleY(1.5); }
+.road-seg:focus-visible { outline: 2px solid #f2efe9; outline-offset: 2px; }
+@media (prefers-reduced-motion: reduce) { .road-seg { transition: none; } }
+@media (prefers-reduced-motion: reduce) { .feat-tipcard { animation: none; } .feat-inv-tile { transition: none; } }
+@media (max-width: 720px) { .feat-inv-row { grid-template-columns: 1fr; gap: 16px; } .feat-inv-head { position: static; flex-direction: row; align-items: baseline; gap: 12px; } }
+.feat-node, .feat-chip { --node-color: #4A90D9; box-sizing: border-box; display: inline-flex; align-items: center; gap: 8px; border: 1px solid rgba(255,255,255,0.1); background: #111420; color: #f2efe9; font-family: inherit; font-size: 12.5px; font-weight: 500; line-height: 1; cursor: pointer; white-space: nowrap; text-align: left; transition: border-color 0.2s, background 0.2s, color 0.2s; }
+.feat-node { position: absolute; transform: translate(-50%, -50%); width: 138px; height: 34px; padding: 0 11px; border-radius: 9px; z-index: 2; }
+.feat-chip { height: 32px; padding: 0 12px; border-radius: 8px; font-size: 13px; text-decoration: none; }
+.feat-node:hover, .feat-chip:hover { border-color: rgba(255,255,255,0.3); }
+.feat-node:focus-visible, .feat-chip:focus-visible, .feat-cta:focus-visible { outline: 2px solid #f2efe9; outline-offset: 2px; }
+.feat-node[data-state="dim"], .feat-chip[data-state="dim"] { background: #0d0f18; border-color: rgba(255,255,255,0.05); color: #7f86ab; }
+.feat-node[data-state="selected"], .feat-chip[data-state="selected"], .feat-chip[aria-pressed="true"] { background: #161928; border-color: var(--node-color); color: #fff; }
+.feat-dot { flex: none; width: 8px; height: 8px; border-radius: 50%; background: var(--node-color); }
+.feat-cta { display: inline-flex; align-items: center; height: 44px; padding: 0 22px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.13); color: #f2efe9; font-size: 15px; font-weight: 500; text-decoration: none; transition: background 0.2s; }
+.feat-cta:hover { background: rgba(255,255,255,0.06); }
+.feat-cta--primary { background: #f2efe9; border-color: #f2efe9; color: #0b0d14; }
+.feat-cta--primary:hover { background: #fff; }
+.feat-link { color: #7fb0ea; text-decoration: none; border-bottom: 1px solid rgba(74,144,217,0.4); }
+.feat-link:hover { color: #b4d2f5; }
+@media (prefers-reduced-motion: reduce) { .feat-node, .feat-chip, .feat-edge, .feat-rail { transition: none; } }
+
+/* Видимый горизонтальный скроллбар для строки табов (entity-header) —
+   даёт понять пользователю, что строку можно листать вбок. */
+.entity-tabs-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: #2a2e42 transparent;
+}
+.entity-tabs-scroll::-webkit-scrollbar {
+  height: 4px;
+}
+.entity-tabs-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+.entity-tabs-scroll::-webkit-scrollbar-thumb {
+  background: #2a2e42;
+  border-radius: 4px;
+}
+.entity-tabs-scroll::-webkit-scrollbar-thumb:hover {
+  background: #3a3f5c;
+}
+
+/* ── Футер: адаптивные отступы ──────────────────────────────────────── */
+.app-footer { padding: 16px 20px; }
+@media (max-width: 640px) {
+  .app-footer { padding: 14px 12px; gap: 10px; }
+}
+
+/* Поле "Добавить заметку" (Compose в notes-timeline) — на мобильном,
+   пока пользователь печатает, растягиваем почти на половину экрана,
+   чтобы было видно больше текста и клавиатура не съедала весь контекст.
+   На десктопе (md+) поведение не меняется — там просто 3 строки. */
+@media (max-width: 767px) {
+  .notes-compose-textarea.is-focused {
+    min-height: 45vh;
+  }
+}
+
+/* ── Документация (/docs) ── */
+.docs-sec { scroll-margin-top: 88px; }
+.docs-toc-link { display: flex; align-items: center; gap: 10px; padding: 7px 12px; border-left: 2px solid transparent; border-radius: 0 8px 8px 0; font-size: 13.5px; color: #8a8fa3; text-decoration: none; transition: color .15s, border-color .15s, background .15s; }
+.docs-toc-link:hover { color: #e8eaf2; background: rgba(255,255,255,.03); }
+.docs-toc-link[aria-current="true"] { color: #fff; border-left-color: var(--docs-accent, #2dd4bf); background: rgba(255,255,255,.05); }
+.docs-toc-link:focus-visible, .docs-chip:focus-visible, .docs-faq-q:focus-visible, .docs-btn:focus-visible { outline: 2px solid var(--docs-accent, #2dd4bf); outline-offset: 2px; }
+.docs-chips { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; padding: 10px 0; }
+.docs-chips::-webkit-scrollbar { display: none; }
+.docs-chip { flex: none; padding: 7px 14px; border-radius: 999px; border: 1px solid rgba(255,255,255,.1); background: transparent; color: #aab0c4; font-size: 13px; text-decoration: none; transition: color .15s, border-color .15s, background .15s; }
+.docs-chip[aria-current="true"] { color: #fff; border-color: var(--docs-accent, #2dd4bf); background: rgba(255,255,255,.06); }
+.docs-card { transition: border-color .2s, transform .2s; }
+.docs-card:hover { border-color: rgba(255,255,255,.22) !important; transform: translateY(-1px); }
+.docs-eq { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; white-space: pre-wrap; }
+.docs-range { width: 100%; accent-color: var(--docs-accent, #2dd4bf); }
+.docs-btn { cursor: pointer; transition: border-color .15s, background .15s, color .15s; }
+.docs-btn:hover { border-color: rgba(255,255,255,.3) !important; }
+.docs-faq-a { display: grid; grid-template-rows: 0fr; transition: grid-template-rows .25s ease; }
+.docs-faq-a[data-open="true"] { grid-template-rows: 1fr; }
+.docs-faq-a > div { overflow: hidden; }
+@media (prefers-reduced-motion: reduce) {
+  .docs-toc-link, .docs-chip, .docs-card, .docs-btn, .docs-faq-a { transition: none; }
+  .docs-card:hover { transform: none; }
+}
+
+/* Калькулятор документации: поля и подписи сжимаются вместе с карточкой, а не раздвигают страницу на телефоне */
+.docs-calc label, .docs-calc input[type="number"], .docs-calc select { min-width: 0; max-width: 100%; box-sizing: border-box; }
+.docs-calc input[type="range"] { width: 100%; min-width: 0; }
+@media (max-width: 600px) { .docs-calc .docs-card, .docs-calc > div { padding: 16px; } }
