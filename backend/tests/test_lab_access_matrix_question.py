@@ -1,0 +1,208 @@
+"""
+Этап 7 — матрица доступа (4 роли x 3 типа лабы) для Question.
+Паттерн идентичен test_lab_access_matrix_observation.py / _hypothesis.py / _prediction.py / _task.py.
+Question был ошибочно пропущен на предыдущих сессиях Этапа 7 (см. ACCESS_POLICY.md
+пометку от 16 августа) — на деле полноценная lab-scoped сущность, как остальные.
+"""
+import pytest
+from tests.conftest import create_test_user, add_lab_member
+from datetime import date
+
+
+async def _login(client, username, password="pass12345"):
+    r = await client.post("/api/v1/auth/login", json={"username": username, "password": password})
+    assert r.status_code == 200
+
+
+async def _create_lab(client, name, is_public=False, open_join=False):
+    r = await client.post("/api/v1/labs", json={
+        "name": name, "is_public": is_public, "open_join": open_join,
+        "goal_type": "task", "new_goal_title": f"Goal for {name}",
+    })
+    assert r.status_code == 200, r.text
+    return r.json()
+
+
+async def _create_question(client, lab_id=None, visibility="private", title="Test question"):
+    r = await client.post("/api/v1/questions/", json={
+        "title": title, "date_created": date.today().isoformat(),
+        "lab_id": lab_id, "visibility": visibility,
+    })
+    assert r.status_code == 201, r.text
+    return r.json()
+
+
+# --- Приватная лаба ---
+
+@pytest.mark.asyncio
+async def test_private_lab_owner_can_create_and_read(client):
+    await create_test_user("qsl_owner1")
+    await _login(client, "qsl_owner1")
+    lab = await _create_lab(client, "Private QA1", is_public=False)
+    q = await _create_question(client, lab_id=lab["id"], visibility="lab")
+    r = await client.get(f"/api/v1/questions/{q['id']}")
+    assert r.status_code == 200
+
+
+@pytest.mark.asyncio
+async def test_private_lab_member_can_read(client):
+    await create_test_user("qsl_owner2")
+    member = await create_test_user("qsl_member2")
+    await _login(client, "qsl_owner2")
+    lab = await _create_lab(client, "Private QA2", is_public=False)
+    q = await _create_question(client, lab_id=lab["id"], visibility="lab")
+    await add_lab_member(lab["id"], member.id)
+
+    await _login(client, "qsl_member2")
+    r = await client.get(f"/api/v1/questions/{q['id']}")
+    assert r.status_code == 200
+
+
+@pytest.mark.asyncio
+async def test_private_lab_outsider_cannot_read(client):
+    await create_test_user("qsl_owner3")
+    await create_test_user("qsl_outsider3")
+    await _login(client, "qsl_owner3")
+    lab = await _create_lab(client, "Private QA3", is_public=False)
+    q = await _create_question(client, lab_id=lab["id"], visibility="lab")
+
+    await _login(client, "qsl_outsider3")
+    r = await client.get(f"/api/v1/questions/{q['id']}")
+    assert r.status_code in (403, 404)
+
+
+@pytest.mark.asyncio
+async def test_private_lab_outsider_cannot_create(client):
+    await create_test_user("qsl_owner4")
+    await create_test_user("qsl_outsider4")
+    await _login(client, "qsl_owner4")
+    lab = await _create_lab(client, "Private QA4", is_public=False)
+
+    await _login(client, "qsl_outsider4")
+    r = await client.post("/api/v1/questions/", json={
+        "title": "Injected", "date_created": date.today().isoformat(),
+        "lab_id": lab["id"], "visibility": "lab",
+    })
+    assert r.status_code == 403
+
+
+@pytest.mark.asyncio
+async def test_private_lab_admin_can_read(client):
+    await create_test_user("qsl_owner5")
+    admin = await create_test_user("qsl_admin5")
+    await _login(client, "qsl_owner5")
+    lab = await _create_lab(client, "Private QA5", is_public=False)
+    q = await _create_question(client, lab_id=lab["id"], visibility="lab")
+    await add_lab_member(lab["id"], admin.id, role="admin")
+
+    await _login(client, "qsl_admin5")
+    r = await client.get(f"/api/v1/questions/{q['id']}")
+    assert r.status_code == 200
+
+
+# --- Публичная лаба, открытое вступление ---
+
+@pytest.mark.asyncio
+async def test_public_open_lab_outsider_can_read(client):
+    await create_test_user("qso_owner1")
+    await create_test_user("qso_outsider1")
+    await _login(client, "qso_owner1")
+    lab = await _create_lab(client, "Public Open QB1", is_public=True, open_join=True)
+    q = await _create_question(client, lab_id=lab["id"], visibility="lab")
+
+    await _login(client, "qso_outsider1")
+    r = await client.get(f"/api/v1/questions/{q['id']}")
+    assert r.status_code == 200
+
+
+@pytest.mark.asyncio
+async def test_public_open_lab_outsider_cannot_create_without_joining(client):
+    await create_test_user("qso_owner2")
+    await create_test_user("qso_outsider2")
+    await _login(client, "qso_owner2")
+    lab = await _create_lab(client, "Public Open QB2", is_public=True, open_join=True)
+
+    await _login(client, "qso_outsider2")
+    r = await client.post("/api/v1/questions/", json={
+        "title": "Injected", "date_created": date.today().isoformat(),
+        "lab_id": lab["id"], "visibility": "lab",
+    })
+    assert r.status_code == 403
+
+
+@pytest.mark.asyncio
+async def test_public_open_lab_member_can_create(client):
+    await create_test_user("qso_owner3")
+    member = await create_test_user("qso_member3")
+    await _login(client, "qso_owner3")
+    lab = await _create_lab(client, "Public Open QB3", is_public=True, open_join=True)
+    await add_lab_member(lab["id"], member.id)
+
+    await _login(client, "qso_member3")
+    r = await client.post("/api/v1/questions/", json={
+        "title": "Legit", "date_created": date.today().isoformat(),
+        "lab_id": lab["id"], "visibility": "lab",
+    })
+    assert r.status_code == 201, r.text
+
+
+# --- Публичная лаба, вступление по заявке ---
+
+@pytest.mark.asyncio
+async def test_public_approval_lab_outsider_can_read(client):
+    await create_test_user("qsa_owner1")
+    await create_test_user("qsa_outsider1")
+    await _login(client, "qsa_owner1")
+    lab = await _create_lab(client, "Public Approval QC1", is_public=True, open_join=False)
+    q = await _create_question(client, lab_id=lab["id"], visibility="lab")
+
+    await _login(client, "qsa_outsider1")
+    r = await client.get(f"/api/v1/questions/{q['id']}")
+    assert r.status_code == 200
+
+
+@pytest.mark.asyncio
+async def test_public_approval_lab_join_request_flow(client):
+    await create_test_user("qsa_owner2")
+    await create_test_user("qsa_applicant2")
+    await _login(client, "qsa_owner2")
+    lab = await _create_lab(client, "Public Approval QC2", is_public=True, open_join=False)
+
+    await _login(client, "qsa_applicant2")
+    r = await client.post(f"/api/v1/labs/{lab['id']}/join-request", json={"message": "let me in"})
+    assert r.status_code in (200, 201), r.text
+
+    r = await client.post("/api/v1/questions/", json={
+        "title": "Too early", "date_created": date.today().isoformat(),
+        "lab_id": lab["id"], "visibility": "lab",
+    })
+    assert r.status_code == 403
+
+    await _login(client, "qsa_owner2")
+    r = await client.get(f"/api/v1/labs/{lab['id']}/requests")
+    assert r.status_code == 200, r.text
+    req_id = r.json()[0]["id"]
+    r = await client.post(f"/api/v1/labs/{lab['id']}/requests/{req_id}/accept")
+    assert r.status_code in (200, 204), r.text
+
+    await _login(client, "qsa_applicant2")
+    r = await client.post("/api/v1/questions/", json={
+        "title": "Now allowed", "date_created": date.today().isoformat(),
+        "lab_id": lab["id"], "visibility": "lab",
+    })
+    assert r.status_code == 201, r.text
+
+
+@pytest.mark.asyncio
+async def test_public_approval_lab_outsider_cannot_create_without_request(client):
+    await create_test_user("qsa_owner3")
+    await create_test_user("qsa_outsider3")
+    await _login(client, "qsa_owner3")
+    lab = await _create_lab(client, "Public Approval QC3", is_public=True, open_join=False)
+
+    await _login(client, "qsa_outsider3")
+    r = await client.post("/api/v1/questions/", json={
+        "title": "Injected", "date_created": date.today().isoformat(),
+        "lab_id": lab["id"], "visibility": "lab",
+    })
+    assert r.status_code == 403
