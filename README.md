@@ -1,6 +1,6 @@
 # Meridian
 
-[![License](https://img.shields.io/github/license/Dinozavrikov/Meridian)](LICENSE) [![Version](https://img.shields.io/github/v/tag/Dinozavrikov/Meridian?label=version)](CHANGELOG.md) ![Status](https://img.shields.io/badge/status-in%20development-orange)
+[![License](https://img.shields.io/github/license/Dinozavrikov/Meridian?style=flat)](LICENSE) [![Version](https://img.shields.io/github/v/tag/Dinozavrikov/Meridian?label=version)](CHANGELOG.md) ![Status](https://img.shields.io/badge/status-in%20development-orange)
 
 **Have an idea? Check it. Then show it to people.**
 
