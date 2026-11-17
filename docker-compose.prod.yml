@@ -1,0 +1,31 @@
+# Production overlay: puts a Caddy reverse proxy with automatic HTTPS in front of the stack.
+#
+#   docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build \
+#     postgres redis mailpit backend recheck-worker frontend caddy
+#
+# Requires SITE_ADDRESS in .env (your domain). Ports 80 and 443 must be reachable from the internet.
+services:
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    depends_on:
+      - backend
+      - frontend
+    ports:
+      - "${HTTP_PORT:-80}:80"
+      - "${HTTPS_PORT:-443}:443"
+    environment:
+      SITE_ADDRESS: ${SITE_ADDRESS:?set SITE_ADDRESS in .env to your domain, for example meridian.example.com}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+
+volumes:
+  caddy_data:
+  caddy_config:

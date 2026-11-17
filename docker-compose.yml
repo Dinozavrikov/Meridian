@@ -79,9 +79,9 @@ services:
       SECRET_KEY: ${SECRET_KEY}
 
       ENVIRONMENT: production
-      COOKIE_SECURE: ${COOKIE_SECURE:-false}
+      COOKIE_SECURE: ${COOKIE_SECURE:-}
 
-      CORS_ORIGINS: '["https://miridin.com"]'
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000}
 
 
 
@@ -181,7 +181,10 @@ services:
     build:
       context: ./frontend
       args:
-        NEXT_PUBLIC_TURNSTILE_SITE_KEY: "0x4AAAAAAEsY-bsjIg5P2BfC"
+        NEXT_PUBLIC_TURNSTILE_SITE_KEY: ${TURNSTILE_SITE_KEY:-}
+        # Empty: the frontend calls the API at a relative address (same domain behind the proxy).
+        # Local development sets the address in docker-compose.override.yml.
+        NEXT_PUBLIC_API_URL: ""
 
     restart: unless-stopped
 

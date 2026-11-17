@@ -8,6 +8,14 @@ The project is under active development: some features are unfinished and may no
 
 ## [Unreleased]
 
+### Fixed
+
+- Self-hosting in production: CORS origins and the Turnstile site key were fixed inside `docker-compose.yml`, so sign-up could not work on another domain; they now come from `.env` (CORS accepts a comma-separated list)
+- Login cookies are now marked `Secure` automatically when `ENVIRONMENT=production` (before, this needed a variable that compose did not even forward)
+- Risky production settings are caught at startup: a placeholder `SECRET_KEY` stops the backend; the test Turnstile secret, a local mail catcher and cookies without `Secure` are warned about
+- A documented production setup: a Caddy reverse proxy overlay (`docker-compose.prod.yml`) that overwrites `X-Real-IP`, and a "Production deployment" guide in the README
+- The frontend build now says explicitly that the API is reached at a relative address by default
+
 ## [0.21.0] - 2026-11-16
 
 First public release. Development history before this point was condensed.

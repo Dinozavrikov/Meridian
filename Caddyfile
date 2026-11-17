@@ -1,0 +1,24 @@
+# Reverse proxy for production with automatic HTTPS (Let's Encrypt) for the domain in SITE_ADDRESS.
+# Used by docker-compose.prod.yml. Set SITE_ADDRESS in .env, for example meridian.example.com.
+{$SITE_ADDRESS} {
+	encode zstd gzip
+
+	# The application expects whole upload requests of at most 20 MB.
+	request_body {
+		max_size 20MB
+	}
+
+	# The API and uploaded files go to the backend. The backend trusts X-Real-IP for country
+	# detection and sign-up checks, so it is always overwritten with the real client address
+	# and can never be spoofed by the client.
+	handle /api/* {
+		reverse_proxy backend:8000 {
+			header_up X-Real-IP {remote_host}
+		}
+	}
+
+	# Everything else is the web app.
+	handle {
+		reverse_proxy frontend:3000
+	}
+}

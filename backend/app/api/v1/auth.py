@@ -32,7 +32,7 @@ from pydantic import BaseModel, EmailStr, StringConstraints, field_validator
 router = APIRouter(prefix="/auth", tags=["auth"])
 def cookie_opts() -> dict:
     """Параметры кук входа. Secure читается из настроек при каждом вызове, а не при импорте: так его проверяет тест."""
-    return dict(httponly=True, samesite="lax", secure=settings.COOKIE_SECURE)
+    return dict(httponly=True, samesite="lax", secure=settings.cookie_secure)
 
 GOOGLE_AUTH_URL = "https://accounts.google.com/o/oauth2/v2/auth"
 GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token"

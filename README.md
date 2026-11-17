@@ -81,8 +81,37 @@ frontend/fe.sh npm test
 frontend/fe.sh npx tsc --noEmit
 ```
 
-## Deployment
-Production runs on a single server behind a reverse proxy. The deployment tooling is operational and is maintained privately, so it is not part of this repository. To run your own instance, build the images from `backend/` and `frontend/` and serve them behind the reverse proxy of your choice, using `docker-compose.yml` as a reference for services, volumes and environment.
+## Production deployment
+
+Meridian runs on any Linux server with Docker (Compose v2), a domain name pointing at it and ports 80 and 443 open. Building the frontend image needs a few GB of RAM; on a small server build the images on another machine and move them with `docker save` and `docker load`.
+
+**1. Configure.** Create `.env` and generate the secrets exactly as in the quick start, then set the values for your domain:
+
+```bash
+cp .env.example .env
+```
+
+- `SITE_ADDRESS`: your domain, for example `meridian.example.com`. Caddy gets the HTTPS certificate for it automatically.
+- `TURNSTILE_SITE_KEY` and `TURNSTILE_SECRET_KEY`: create a free [Cloudflare Turnstile](https://www.cloudflare.com/products/turnstile/) widget for your domain. Without working keys nobody can sign up. The values in `.env.example` are Cloudflare's test keys, which always pass, so do not use them in production. The site key is built into the frontend: rebuild the frontend after changing it.
+- `SMTP_*`: your mail relay. Password reset sends email, and the default points at the local Mailpit catcher, which delivers nothing.
+- `COOKIE_SECURE`: leave it empty. In production login cookies are marked `Secure` automatically (set `false` only for a plain-HTTP trial).
+- `CORS_ORIGINS` is needed only if the API is served from a different origin than the site. `GOOGLE_*` is optional.
+
+**2. Start.**
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build postgres redis backend recheck-worker frontend caddy
+```
+
+Migrations run on start. Open `https://your-domain/api/health` to check. To update, run `git pull` and the same command.
+
+**Good to know.**
+
+- At startup the backend prints `[config]` warnings for risky production settings and refuses to start with the placeholder `SECRET_KEY`.
+- The proxy sets `X-Real-IP`, which the backend trusts for country detection and sign-up checks. If you use another proxy, make it overwrite this header with the client address, and never expose the backend port directly.
+- There is no application-level rate limiting for sign-up and login yet: on sign-up Turnstile is the only protection. Keep this in mind for a public instance.
+- Encrypted, restore-tested backups are in `scripts/backup/` (see backend/docs/BACKUP.md, in Russian). You supply your own encryption key.
+- AI features need an Ollama instance reachable from the backend container (see AI features above).
 
 ## Documentation
 
@@ -196,8 +225,37 @@ frontend/fe.sh npm test
 frontend/fe.sh npx tsc --noEmit
 ```
 
-## Развертывание
-Прод работает на одном сервере за обратным прокси. Инструменты развертывания относятся к эксплуатации и ведутся приватно, поэтому в этот репозиторий не входят. Чтобы запустить свой экземпляр, соберите образы из `backend/` и `frontend/` и поставьте их за выбранный вами обратный прокси; `docker-compose.yml` послужит образцом по сервисам, томам и переменным окружения.
+## Развертывание в продакшене
+
+Meridian работает на любом Linux-сервере с Docker (Compose v2), доменным именем, которое на него указывает, и открытыми портами 80 и 443. Для сборки образа frontend нужно несколько гигабайт памяти: на маленьком сервере соберите образы на другой машине и перенесите командами `docker save` и `docker load`.
+
+**1. Настройка.** Создайте `.env` и сгенерируйте секреты так же, как в быстром старте, затем задайте значения для вашего домена:
+
+```bash
+cp .env.example .env
+```
+
+- `SITE_ADDRESS`: ваш домен, например `meridian.example.com`. HTTPS-сертификат для него Caddy получит сам.
+- `TURNSTILE_SITE_KEY` и `TURNSTILE_SECRET_KEY`: создайте бесплатный виджет [Cloudflare Turnstile](https://www.cloudflare.com/products/turnstile/) для вашего домена. Без рабочих ключей никто не сможет зарегистрироваться. Значения в `.env.example` это тестовые ключи Cloudflare, которые всегда проходят проверку, поэтому в продакшене их использовать нельзя. Ключ сайта встраивается во frontend: после его смены пересоберите frontend.
+- `SMTP_*`: ваш почтовый сервер. Сброс пароля отправляет письма, а по умолчанию настроен локальный перехватчик Mailpit, который ничего не доставляет.
+- `COOKIE_SECURE`: оставьте пустым. В продакшене куки входа получают флаг `Secure` автоматически (`false` только для пробы по обычному HTTP).
+- `CORS_ORIGINS` нужен, только если API отдается с другого адреса, чем сайт. `GOOGLE_*` необязательны.
+
+**2. Запуск.**
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build postgres redis backend recheck-worker frontend caddy
+```
+
+Миграции выполняются при старте. Для проверки откройте `https://ваш-домен/api/health`. Для обновления выполните `git pull` и ту же команду.
+
+**Что важно знать.**
+
+- При старте backend печатает предупреждения `[config]` о рискованных настройках продакшена и отказывается запускаться с заглушкой `SECRET_KEY`.
+- Прокси выставляет `X-Real-IP`, которому backend доверяет при определении страны и проверках при регистрации. Если вы используете другой прокси, настройте его так, чтобы он перезаписывал этот заголовок адресом клиента, и никогда не открывайте порт backend наружу.
+- Ограничения частоты запросов на уровне приложения для регистрации и входа пока нет: при регистрации единственная защита это Turnstile. Учитывайте это на публичном экземпляре.
+- Зашифрованные резервные копии с проверкой восстановления лежат в `scripts/backup/` (см. backend/docs/BACKUP.md). Ключ шифрования вы задаете свой.
+- Для ИИ-функций нужен Ollama, доступный из контейнера backend (см. раздел про ИИ-функции выше).
 
 ## Документация
 
