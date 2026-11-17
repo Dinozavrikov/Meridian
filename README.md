@@ -4,7 +4,7 @@
 
 **Meridian is a place to find out what is actually true.** Write down what you observe, bet on what will happen, link ideas into a graph and watch which of your beliefs hold up over time. Work alone or with others in shared **laboratories**: an investor testing a thesis, a researcher weighing competing explanations, or anyone who wants to settle a question with evidence instead of arguments.
 
-Live: [Meridian: settle questions with evidence](https://miridin.com) · Russian version: [README.ru.md](README.ru.md)
+Live: [Meridian: settle questions with evidence](https://miridin.com) · [Русская версия ниже](#ru)
 
 > [!WARNING]
 > **Meridian is under active development (pre-1.0).** Many features are unfinished or may not work yet (for example, laboratories are not complete), and the data model, API and interface can change without notice. Use it for experiments, keep backups of anything important and do not treat it as production-ready. See the [changelog](CHANGELOG.md) for what is already there.
@@ -106,3 +106,114 @@ Please report vulnerabilities privately, see [SECURITY.md](SECURITY.md).
 ## License
 
 Copyright (C) 2026 Dinozavrikov. Licensed under the [GNU Affero General Public License v3.0](LICENSE). If you run a modified version as a network service, you must offer its source code to the users of that service.
+
+---
+
+<a id="ru"></a>
+
+# Meridian по-русски
+
+**Meridian: место, где можно выяснить, что на самом деле правда.** Записывайте, что наблюдаете, делайте ставки на то, что произойдет, связывайте идеи в граф и смотрите, какие убеждения выдерживают проверку временем. Работайте в одиночку или вместе с другими в общих **лабораториях**: инвестор проверяет тезис, исследователь сопоставляет объяснения, а любой любопытный человек решает спор фактами, а не доводами.
+
+Рабочая версия: [Meridian: решайте споры фактами](https://miridin.com) · [English version above](#meridian)
+
+> [!WARNING]
+> **Meridian находится в активной разработке (версия до 1.0).** Многие возможности не доделаны или могут не работать (например, лаборатории еще не завершены), а модель данных, API и интерфейс могут меняться без предупреждения. Подходит для экспериментов; важные данные сохраняйте отдельно и не считайте продукт готовым к промышленной эксплуатации. Что уже есть, смотрите в [журнале изменений](CHANGELOG.md).
+
+## Что умеет
+
+- **Лаборатории:** общие рабочие пространства вокруг цели: роли, единая политика доступа, снимки с проверяемой историей и рейтинг точности прогнозов участников.
+- **Записи:** наблюдения, гипотезы, прогнозы, убеждения, вопросы и задачи, связанные типизированными связями и графом.
+- **Инструменты честного мышления:** критерии опровержения, разнообразие свидетельств, разделение фактов и интерпретаций, зрелость гипотез, калибровка прогнозов и фоновая перепроверка противоречий.
+- **История и страховка:** история правок по полям с откатом, корзина с восстановлением, вложения и результаты с богатым редактором.
+- **Локальный ИИ:** перевод, классификация, эмбеддинги и описание изображений работают на вашем Ollama. Внешние ИИ-провайдеры не используются.
+- **Приватность:** личные сообщения шифруются в базе, резервные копии шифруются и проверяются восстановлением.
+
+Полный список изменений в [CHANGELOG.md](CHANGELOG.md).
+
+## Стек
+
+| Слой     | Технологии                                       |
+|----------|--------------------------------------------------|
+| Frontend | Next.js, React, TypeScript                       |
+| Backend  | FastAPI (Python 3.12), SQLAlchemy, Alembic       |
+| Данные   | PostgreSQL с pgvector, Redis                     |
+| ИИ       | Ollama (локальные модели)                        |
+| Инфра    | Docker Compose                            |
+
+## Быстрый старт (локальная разработка)
+
+Нужен Docker с Compose v2. Ollama необязателен (нужен только для ИИ-функций).
+
+```bash
+git clone https://github.com/Dinozavrikov/Meridian.git
+cd Meridian
+cp .env.example .env
+cp docker-compose.override.example.yml docker-compose.override.yml
+# сгенерировать секреты (те же команды лежат в начале .env.example)
+sed -i "s|^SECRET_KEY=.*|SECRET_KEY=$(openssl rand -hex 32)|" .env
+sed -i "s|^POSTGRES_PASSWORD=.*|POSTGRES_PASSWORD=$(openssl rand -hex 16)|" .env
+sed -i "s|^POSTGRES_TEST_PASSWORD=.*|POSTGRES_TEST_PASSWORD=$(openssl rand -hex 16)|" .env
+sed -i "s|^MESSAGE_ENCRYPTION_KEY=.*|MESSAGE_ENCRYPTION_KEY=$(python3 -c 'import base64,os;print(base64.urlsafe_b64encode(os.urandom(32)).decode())')|" .env
+docker compose up -d --build postgres redis mailpit backend recheck-worker frontend
+```
+
+- Приложение: http://localhost:3000
+- API: http://localhost:8000
+- Mailpit (перехватывает исходящую почту): http://localhost:8025
+
+Миграции базы выполняются сами при старте контейнера backend.
+
+### ИИ-функции
+
+Backend обращается к локальному Ollama по адресу `http://host.docker.internal:11434`. Имя модели по умолчанию `qwen2.5-custom`: это собственная модель, она не опубликована, поэтому укажите любую свою чат-модель через `OLLAMA_MODEL` (и при необходимости `OLLAMA_URL`) в `.env`. Выбор моделей по задачам описан в [backend/docs/LLM_ROUTING.md](backend/docs/LLM_ROUTING.md). Без Ollama приложение работает, но ИИ-функции недоступны.
+
+### Вход через Google (необязательно)
+
+Выключен, пока не заданы `GOOGLE_CLIENT_ID` и `GOOGLE_CLIENT_SECRET`. Тот, кто запускает публичный экземпляр, сам отвечает за соблюдение законов своей юрисдикции, в том числе ограничений на сторонние сервисы входа (например, российских правил об иностранных сервисах авторизации).
+
+### Определение страны (необязательно)
+
+От страны посетителя зависит, показывается ли кнопка входа через Google. Для этого используется бесплатная база [DB-IP Country Lite](https://db-ip.com/db/download/ip-to-country-lite) (CC BY 4.0, везде, где она применяется, нужна атрибуция). Сам файл в репозиторий не входит: скачайте `dbip-country-lite.mmdb` и положите в `backend/geoip/dbip-country-lite.mmdb`. Без него приложение работает, а страна считается неизвестной.
+
+## Тесты
+
+```bash
+# backend: настоящий PostgreSQL и настоящий локальный Ollama, без моков
+docker compose up -d backend-test
+docker compose exec backend-test pytest
+
+# frontend: запускается в контейнере Node, на хосте Node не нужен
+frontend/fe.sh npm test
+frontend/fe.sh npx tsc --noEmit
+```
+
+## Развертывание
+Прод работает на одном сервере за обратным прокси. Инструменты развертывания относятся к эксплуатации и ведутся приватно, поэтому в этот репозиторий не входят. Чтобы запустить свой экземпляр, соберите образы из `backend/` и `frontend/` и поставьте их за выбранный вами обратный прокси; `docker-compose.yml` послужит образцом по сервисам, томам и переменным окружения.
+
+## Документация
+
+- В приложении: `/docs`
+- Технические заметки: [backend/docs](backend/docs): политика доступа, журнал событий и очистка, снимки лабораторий, резервные копии, маршрутизация моделей, статусы записей
+
+## Релизы
+
+Версии по [семантическому версионированию](https://semver.org/lang/ru/): минорная версия это новая функция, патч это исправление, 1.0.0 будет означать полностью готовый продукт. `scripts/release.sh patch|minor|major` поднимает версию, обновляет журнал изменений и ставит тег.
+
+## Поддержка проекта
+
+Meridian это свободное программное обеспечение, которое разрабатывает один человек. Если он вам полезен, вы можете поддержать разработку:
+
+- ЮMoney: https://yoomoney.ru/to/4100118892485316
+- CloudTips: https://pay.cloudtips.ru/p/d6f0acf8
+- Bitcoin (BTC): `19uURkCzLR7XTd7LAReMTQrfEh8AA1d9zk`
+- Ethereum (ETH): `0xd217E1591799C41Ca45F6496958d26dc3740b5f8`
+- Litecoin (LTC): `LSyYMor5HHWtH52vFPJ8aPVdaEV74EJHf6`
+
+## Безопасность
+
+О найденных уязвимостях сообщайте приватно, см. [SECURITY.md](SECURITY.md).
+
+## Лицензия
+
+Copyright (C) 2026 Dinozavrikov. Лицензия [GNU Affero General Public License v3.0](LICENSE). Если вы запускаете измененную версию как сетевой сервис, вы обязаны предоставить ее исходный код пользователям этого сервиса.
