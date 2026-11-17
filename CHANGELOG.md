@@ -18,7 +18,7 @@ First public release. Development history before this point was condensed.
 - Global community graph
 - Predictions with confidence, outcomes and per-tag calibration
 - Worldviews, questions and tasks as first-class entities linked to the rest
-- Epistemic tooling: falsification criteria, evidence diversity index, fact/interpretation classification, hypothesis maturity
+- Tools for honest thinking: falsification criteria, evidence diversity index, fact/interpretation classification, hypothesis maturity
 - Background re-checking of contradictions
 - Laboratories with roles, a unified access policy and a members' calibration leaderboard
 - Results: rich editor, `meridian://` links, publish workflow
