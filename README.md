@@ -1,15 +1,20 @@
 # Meridian
 
-An epistemic management platform: record what you observe, state hypotheses and predictions, link everything into a graph, and see how well your beliefs hold up over time.
+[![License](https://img.shields.io/github/license/Dinozavrikov/Meridian)](LICENSE) [![Version](https://img.shields.io/github/v/tag/Dinozavrikov/Meridian?label=version)](CHANGELOG.md) ![Status](https://img.shields.io/badge/status-in%20development-orange)
 
-Live: [Meridian, an epistemic management platform](https://miridin.com) · Russian version: [README.ru.md](README.ru.md)
+**Meridian is a place to find out what is actually true.** Write down what you observe, bet on what will happen, link ideas into a graph and watch which of your beliefs hold up over time. Work alone or with others in shared **laboratories**: an investor testing a thesis, a researcher weighing competing explanations, or anyone who wants to settle a question with evidence instead of arguments.
+
+Live: [Meridian: settle questions with evidence](https://miridin.com) · Russian version: [README.ru.md](README.ru.md)
+
+> [!WARNING]
+> **Meridian is under active development (pre-1.0).** Many features are unfinished or may not work yet (for example, laboratories are not complete), and the data model, API and interface can change without notice. Use it for experiments, keep backups of anything important and do not treat it as production-ready. See the [changelog](CHANGELOG.md) for what is already there.
 
 ## What it does
 
-- **Entities:** observations, hypotheses, predictions, worldviews, questions and tasks, connected by typed links and a graph view.
-- **Epistemic tooling:** falsification criteria, evidence diversity, fact/interpretation classification, hypothesis maturity, calibration of predictions, background re-checking of contradictions.
-- **Laboratories:** shared workspaces with roles, a unified access policy, snapshots with a hash-chained history and a members' calibration leaderboard.
-- **History and safety nets:** per-field change history with undo, a trash with restore, file attachments, results with a rich editor.
+- **Laboratories:** shared workspaces built around a goal, with roles, a single access policy, snapshots with a verifiable history and a leaderboard of members' forecasting accuracy.
+- **Records:** observations, hypotheses, predictions, worldviews, questions and tasks, connected by typed links and a graph view.
+- **Tools for honest thinking:** criteria that would disprove an idea, diversity of evidence, fact versus interpretation, hypothesis maturity, forecast calibration and background re-checking of contradictions.
+- **History and safety nets:** per-field change history with undo, a trash with restore, file attachments and results with a rich editor.
 - **Local AI:** translation, classification, embeddings and image description run on your own Ollama instance. No external AI provider is used.
 - **Privacy:** private messages are encrypted at rest, backups are encrypted and restore-tested.
 
