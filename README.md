@@ -2,21 +2,25 @@
 
 [![License](https://img.shields.io/github/license/Dinozavrikov/Meridian)](LICENSE) [![Version](https://img.shields.io/github/v/tag/Dinozavrikov/Meridian?label=version)](CHANGELOG.md) ![Status](https://img.shields.io/badge/status-in%20development-orange)
 
-**Meridian is a place to find out what is actually true.** Write down what you observe, bet on what will happen, link ideas into a graph and watch which of your beliefs hold up over time. Work alone or with others in shared **laboratories**: an investor testing a thesis, a researcher weighing competing explanations, or anyone who wants to settle a question with evidence instead of arguments.
+**Have an idea? Check it. Then show it to people.**
 
-Live: [Meridian: settle questions with evidence](https://miridin.com) · [Русская версия ниже](#ru)
+Meridian is a place to find out whether you are right. Write down what you notice, say what you expect to happen, and connect the dots. Later you see what actually came true. When you are ready, open a **laboratory**: a shared space where you and other people test the idea together, with evidence instead of arguments.
+
+It works for small things (which pizza is really the best?) and for big ones (can a household cover its own food?).
+
+Try it: [Meridian: check an idea, then show it to people](https://miridin.com) · [Русская версия ниже](#ru)
 
 > [!WARNING]
 > **Meridian is under active development (pre-1.0).** Many features are unfinished or may not work yet (for example, laboratories are not complete), and the data model, API and interface can change without notice. Use it for experiments, keep backups of anything important and do not treat it as production-ready. See the [changelog](CHANGELOG.md) for what is already there.
 
 ## What it does
 
-- **Laboratories:** shared workspaces built around a goal, with roles, a single access policy, snapshots with a verifiable history and a leaderboard of members' forecasting accuracy.
-- **Records:** observations, hypotheses, predictions, worldviews, questions and tasks, connected by typed links and a graph view.
-- **Tools for honest thinking:** criteria that would disprove an idea, diversity of evidence, fact versus interpretation, hypothesis maturity, forecast calibration and background re-checking of contradictions.
-- **History and safety nets:** per-field change history with undo, a trash with restore, file attachments and results with a rich editor.
-- **Local AI:** translation, classification, embeddings and image description run on your own Ollama instance. No external AI provider is used.
-- **Privacy:** private messages are encrypted at rest, backups are encrypted and restore-tested.
+- **Laboratories:** a shared space around one question. Invite people, give them roles, save snapshots of where you are, and see who predicts best.
+- **Your thinking in one place:** observations, hypotheses, predictions, beliefs, questions and tasks, connected into a graph you can explore.
+- **Honest-thinking tools:** ask "what would prove me wrong?", check whether your evidence is varied enough, separate facts from interpretations, and see how well your forecasts match reality.
+- **Nothing gets lost:** every edit has a history with undo, deleted things wait in a trash you can restore from, and you can attach files.
+- **Local AI:** translation, classification, embeddings and image description run on a local model through Ollama: on your own machine if you host Meridian yourself, and on the author's computer on the live site. No external AI service is used.
+- **Privacy:** private messages are encrypted in the database, and backups are encrypted and regularly test-restored.
 
 See [CHANGELOG.md](CHANGELOG.md) for the full list.
 
@@ -113,21 +117,25 @@ Copyright (C) 2026 Dinozavrikov. Licensed under the [GNU Affero General Public L
 
 # Meridian по-русски
 
-**Meridian: место, где можно выяснить, что на самом деле правда.** Записывайте, что наблюдаете, делайте ставки на то, что произойдет, связывайте идеи в граф и смотрите, какие убеждения выдерживают проверку временем. Работайте в одиночку или вместе с другими в общих **лабораториях**: инвестор проверяет тезис, исследователь сопоставляет объяснения, а любой любопытный человек решает спор фактами, а не доводами.
+**Есть идея? Проверьте ее. А потом покажите людям.**
 
-Рабочая версия: [Meridian: решайте споры фактами](https://miridin.com) · [English version above](#meridian)
+Meridian: место, где можно выяснить, правы ли вы. Записывайте, что замечаете, говорите, чего ждете, и связывайте точки между собой. Потом смотрите, что из этого действительно сбылось. А когда захотите, откройте **лабораторию**: общее пространство, где вы вместе с другими проверяете идею, опираясь на факты, а не на споры.
+
+Подойдет и для мелочей (какая пицца на самом деле лучше?), и для больших вопросов (может ли семья обеспечить себя едой?).
+
+Попробовать: [Meridian: проверьте идею и покажите людям](https://miridin.com) · [English version above](#meridian)
 
 > [!WARNING]
 > **Meridian находится в активной разработке (версия до 1.0).** Многие возможности не доделаны или могут не работать (например, лаборатории еще не завершены), а модель данных, API и интерфейс могут меняться без предупреждения. Подходит для экспериментов; важные данные сохраняйте отдельно и не считайте продукт готовым к промышленной эксплуатации. Что уже есть, смотрите в [журнале изменений](CHANGELOG.md).
 
 ## Что умеет
 
-- **Лаборатории:** общие рабочие пространства вокруг цели: роли, единая политика доступа, снимки с проверяемой историей и рейтинг точности прогнозов участников.
-- **Записи:** наблюдения, гипотезы, прогнозы, убеждения, вопросы и задачи, связанные типизированными связями и графом.
-- **Инструменты честного мышления:** критерии опровержения, разнообразие свидетельств, разделение фактов и интерпретаций, зрелость гипотез, калибровка прогнозов и фоновая перепроверка противоречий.
-- **История и страховка:** история правок по полям с откатом, корзина с восстановлением, вложения и результаты с богатым редактором.
-- **Локальный ИИ:** перевод, классификация, эмбеддинги и описание изображений работают на вашем Ollama. Внешние ИИ-провайдеры не используются.
-- **Приватность:** личные сообщения шифруются в базе, резервные копии шифруются и проверяются восстановлением.
+- **Лаборатории:** общее пространство вокруг одного вопроса. Зовите людей, раздавайте роли, сохраняйте снимки того, где вы сейчас, и смотрите, кто точнее всех предсказывает.
+- **Ваши мысли в одном месте:** наблюдения, гипотезы, прогнозы, убеждения, вопросы и задачи, связанные в граф, по которому можно ходить.
+- **Инструменты честного мышления:** спросить себя «что докажет, что я неправ?», проверить, достаточно ли разнообразны ваши свидетельства, отделить факты от трактовок и увидеть, насколько ваши прогнозы совпадают с реальностью.
+- **Ничего не пропадает:** у каждой правки есть история с откатом, удаленное лежит в корзине, откуда его можно вернуть, а к записям можно прикреплять файлы.
+- **Локальный ИИ:** перевод, классификация, эмбеддинги и описание изображений работают на локальной модели через Ollama: на вашем компьютере, если вы развернули Meridian у себя, и на компьютере автора на живом сайте. Внешние ИИ-сервисы не используются.
+- **Приватность:** личные сообщения шифруются в базе, а резервные копии шифруются и регулярно проверяются восстановлением.
 
 Полный список изменений в [CHANGELOG.md](CHANGELOG.md).
 
