@@ -14,6 +14,7 @@ The project is under active development: some features are unfinished and may no
 
 ### Added
 
+- ARCHITECTURE.md: how Meridian is put together, with a test that fails when the document refers to code that no longer exists or stores numbers that go stale
 - The sitemap now lists public records (hypotheses, observations, predictions, questions, tasks) so search engines find them without crawling the feed; the backend gets a public list endpoint that returns only type, id and update time
 
 ## [0.22.3] - 2026-11-18
