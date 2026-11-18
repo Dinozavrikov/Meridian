@@ -3,14 +3,15 @@
 Описание и пробный расчет целиком берутся из services/maturity_model.py, а тот читает константы и функции
 боевой формулы. Данных пользователей здесь нет, входные списки ограничены по размеру."""
 from fastapi import APIRouter, HTTPException, Response
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import ConfigDict, Field
 
+from app.schemas._strict import StrictIn
 from app.services import maturity_model as mm
 
 router = APIRouter(prefix="/meta", tags=["meta"])
 
 
-class _In(BaseModel):
+class _In(StrictIn):
     model_config = ConfigDict(extra="forbid")
 
 
