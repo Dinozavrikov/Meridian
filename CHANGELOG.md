@@ -8,6 +8,8 @@ The project is under active development: some features are unfinished and may no
 
 ## [Unreleased]
 
+## [0.22.2] - 2026-11-18
+
 ### Fixed
 
 - Public pages are now rendered before the session check finishes, so their text is in the server HTML (before, crawlers without JavaScript saw an empty screen)
