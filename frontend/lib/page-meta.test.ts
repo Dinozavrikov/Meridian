@@ -1,4 +1,4 @@
-// Метаданные публичных страниц: у каждой свои, без «ё», canonical совпадает с адресом; запись берет данные у самой записи.
+// Метаданные публичных страниц: у каждой свои, без буквы е с двумя точками, canonical совпадает с адресом; запись берет данные у самой записи.
 import { afterEach, describe, expect, it, vi } from "vitest"
 import { readFileSync } from "node:fs"
 
@@ -18,7 +18,7 @@ describe("метаданные публичных страниц", async () => {
     expect(new Set(metas.map(([, m]: any) => m.title)).size).toBe(PAGES.length)
     expect(new Set(metas.map(([, m]: any) => m.description)).size).toBe(PAGES.length)
   })
-  it("корневой layout без «ё»", () => {
+  it("корневой layout без буквы е с двумя точками", () => {
     expect(readFileSync("app/layout.tsx", "utf-8")).not.toContain("\u0451")
   })
 })
