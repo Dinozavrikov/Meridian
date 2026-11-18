@@ -11,10 +11,10 @@ const ptSerif = PT_Serif({ subsets: ["latin", "cyrillic"], weight: ["400", "700"
 export const metadata: Metadata = {
   metadataBase: new URL("https://miridin.com"),
   title: "Meridian",
-  description: "Чтобы не забыть о причинах уверенности — фиксируйте гипотезы и прогнозы, сверяйтесь с реальностью, когда придёт время.",
+  description: "Чтобы не забыть о причинах уверенности — фиксируйте гипотезы и прогнозы, сверяйтесь с реальностью, когда придет время.",
   openGraph: {
     title: "Meridian",
-    description: "Чтобы не забыть о причинах уверенности — фиксируйте гипотезы и прогнозы, сверяйтесь с реальностью, когда придёт время.",
+    description: "Чтобы не забыть о причинах уверенности — фиксируйте гипотезы и прогнозы, сверяйтесь с реальностью, когда придет время.",
     url: "https://miridin.com",
     siteName: "Meridian",
     locale: "ru_RU",
@@ -23,7 +23,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "Meridian",
-    description: "Чтобы не забыть о причинах уверенности — фиксируйте гипотезы и прогнозы, сверяйтесь с реальностью, когда придёт время.",
+    description: "Чтобы не забыть о причинах уверенности — фиксируйте гипотезы и прогнозы, сверяйтесь с реальностью, когда придет время.",
   },
 }
 
@@ -44,7 +44,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               "@type": "WebApplication",
               "name": "Meridian",
               "url": "https://miridin.com",
-              "description": "Приложение для принятия более эффективных решений: фиксируйте гипотезы и прогнозы, сверяйтесь с реальностью, когда придёт время.",
+              "description": "Приложение для принятия более эффективных решений: фиксируйте гипотезы и прогнозы, сверяйтесь с реальностью, когда придет время.",
               "applicationCategory": "LifestyleApplication",
               "operatingSystem": "Web",
               "inLanguage": "ru",

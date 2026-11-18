@@ -8,6 +8,11 @@ The project is under active development: some features are unfinished and may no
 
 ## [Unreleased]
 
+### Fixed
+
+- Every public page had the same title and description; they now have their own, and a record page takes its title and description from the record (only public records are indexable)
+- The default page description no longer uses a non-standard spelling of the word for "will come"
+
 ## [0.22.2] - 2026-11-18
 
 ### Fixed
