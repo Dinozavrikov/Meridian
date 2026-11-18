@@ -8,6 +8,8 @@ The project is under active development: some features are unfinished and may no
 
 ## [Unreleased]
 
+## [0.22.3] - 2026-11-18
+
 ### Changed
 
 - The footer tagline and description now match the project's current wording: ideas checked against reality
