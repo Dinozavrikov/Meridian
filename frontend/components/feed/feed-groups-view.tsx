@@ -1,10 +1,10 @@
 "use client"
-import { useEffect, useState, type ReactNode } from "react"
+import { useEffect, useRef, useState, type ReactNode } from "react"
 import { ArrowUp, Globe, Loader2 } from "lucide-react"
 import { useStore } from "@/lib/store"
 import { useT } from "@/lib/i18n/useT"
 import { scopeKey, type FeedScope } from "@/lib/feed-scope"
-import { groupIsOnlyMine, isNewSince, readSeen, writeSeen, type FeedGroup } from "@/lib/feed-groups"
+import { groupIsOnlyMine, isNewSince, readSeen, writeSeen, type FeedGroup, type FeedGroupsPage } from "@/lib/feed-groups"
 import { useFeedGroups, type FeedFilter } from "@/lib/use-feed-groups"
 import { useInfiniteScrollSentinel } from "@/lib/use-infinite-scroll-sentinel"
 import { FeedGroupCard } from "@/components/feed/feed-group-card"
@@ -18,16 +18,24 @@ import { useFeedViewMode } from "@/lib/feed-view-mode"
 /** Лента карточками-досье: заголовок страницы, фильтры, список, плашка «Есть новое». split — страница ленты (колонка и
  *  правая панель), single — вкладка лаборатории (фильтры строкой над колонкой, без заголовка: он есть у страницы
  *  лаборатории). Вызывающий ставит key={scopeKey(scope)}: метка «прошлого захода» читается один раз при монтировании. */
-export function FeedGroupsView({ scope, layout = "single", extras, showHeading = false }: {
-  scope: FeedScope; layout?: "split" | "single"; extras?: ReactNode; showHeading?: boolean
+export function FeedGroupsView({ scope, layout = "single", extras, showHeading = false, initialPage = null }: {
+  scope: FeedScope; layout?: "split" | "single"; extras?: ReactNode; showHeading?: boolean; initialPage?: FeedGroupsPage | null
 }) {
   const t = useT()
   const user = useStore(s => s.user)
   const sKey = scopeKey(scope)
   const [filter, setFilter] = useState<FeedFilter>({ type: null, topic: null })
-  const [lastSeen] = useState(() => readSeen(sKey))
+  // Метка «прошлого захода» читается после монтирования: карточки приходят уже с сервера, а он localStorage не видит,
+  // иначе бейджи «Новое» разошлись бы при гидратации. Читаем один раз, до записи новой метки (эффект ниже по порядку).
+  const [lastSeen, setLastSeen] = useState<string | null>(null)
+  const seenRead = useRef(false)
+  useEffect(() => {
+    if (seenRead.current) return
+    seenRead.current = true
+    setLastSeen(readSeen(sKey))
+  }, [sKey])
   const [viewMode, setViewMode] = useFeedViewMode()
-  const q = useFeedGroups(scope, filter)
+  const q = useFeedGroups(scope, filter, initialPage)
   const sentinelRef = useInfiniteScrollSentinel(
     () => q.fetchNextPage(),
     !q.isLoading && !q.isFetchingNextPage && !!q.hasNextPage,

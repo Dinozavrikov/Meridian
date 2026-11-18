@@ -12,6 +12,8 @@ The project is under active development: some features are unfinished and may no
 
 ### Fixed
 
+- Public pages are now rendered before the session check finishes, so their text is in the server HTML (before, crawlers without JavaScript saw an empty screen)
+- The public feed is now rendered on the server for the first page, so crawlers that do not run JavaScript see the records too (needs `INTERNAL_API_URL`, otherwise the feed loads in the browser as before); the feed page has its own title and description
 - Search engines saw an empty feed: `robots.txt` blocked the whole `/api/`, so a crawler that runs JavaScript could not load the public feed and record cards. The public read endpoints are now allowed; everything else under `/api/` stays closed
 
 ## [0.22.0] - 2026-11-18

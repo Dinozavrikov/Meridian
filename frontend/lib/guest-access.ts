@@ -16,6 +16,13 @@ export const GUEST_ALLOWED = [
   "/profile",
 ]
 
+/** Публичные страницы, чей текст должен быть в серверном HTML: AppShell рисует их до ответа auth/me. */
+export const PRERENDERED_PATHS = ["/feed", "/support", "/features", "/roadmap", "/docs", "/privacy", "/terms"]
+
+export function isPrerenderedPath(pathname: string | null): boolean {
+  return !!pathname && PRERENDERED_PATHS.some(p => pathname === p || pathname.startsWith(p + "/"))
+}
+
 export function isGuestAllowedPath(pathname: string): boolean {
   return GUEST_ALLOWED.some(p => pathname === p || pathname.startsWith(p + "/"))
 }

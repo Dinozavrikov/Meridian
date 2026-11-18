@@ -136,6 +136,8 @@ export const STRINGS: Record<string, string> = {
   "footer.public.support": "Поддержка",
   "footer.public.legal": "Правовое",
   "footer.link.support": "Поддержать проект",
+  "feed.meta.title": "Лента гипотез и прогнозов · Meridian",
+  "feed.meta.description": "Публичная лента Meridian: наблюдения, гипотезы и прогнозы людей и то, как они сошлись с реальностью.",
   "footer.link.source": "Исходный код",
   "support.pageTitle": "Поддержка",
   "support.eyebrow": "Поддержать проект",

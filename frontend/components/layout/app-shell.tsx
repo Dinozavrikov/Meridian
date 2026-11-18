@@ -9,7 +9,7 @@ import { GuestSidebar } from "./guest-sidebar"
 import { SearchModal } from "./search-modal"
 import { RAIL_WIDTH } from "@/lib/nav"
 
-import { isGuestAllowedPath } from "@/lib/guest-access"
+import { isGuestAllowedPath, isPrerenderedPath } from "@/lib/guest-access"
 import { useIsMobile } from "@/lib/use-is-mobile"
 import Link from "next/link"
 import { Globe } from "lucide-react"
@@ -62,7 +62,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   // Пока не знаем, гость это или нет, не показываем ни один из сайдбаров —
   // иначе на долю секунды мелькнёт не тот вариант даже для залогиненных.
-  if (!authChecked) {
+  // Публичные страницы рисуются сразу, в том числе на сервере: иначе краулер без JS видит пустой экран.
+  // Структура дерева одна и та же до и после проверки (сайдбары заменяются на null), иначе страница пересоздалась бы.
+  if (!authChecked && !isPrerenderedPath(pathname)) {
     return <div style={{ height: "100vh", background: "#0b0d14" }} />
   }
 
@@ -71,8 +73,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       {/* Спейсер под fixed-сайдбар: виден только там же, где виден сам
           сайдбар (md и шире). На мобильном сайдбара нет — значит и
           спейсер не нужен, контент занимает всю ширину экрана. */}
-      <div className={user ? "block" : "hidden md:block"} style={{ width: user ? RAIL_WIDTH : 180, flexShrink: 0 }} />
-      {user ? <Sidebar /> : <GuestSidebar />}
+      <div className={user || !authChecked ? "block" : "hidden md:block"} style={{ width: user || !authChecked ? RAIL_WIDTH : 180, flexShrink: 0 }} />
+      {!authChecked ? null : user ? <Sidebar /> : <GuestSidebar />}
       <div style={{
         flex: 1,
         minWidth: 0,
@@ -82,7 +84,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             призыв зарегистрироваться), но горизонтальным компактным
             баннером сверху вместо колонки в 180px, которой на телефоне
             просто нет места. */}
-        {!user && isMobile && (
+        {authChecked && !user && isMobile && (
           <div style={{
             display: "flex", alignItems: "center", gap: 10,
             padding: "8px 14px", flexShrink: 0,
@@ -104,7 +106,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           {children}
         </div>
       </div>
-      <SearchModal />
+      {authChecked && <SearchModal />}
     </div>
   )
 }

@@ -186,6 +186,11 @@ services:
         # Local development sets the address in docker-compose.override.yml.
         NEXT_PUBLIC_API_URL: ""
 
+    environment:
+      # Server-side rendering of the public feed calls the backend by its internal address.
+      # Without it the feed is simply loaded in the browser.
+      INTERNAL_API_URL: http://backend:8000
+
     restart: unless-stopped
 
     depends_on:

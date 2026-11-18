@@ -123,3 +123,6 @@ export function readSeen(key: string, storage: StorageLike | null = defaultStora
 export function writeSeen(key: string, iso: string, storage: StorageLike | null = defaultStorage()): void {
   try { storage?.setItem(SEEN_PREFIX + key, iso) } catch { /* приватный режим или квота: метка «Новое» просто не сохранится */ }
 }
+
+/** Размер первой страницы ленты: один для серверной отрисовки и для клиентского запроса. */
+export const FEED_PAGE_SIZE = 20

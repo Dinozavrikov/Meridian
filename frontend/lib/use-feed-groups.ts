@@ -1,11 +1,11 @@
 "use client"
 import { useRef } from "react"
-import { useInfiniteQuery, useQuery, useQueryClient } from "@tanstack/react-query"
+import { useInfiniteQuery, useQuery, useQueryClient, type InfiniteData } from "@tanstack/react-query"
 import { feedApi } from "@/lib/api"
 import { scopeKey, type FeedScope } from "@/lib/feed-scope"
-import { hasNewerActivity, mergeGroups, type FeedGroupsPage, type TopicCount } from "@/lib/feed-groups"
+import { FEED_PAGE_SIZE, hasNewerActivity, mergeGroups, type FeedGroupsPage, type TopicCount } from "@/lib/feed-groups"
 
-const PAGE_SIZE = 20
+const PAGE_SIZE = FEED_PAGE_SIZE
 export const PEEK_INTERVAL_MS = 30_000
 
 export interface FeedFilter { type: string | null; topic: string | null }
@@ -16,7 +16,8 @@ function fetchGroups(scope: FeedScope, filter: FeedFilter, page: number, pageSiz
 }
 
 /** Ключи начинаются с "feed": существующие invalidateQueries(["feed"]) (комментарий, удаление записи) обновляют и эту ленту. */
-export function useFeedGroups(scope: FeedScope, filter: FeedFilter) {
+/** initialPage: первая страница, отрисованная на сервере. Годится только для ленты без фильтров. */
+export function useFeedGroups(scope: FeedScope, filter: FeedFilter, initialPage?: FeedGroupsPage | null) {
   const qc = useQueryClient()
   const sk = scopeKey(scope)
   const key = ["feed", "groups", sk, filter.type, filter.topic] as const
@@ -24,6 +25,7 @@ export function useFeedGroups(scope: FeedScope, filter: FeedFilter) {
   const query = useInfiniteQuery({
     queryKey: key,
     initialPageParam: 1,
+    initialData: (initialPage && !filter.type && !filter.topic ? { pages: [initialPage], pageParams: [1] } : undefined) as InfiniteData<FeedGroupsPage, number> | undefined,
     queryFn: ({ pageParam }) => fetchGroups(scope, filter, pageParam, PAGE_SIZE),
     getNextPageParam: (last: FeedGroupsPage) => (last.page < last.total_pages ? last.page + 1 : undefined),
   })
