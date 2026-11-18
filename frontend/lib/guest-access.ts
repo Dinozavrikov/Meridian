@@ -10,7 +10,7 @@
 // модалки AuthGateModal (см. app/providers.tsx), а не превентивным
 // редиректом здесь.
 export const GUEST_ALLOWED = [
-  "/feed", "/features", "/roadmap", "/docs", "/privacy", "/terms", "/labs",
+  "/feed", "/features", "/roadmap", "/docs", "/privacy", "/terms", "/support", "/labs",
   "/login", "/register",
   "/observations", "/hypotheses", "/predictions", "/worldview", "/questions",
   "/profile",

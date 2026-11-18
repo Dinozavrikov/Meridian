@@ -1,10 +1,14 @@
 "use client"
 import { useT } from "@/lib/i18n/useT"
 import { appVersion } from "@/lib/version"
+import { REPO_URL, EXTERNAL_LINK_PROPS } from "@/lib/project-links"
 
 interface FooterProps {
   variant?: "app" | "public"
 }
+
+type FooterLink = { label: string; href: string; external?: boolean }
+const extProps = (l: FooterLink) => (l.external ? EXTERNAL_LINK_PROPS : {})
 
 const YEAR = new Date().getFullYear()
 
@@ -33,13 +37,15 @@ function StatusRow({ label }: { label: string }) {
 export function Footer({ variant = "app" }: FooterProps) {
   const t = useT()
   const statusLabel = t("footer.status")
-  const LINKS = {
+  const LINKS: Record<"product" | "support" | "legal", FooterLink[]> = {
     product: [
       { label: t("footer.link.features"), href: "/features" },
       { label: t("footer.link.roadmap"), href: "/roadmap" },
     ],
     support: [
       { label: t("footer.link.docs"), href: "/docs" },
+      { label: t("footer.link.support"), href: "/support" },
+      { label: t("footer.link.source"), href: REPO_URL, external: true },
     ],
     legal: [
       { label: t("footer.link.privacy"), href: "/privacy" },
@@ -144,7 +150,7 @@ export function Footer({ variant = "app" }: FooterProps) {
                 <span key={gi} style={{ display: "flex", alignItems: "center" }}>
                   {group.map((l, li) => (
                     <span key={l.label} style={{ display: "flex", alignItems: "center" }}>
-                      <a href={l.href} className="footer-link">{l.label}</a>
+                      <a href={l.href} {...extProps(l)} className="footer-link">{l.label}</a>
                       {li < group.length - 1 && (
                         <span style={{ color: "#9999a1", margin: "0 8px", fontSize: 10 }}>·</span>
                       )}
@@ -213,7 +219,7 @@ export function Footer({ variant = "app" }: FooterProps) {
                 color: "#898988", marginBottom: 10,
               }}>{col.title}</p>
               {col.links.map(l => (
-                <a key={l.label} href={l.href} style={{
+                <a key={l.label} href={l.href} {...extProps(l)} style={{
                   display: "block", fontSize: 13,
                   color: "#9a9a96", textDecoration: "none",
                   marginBottom: 6, cursor: "pointer",

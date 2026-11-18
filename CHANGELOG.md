@@ -8,6 +8,10 @@ The project is under active development: some features are unfinished and may no
 
 ## [Unreleased]
 
+### Added
+
+- A support page (`/support`) with payment links, copyable crypto addresses and ways to help without money; the footer now links to it and to the source code on GitHub
+
 ## [0.21.1] - 2026-11-18
 
 ### Fixed

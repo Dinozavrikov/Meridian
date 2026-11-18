@@ -12,7 +12,7 @@ interface Props {
   titleKey: string
   accentKey: string
   leadKey: string
-  revision: LegalRevision
+  revision?: LegalRevision
   notice?: ReactNode
   children?: ReactNode
 }
@@ -24,8 +24,9 @@ export function LegalHero({ color, eyebrowKey, titleKey, accentKey, leadKey, rev
   const t = useT()
   const locale = useStore(s => s.locale) as string
   const date = useMemo(() => {
+    if (!revision) return ""
     try { return new Intl.DateTimeFormat(locale, { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" }).format(new Date(revision.date)) } catch { return revision.date }
-  }, [locale, revision.date])
+  }, [locale, revision])
   const title = t(titleKey)
   const accent = t(accentKey)
   const at = title.indexOf(accent)
@@ -39,13 +40,13 @@ export function LegalHero({ color, eyebrowKey, titleKey, accentKey, leadKey, rev
         {at >= 0 ? <>{title.slice(0, at)}<span style={{ color }}>{accent}</span>{title.slice(at + accent.length)}</> : title}
       </h1>
       <p style={{ margin: "0 0 24px", maxWidth: 720, fontSize: 18, lineHeight: 1.6, color: v2.t2 }}>{t(leadKey)}</p>
-      <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
+      {revision && <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
         <span style={{ ...chip, color, background: `${color}14`, border: `1px solid ${color}33` }}>
           <span style={{ width: 6, height: 6, borderRadius: "50%", background: color }} />{t("legalPage.stamp.active")}
         </span>
         <span style={{ ...chip, color: v2.t3, border: `1px solid ${v2.bd2}`, fontFamily: "var(--font-mono, monospace)" }}>{t("legalPage.stamp.rev", { version: revision.version })}</span>
         <span style={{ fontSize: 12, color: v2.t3 }}>{t("legalPage.stamp.since", { date })}</span>
-      </div>
+      </div>}
       {children}
       {notice}
     </section>
