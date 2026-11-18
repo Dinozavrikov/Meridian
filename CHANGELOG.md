@@ -8,6 +8,8 @@ The project is under active development: some features are unfinished and may no
 
 ## [Unreleased]
 
+## [0.22.4] - 2026-11-19
+
 ### Fixed
 
 - The public maturity simulator now rejects control characters in its input like the rest of the API
