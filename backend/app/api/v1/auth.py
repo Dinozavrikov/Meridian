@@ -50,7 +50,6 @@ async def _verify_turnstile(token: str, remote_ip: str) -> bool:
     if not settings.TURNSTILE_SECRET_KEY:
         print("[auth] TURNSTILE_SECRET_KEY не настроен — регистрация заблокирована до настройки", flush=True)
         return False
-    print(f"[auth][debug] Turnstile запрос: remote_ip={remote_ip!r} token_len={len(token) if token else 0}", flush=True)
     try:
         async with httpx.AsyncClient(timeout=10) as client:
             resp = await client.post(TURNSTILE_VERIFY_URL, data={

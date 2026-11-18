@@ -74,7 +74,16 @@ def config_problems(s: "Settings") -> list[tuple[str, str]]:
 
 settings = Settings()
 
+# Критичная ошибка останавливает любой процесс при импорте (в том числе миграции).
 for _level, _message in config_problems(settings):
-    print(f"[config] {_message}", flush=True)
     if _level == "error":
+        print(f"[config] {_message}", flush=True)
         raise RuntimeError(_message)
+
+
+def log_config_warnings(s: "Settings" = settings) -> None:
+    """Печатает предупреждения о рискованных настройках. Вызывается один раз из lifespan приложения:
+    при импорте config.py печатать нельзя, его импортируют entrypoint, alembic и uvicorn."""
+    for level, message in config_problems(s):
+        if level == "warning":
+            print(f"[config] {message}", flush=True)

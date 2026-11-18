@@ -20,6 +20,8 @@ async def lifespan(app: FastAPI):
     # uvicorn). Base.metadata.create_all() отсюда убран: раньше это был
     # второй источник истины по схеме — новая таблица могла тихо
     # появиться при рестарте контейнера без соответствующей миграции.
+    from app.core.config import log_config_warnings
+    log_config_warnings()
     from app.services.prediction_reminders import send_due_prediction_reminders
     from app.services.contradiction_recheck import run_delayed_recheck
     from app.services.attachment_gc import run_attachment_gc, run_attachment_version_gc

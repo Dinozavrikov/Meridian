@@ -72,3 +72,74 @@ async def test_login_cookies_follow_the_default(client, test_user, monkeypatch, 
     cookies = [h for h in r.headers.get_list("set-cookie") if h.startswith(("access_token", "refresh_token"))]
     assert len(cookies) == 2
     assert all(("; Secure" in c) == secure for c in cookies)
+
+
+# --- Предупреждения [config]: один раз за запуск приложения, не при каждом импорте ---
+import asyncio
+import base64
+import os
+import subprocess
+import sys
+from pathlib import Path
+
+from app.core.config import PLACEHOLDER_SECRETS
+
+BACKEND_DIR = Path(__file__).resolve().parents[1]
+
+
+def _run_python(code: str, **env_overrides):
+    # app.main подключает шифрование сообщений, ему нужен настоящий ключ Fernet, а не заглушка из BASE
+    valid_key = base64.urlsafe_b64encode(b"0" * 32).decode()
+    env = {**os.environ, **{k: str(v) for k, v in {**BASE, "MESSAGE_ENCRYPTION_KEY": valid_key, **env_overrides}.items()}}
+    return subprocess.run([sys.executable, "-c", code], cwd=BACKEND_DIR, env=env,
+                          capture_output=True, text=True, timeout=120)
+
+
+_RISKY = dict(TURNSTILE_SECRET_KEY=TURNSTILE_TEST_SECRET, SMTP_HOST="mailpit")
+
+
+def test_importing_config_and_app_prints_no_config_warnings():
+    """Импорт config.py (entrypoint, alembic, uvicorn) больше не печатает предупреждения."""
+    r = _run_python("import app.core.config; import app.main", **_RISKY)
+    assert r.returncode == 0, r.stderr[-800:]
+    assert "[config]" not in r.stdout
+
+
+def test_log_config_warnings_prints_each_warning_exactly_once():
+    r = _run_python("from app.core.config import log_config_warnings; log_config_warnings()", **_RISKY)
+    assert r.returncode == 0, r.stderr[-800:]
+    lines = [ln for ln in r.stdout.splitlines() if ln.startswith("[config]")]
+    assert len(lines) == 2, lines
+    assert any("TURNSTILE_SECRET_KEY" in ln for ln in lines) and any("SMTP_HOST" in ln for ln in lines)
+
+
+def test_placeholder_secret_key_still_stops_the_process_on_import():
+    placeholder = sorted(PLACEHOLDER_SECRETS)[0]
+    r = _run_python("import app.core.config", SECRET_KEY=placeholder)
+    assert r.returncode != 0
+    assert "SECRET_KEY" in r.stdout + r.stderr
+
+
+# --- Turnstile: клиентский IP не попадает в журнал ---
+def test_turnstile_check_does_not_log_client_ip(monkeypatch, capsys):
+    from app.api.v1 import auth
+
+    class FakeResp:
+        status_code = 200
+        text = "{}"
+        def json(self):
+            return {"success": True}
+
+    class FakeClient:
+        def __init__(self, *a, **k): pass
+        async def __aenter__(self): return self
+        async def __aexit__(self, *a): return False
+        async def post(self, url, data=None, **k):
+            assert data["remoteip"] == "203.0.113.7"  # в Cloudflare IP по-прежнему уходит
+            return FakeResp()
+
+    monkeypatch.setattr(auth.httpx, "AsyncClient", FakeClient)
+    monkeypatch.setattr(auth.settings, "TURNSTILE_SECRET_KEY", "a-real-turnstile-secret")
+    assert asyncio.run(auth._verify_turnstile("tok-123", "203.0.113.7")) is True
+    out = capsys.readouterr()
+    assert "203.0.113.7" not in out.out + out.err

@@ -15,6 +15,9 @@ The project is under active development: some features are unfinished and may no
 - Risky production settings are caught at startup: a placeholder `SECRET_KEY` stops the backend; the test Turnstile secret, a local mail catcher and cookies without `Secure` are warned about
 - A documented production setup: a Caddy reverse proxy overlay (`docker-compose.prod.yml`) that overwrites `X-Real-IP`, and a "Production deployment" guide in the README
 - The frontend build now says explicitly that the API is reached at a relative address by default
+- The Caddy proxy keeps retrying the connection for up to 20 seconds while the backend or frontend restarts (an update, `git pull`), instead of answering 502 to sign-up and login
+- Startup warnings about risky settings are printed once per start instead of three times
+- The backend no longer writes the visitor's IP address to its log during sign-up checks
 
 ## [0.21.0] - 2026-11-16
 

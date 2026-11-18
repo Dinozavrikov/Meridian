@@ -14,11 +14,18 @@
 	handle /api/* {
 		reverse_proxy backend:8000 {
 			header_up X-Real-IP {remote_host}
+			# While the backend restarts (migrations run first) keep retrying the connection
+			# instead of answering 502: the request has not reached the app yet, so it is safe.
+			lb_try_duration 20s
+			lb_try_interval 250ms
 		}
 	}
 
 	# Everything else is the web app.
 	handle {
-		reverse_proxy frontend:3000
+		reverse_proxy frontend:3000 {
+			lb_try_duration 20s
+			lb_try_interval 250ms
+		}
 	}
 }
