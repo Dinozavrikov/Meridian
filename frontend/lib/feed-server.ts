@@ -21,6 +21,7 @@ export async function fetchPublicFeedFirstPage(): Promise<FeedGroupsPage | null>
 }
 
 const TYPE_RE = /^[a-z_]{1,32}$/
+export interface SitemapRecord { type: string; id: number; updated_at: string }
 const ID_RE = /^\d{1,9}$/
 
 /** Ядро карточки записи для метатегов. Параметры из URL проверяются до подстановки в адрес backend.
@@ -38,5 +39,21 @@ export async function fetchEntityCore(type: string, id: string): Promise<Record<
     return data && typeof data.core === "object" && data.core ? data.core : null
   } catch {
     return null
+  }
+}
+
+/** Публичные записи для sitemap. Без INTERNAL_API_URL или при ошибке: пустой список (в sitemap остаются обычные страницы).
+ *  Из ответа берутся только записи с допустимым типом и числовым id: адрес страницы собирается из этих полей. */
+export async function fetchSitemapRecords(): Promise<SitemapRecord[]> {
+  const base = process.env.INTERNAL_API_URL?.trim().replace(/\/+$/, "")
+  if (!base) return []
+  try {
+    const res = await fetch(`${base}/api/v1/feed/public/sitemap`, { signal: AbortSignal.timeout(5000), next: { revalidate: 600 } })
+    if (!res.ok) return []
+    const data = await res.json()
+    if (!Array.isArray(data)) return []
+    return data.filter((r): r is SitemapRecord => !!r && TYPE_RE.test(String(r.type)) && Number.isInteger(r.id) && r.id > 0)
+  } catch {
+    return []
   }
 }

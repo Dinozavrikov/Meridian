@@ -13,6 +13,9 @@ GUARD_TOKENS = ("get_entity_for_view", "get_entity_for_read", "entity_visibility
 REGISTRY = {
     "feed.public_recently_confirmed": "PUBLIC: только visibility == public",
     "feed.public_graph_teaser": "PUBLIC: только публичные записи и связи между ними",
+    "maturity_model.get_maturity_model": "PUBLIC: статичное описание формулы зрелости, данных пользователей нет",
+    "privacy_facts.privacy_facts": "PUBLIC: статичные сроки жизни входа и ссылок из настроек сервиса, данных пользователей нет",
+    "feed.public_sitemap": "PUBLIC: только visibility == public и не удалена; отдает тип, id и время, без текстов и авторов",
     "global_graph.global_graph_overview": "PUBLIC: только visibility == public, рёбра между публичными",
     "global_graph.global_graph_all": "PUBLIC: только visibility == public, рёбра между публичными",
     "graph.global_blind_spots": "PUBLIC: только visibility == public",

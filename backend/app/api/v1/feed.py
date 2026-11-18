@@ -780,6 +780,28 @@ async def public_graph_teaser(db: AsyncSession = Depends(get_db)):
     return {"nodes": nodes, "edges": edges, "approximate": True}
 
 
+# Типы записей для sitemap: у убеждений нет заголовка, их страница обсуждения закрыта от индекса (noindex).
+SITEMAP_TYPES = ("observation", "hypothesis", "prediction", "question", "task")
+
+
+@router.get("/public/sitemap")
+async def public_sitemap(limit: int = Query(5000, ge=1, le=10000), db: AsyncSession = Depends(get_db)):
+    """Перечень публичных записей для sitemap: только тип, id и время изменения, без текстов и авторов.
+    Отбор тот же, что у публичной ленты: visibility == public и не удалена."""
+    out: list[dict] = []
+    for etype in SITEMAP_TYPES:
+        model = ENTITY_MODELS[etype]
+        stamp = func.coalesce(model.updated_at, model.created_at) if hasattr(model, "updated_at") else model.created_at
+        rows = (await db.execute(
+            select(model.id, stamp)
+            .where(model.visibility == "public", model.deleted_at.is_(None))
+            .order_by(stamp.desc()).limit(limit)
+        )).all()
+        out += [{"type": etype, "id": rid, "updated_at": _utc(ts).isoformat()} for rid, ts in rows]
+    out.sort(key=lambda x: x["updated_at"], reverse=True)
+    return out[:limit]
+
+
 @router.get("/groups/entity/{entity_type}/{entity_id}", response_model=FeedGroupOut)
 async def feed_group_of_entity(entity_type: str, entity_id: int,
                                user: Optional[User] = Depends(get_current_user_optional),

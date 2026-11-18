@@ -12,6 +12,10 @@ The project is under active development: some features are unfinished and may no
 
 - The public maturity simulator now rejects control characters in its input like the rest of the API
 
+### Added
+
+- The sitemap now lists public records (hypotheses, observations, predictions, questions, tasks) so search engines find them without crawling the feed; the backend gets a public list endpoint that returns only type, id and update time
+
 ## [0.22.3] - 2026-11-18
 
 ### Changed
