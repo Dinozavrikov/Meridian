@@ -134,9 +134,9 @@ Two pipelines.
 - `UIStringTranslation` (public).
 - `ContentTranslation` (encrypted via `EncryptedText`), keyed by `(type, id, field, lang)`.
 
-Server: `/i18n/ensure` and `/i18n/ensure-content`. Whitelist `_ROWS` in `translatable_fields.py`. Guest limit in-memory.
+Server: `/i18n/ensure` and `/i18n/ensure-content`. Whitelist `_ROWS` in `translatable_fields.py`. `ensure_ui_translations` is the shared core of the endpoint and of `scripts/warm_i18n.py`. A guest gets ready translations from the cache only and never makes the model work, except for the strings in `AUTH_UI_STRINGS`, which are rate-limited in memory. A new language is therefore filled by a signed-in user or by the warm-up script, not by guests.
 
-Frontend: `lib/i18n/` with `chunked-loader`, `useT`, `useContentT`, `useDynamicT`. `translationScope: "content"` is placeholder.
+Frontend: `lib/i18n/` with `chunked-loader`, `useT`, `useContentT`, `useDynamicT`. The loader sends strings in sequential batches: keys the screen already asked for through `useT` go first, and a batch is capped by text volume (`CHUNK_MAX_CHARS`) because the reverse proxy cuts a request after a minute. `translationScope: "content"` is placeholder.
 ### 3.8 AI / LLM routing
 
 `llm_router.py` routes 5 tasks (`translate`, `analysis`, `reflection`, `vision`, `embedding`) with budget-aware truncation (`_water_fill`, `fit_texts`).

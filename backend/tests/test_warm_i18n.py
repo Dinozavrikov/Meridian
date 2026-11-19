@@ -10,9 +10,9 @@ from scripts.warm_i18n import warm_locale
 async def test_warm_locale_uses_chunks_and_counts_failures():
     calls = []
 
-    async def fake(locale, body, user, db):
-        calls.append(list(body.strings))
-        return SimpleNamespace(translations={}, missing=[k for k in body.strings if k.startswith("bad")])
+    async def fake(db, locale, strings):
+        calls.append(list(strings))
+        return SimpleNamespace(translations={}, missing=[k for k in strings if k.startswith("bad")])
 
     items = [("a1", "x"), ("bad1", "x"), ("a2", "x"), ("bad2", "x"), ("a3", "x")]
     res = await warm_locale("en", items, chunk=2, ensure=fake)

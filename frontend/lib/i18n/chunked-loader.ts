@@ -17,6 +17,11 @@ export interface ChunkedLoadOptions {
   onChunk?: (merged: Dict) => void
   /** Если вернёт true — новые запросы больше не отправляются (смена языка, размонтирование). */
   shouldStop?: () => boolean
+  /** Предел объема русского текста в одной пачке (символов): длинные абзацы не должны упираться в 60 с у nginx.
+   *  Одна строка длиннее предела уходит отдельной пачкой. */
+  maxChars?: number
+  /** Ключи, нужные на экране прямо сейчас: переводятся первыми. Вызывается перед каждой пачкой. */
+  priorityKeys?: () => Iterable<string>
 }
 
 /** Убирает то, что не является переводом: пустые значения и русский оригинал, выданный
@@ -44,15 +49,33 @@ const sleep = (ms: number) => new Promise<void>(resolve => setTimeout(resolve, m
 export async function loadTranslationsChunked(opts: ChunkedLoadOptions): Promise<Dict> {
   const {
     strings, post, chunkSize = 30, concurrency = 1, retries = 2, retryDelayMs = 1500, onChunk, shouldStop,
+    maxChars = Infinity, priorityKeys,
   } = opts
-  const entries = Object.entries(strings)
-  const chunks: Dict[] = []
-  for (let i = 0; i < entries.length; i += chunkSize) {
-    chunks.push(Object.fromEntries(entries.slice(i, i + chunkSize)))
+  const remaining = new Map(Object.entries(strings))
+
+  /** Следующая пачка: сначала ключи, нужные на экране, потом остальные в порядке словаря. Ограничена числом строк и объемом текста. */
+  function takeChunk(): Dict {
+    const chunk: Dict = {}
+    let count = 0
+    let chars = 0
+    const fits = (text: string) => count === 0 || (count < chunkSize && chars + text.length <= maxChars)
+    const take = (key: string, text: string) => { chunk[key] = text; remaining.delete(key); count++; chars += text.length }
+    if (priorityKeys) {
+      for (const key of priorityKeys()) {
+        const text = remaining.get(key)
+        if (text === undefined) continue
+        if (!fits(text)) return chunk
+        take(key, text)
+      }
+    }
+    for (const [key, text] of remaining) {
+      if (!fits(text)) break
+      take(key, text)
+    }
+    return chunk
   }
 
   let merged: Dict = {}
-  let next = 0
 
   async function processChunk(chunk: Dict) {
     let pending = chunk
@@ -78,9 +101,9 @@ export async function loadTranslationsChunked(opts: ChunkedLoadOptions): Promise
   }
 
   async function worker() {
-    while (next < chunks.length) {
+    while (remaining.size > 0) {
       if (shouldStop?.()) return
-      await processChunk(chunks[next++])
+      await processChunk(takeChunk())
     }
   }
 

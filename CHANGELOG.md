@@ -8,6 +8,12 @@ The project is under active development: some features are unfinished and may no
 
 ## [Unreleased]
 
+### Fixed
+
+- The cache warm-up script failed on every run (it called the endpoint without a request); it now uses the shared translation function, and the test container mounts scripts so such tests run the current code
+- New pages (documentation, privacy, terms) were translated last because the whole dictionary went in one long queue: strings the screen needs now go first, and a batch is limited by text volume
+- A guest now sees ready translations of the interface from the cache (before, any page outside the sign-in screens got an error and no translation); the model never works for a guest
+
 ## [0.22.4] - 2026-11-19
 
 ### Fixed

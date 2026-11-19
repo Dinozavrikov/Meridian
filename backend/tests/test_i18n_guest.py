@@ -20,9 +20,15 @@ async def test_guest_can_translate_whitelisted_strings(client, translate_ok):
 
 
 @pytest.mark.asyncio
-async def test_guest_cannot_translate_arbitrary_strings(client, translate_ok):
+async def test_guest_gets_nothing_for_uncached_arbitrary_strings_and_the_model_is_not_called(client, monkeypatch):
+    import app.api.v1.i18n as i18n_mod
+
+    async def boom(strings, lang):
+        raise AssertionError("модель вызвана ради гостя")
+    monkeypatch.setattr(i18n_mod, "translate_strings", boom)
     r = await client.post("/api/v1/i18n/ensure/ja", json={"strings": {"Мой приватный текст": "Мой приватный текст"}})
-    assert r.status_code == 401
+    assert r.status_code == 200, r.text
+    assert r.json()["translations"] == {} and r.json()["missing"] == []
 
 
 @pytest.mark.asyncio

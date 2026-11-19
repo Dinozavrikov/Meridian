@@ -143,6 +143,7 @@ services:
       - ./backend/app:/app/app
       - ./backend/tests:/app/tests
       - ./backend/alembic:/app/alembic
+      - ./backend/scripts:/app/scripts
     environment:
       DATABASE_URL: postgresql+asyncpg://meridian:${POSTGRES_TEST_PASSWORD}@postgres-test:5432/meridian_test
       REDIS_URL: redis://redis:6379/0

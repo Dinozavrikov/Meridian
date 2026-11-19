@@ -80,29 +80,11 @@ class EnsureResponse(BaseModel):
     missing: list[str] = []
 
 
-@router.post("/ensure/{locale}", response_model=EnsureResponse)
-async def ensure_translations(
-    locale: str,
-    body: EnsureRequest,
-    request: Request,
-    user: User | None = Depends(get_current_user_optional),
-    db: AsyncSession = Depends(get_db),
-):
-    if locale == "ru":
-        return EnsureResponse(translations=body.strings)
-
-    # Гость может переводить только UI-строки auth/гостевого шелла: whitelist,
-    # чтобы не крутить LLM произвольным текстом от анонима. Залогиненный —
-    # без ограничений (как и раньше).
-    if user is None:
-        if not set(body.strings.values()) <= AUTH_UI_STRINGS:
-            raise HTTPException(status_code=401, detail="Требуется вход в аккаунт")
-        ip = (request.client.host if request.client else "unknown")
-        if not _guest_rate_ok(ip):
-            raise HTTPException(status_code=429, detail="Слишком много запросов, подождите минуту")
-
-    keys = list(body.strings.keys())
-    hashes = {k: _hash(body.strings[k]) for k in keys}
+async def ensure_ui_translations(db: AsyncSession, locale: str, strings: dict[str, str], *, cache_only: bool = False) -> EnsureResponse:
+    """Готовые переводы из кэша и (если не cache_only) перевод недостающих моделью с записью в кэш.
+    Общая часть эндпоинта и скрипта прогрева scripts/warm_i18n.py: права доступа проверяет вызывающий."""
+    keys = list(strings.keys())
+    hashes = {k: _hash(strings[k]) for k in keys}
 
     existing = (await db.execute(
         select(UIStringTranslation).where(
@@ -120,7 +102,10 @@ async def ensure_translations(
         if row and row.source_hash == hashes[k]:
             result[k] = row.translated_text
         else:
-            to_translate[k] = body.strings[k]
+            to_translate[k] = strings[k]
+
+    if to_translate and cache_only:
+        return EnsureResponse(translations=result)   # гостю: только готовое, без вызова модели
 
     if to_translate:
         try:
@@ -162,6 +147,33 @@ async def ensure_translations(
         await db.commit()
 
     return EnsureResponse(translations=result)
+
+
+@router.post("/ensure/{locale}", response_model=EnsureResponse)
+async def ensure_translations(
+    locale: str,
+    body: EnsureRequest,
+    request: Request,
+    user: User | None = Depends(get_current_user_optional),
+    db: AsyncSession = Depends(get_db),
+):
+    if locale == "ru":
+        return EnsureResponse(translations=body.strings)
+
+    # Гость: UI-строки auth/гостевого шелла (whitelist) переводятся моделью, чтобы не крутить LLM
+    # произвольным текстом от анонима. Любые другие строки гость получает только из кэша:
+    # готовый перевод показываем (это публичный текст интерфейса), а модель ради него не работает.
+    # Залогиненный без ограничений.
+    cache_only = False
+    if user is None:
+        if set(body.strings.values()) <= AUTH_UI_STRINGS:
+            ip = (request.client.host if request.client else "unknown")
+            if not _guest_rate_ok(ip):
+                raise HTTPException(status_code=429, detail="Слишком много запросов, подождите минуту")
+        else:
+            cache_only = True
+
+    return await ensure_ui_translations(db, locale, body.strings, cache_only=cache_only)
 
 
 class ContentItem(StrictIn):

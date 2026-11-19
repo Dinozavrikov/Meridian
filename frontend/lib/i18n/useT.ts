@@ -14,6 +14,14 @@ import { migrateLegacyCaches } from "./cache-migrate"
 // постепенно. Строки, которые сервер не смог перевести (поле missing), повторяются и в
 // кэш не попадают — русский оригинал никогда не сохраняется как «перевод».
 const CHUNK_SIZE = 30
+// Объем русского текста в пачке: по логам пачка около 800 символов идет 16-22 с, длинные абзацы страниц документации
+// в пачке по 30 строк (3600 символов) не укладываются в 60 с nginx. Значение эвристическое, сверять с логом прода.
+export const CHUNK_MAX_CHARS = 1500
+
+// Ключи, которые экран уже запросил через t(): загрузчик переводит их раньше остальных, иначе страницы из хвоста
+// словаря (документация, приватность, условия) ждали бы очереди из десятков пачек.
+const requestedKeys = new Set<string>()
+export const requestedTranslationKeys = (): Iterable<string> => requestedKeys
 
 export function useTranslationsLoader() {
   const locale = useStore(s => s.locale)
@@ -64,6 +72,8 @@ export function useTranslationsLoader() {
     loadTranslationsChunked({
       strings: STRINGS,
       chunkSize: CHUNK_SIZE,
+      maxChars: CHUNK_MAX_CHARS,
+      priorityKeys: requestedTranslationKeys,
       concurrency: 1,
       retries: 2,
       shouldStop: () => cancelled,
@@ -89,6 +99,7 @@ export function useT() {
   const locale = useStore(s => s.locale)
   const translations = useStore(s => s.translations) ?? {}
   return useCallback((key: string, vars?: Record<string, string | number>) => {
+    requestedKeys.add(key)
     const base = locale === "ru" ? STRINGS[key] : (translations[key] ?? STRINGS[key] ?? key)
     if (!vars) return base
     return Object.entries(vars).reduce(

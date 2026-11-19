@@ -6,18 +6,18 @@ import json
 import sys
 import time
 
-from app.api.v1.i18n import EnsureRequest, ensure_translations
+from app.api.v1.i18n import ensure_ui_translations
 from app.db.session import AsyncSessionLocal
 
 CHUNK = 30  # ~15–20 с на пачку; сама очередь к модели держит ai._call_llm
 
 
-async def warm_locale(locale, items, chunk=CHUNK, ensure=ensure_translations):
+async def warm_locale(locale, items, chunk=CHUNK, ensure=ensure_ui_translations):
     ok = failed = 0
     for i in range(0, len(items), chunk):
         part = dict(items[i:i + chunk])
         async with AsyncSessionLocal() as db:
-            reply = await ensure(locale, EnsureRequest(strings=part), user=None, db=db)
+            reply = await ensure(db, locale, part)
         failed += len(reply.missing)
         ok += len(part) - len(reply.missing)
     return {"locale": locale, "ok": ok, "failed": failed}
