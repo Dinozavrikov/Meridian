@@ -8,6 +8,10 @@ The project is under active development: some features are unfinished and may no
 
 ## [Unreleased]
 
+### Security
+
+- Frontend dependencies updated: no known vulnerabilities remain in the production dependency tree, including two critical ones (Next.js and DOMPurify)
+
 ### Fixed
 
 - The cache warm-up script failed on every run (it called the endpoint without a request); it now uses the shared translation function, and the test container mounts scripts so such tests run the current code
