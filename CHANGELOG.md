@@ -8,6 +8,8 @@ The project is under active development: some features are unfinished and may no
 
 ## [Unreleased]
 
+## [0.22.6] - 2026-11-20
+
 ### Security
 
 - Test tooling (vitest) updated to 4.1.12, which closes the last known vulnerabilities in the frontend development dependencies
