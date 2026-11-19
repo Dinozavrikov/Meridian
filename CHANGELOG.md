@@ -8,6 +8,8 @@ The project is under active development: some features are unfinished and may no
 
 ## [Unreleased]
 
+## [0.22.7] - 2026-11-20
+
 ### Security
 
 - The backend image now installs a patched pip instead of the one bundled with the base image
