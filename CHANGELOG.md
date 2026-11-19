@@ -11,9 +11,12 @@ The project is under active development: some features are unfinished and may no
 ### Security
 
 - Frontend dependencies updated: no known vulnerabilities remain in the production dependency tree, including two critical ones (Next.js and DOMPurify)
+- Backend dependencies upgraded (FastAPI, Starlette, cryptography, Pillow, python-multipart, aiosmtplib); JWT handling moved from python-jose to PyJWT, and tokens issued before the upgrade stay valid
 
 ### Fixed
 
+- Tests that look up routes no longer walk the application route list directly (newer FastAPI nests included routers), so the route guard tests check every route again; a test now fails if a direct walk comes back
+- A test that added a route to the shared application no longer leaves it behind for later tests
 - The cache warm-up script failed on every run (it called the endpoint without a request); it now uses the shared translation function, and the test container mounts scripts so such tests run the current code
 - New pages (documentation, privacy, terms) were translated last because the whole dictionary went in one long queue: strings the screen needs now go first, and a batch is limited by text volume
 - A guest now sees ready translations of the interface from the cache (before, any page outside the sign-in screens got an error and no translation); the model never works for a guest

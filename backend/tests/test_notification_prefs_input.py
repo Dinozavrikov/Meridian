@@ -2,12 +2,13 @@
 import pytest
 
 from app.main import app
+from tests.route_utils import iter_api_routes
 from tests.conftest import create_test_user
 from tests.test_lab_signal import _login
 
 
 def _url():
-    for r in app.routes:
+    for r in iter_api_routes():
         ep = getattr(r, "endpoint", None)
         if ep is not None and ep.__name__ == "update_notification_prefs":
             return r.path

@@ -70,11 +70,25 @@ async def test_ai_ok_saves_exactly_one_row(client, monkeypatch):
 async def test_handler_maps_ai_unavailable_to_503(client):
     """Общий обработчик: любой эндпоинт, где ИИ бросил AIUnavailable, отвечает 503."""
     from app.main import app
+    from tests.route_utils import iter_api_routes
 
-    @app.get("/__test/ai-down")
     async def _ai_down():
         raise AIUnavailable(AIUnavailable.USER_MESSAGE)
 
-    r = await client.get("/__test/ai-down")
-    assert r.status_code == 503
-    assert r.json() == {"detail": AIUnavailable.USER_MESSAGE}
+    # Роут вешается на глобальный app, поэтому обязательно убираем его после теста:
+    # иначе он остается для всех следующих тестов (и ломает охранники, обходящие роуты).
+    before = list(app.router.routes)
+    app.add_api_route("/__test/ai-down", _ai_down, methods=["GET"])
+    added = [r for r in app.router.routes if r not in before]
+    assert added, "роут не добавился"
+    try:
+        r = await client.get("/__test/ai-down")
+        assert r.status_code == 503
+        assert r.json() == {"detail": AIUnavailable.USER_MESSAGE}
+    finally:
+        for route in added:
+            app.router.routes.remove(route)
+
+    assert not any(x.path == "/__test/ai-down" for x in iter_api_routes())
+    gone = await client.get("/__test/ai-down")
+    assert gone.status_code == 404

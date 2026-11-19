@@ -2,13 +2,14 @@
 import pytest
 
 from app.main import app
+from tests.route_utils import iter_api_routes
 from tests.conftest import create_test_user
 from tests.test_open_via_link import _login, _mk_obs
 from tests.test_publication_share import _post_link
 
 
 def _teaser_path():
-    return next(r.path for r in app.routes if getattr(r, "name", None) == "public_graph_teaser")
+    return next(r.path for r in iter_api_routes() if getattr(r, "name", None) == "public_graph_teaser")
 
 
 async def _edges(client):

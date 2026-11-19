@@ -7,6 +7,7 @@ from datetime import datetime, timedelta, timezone
 from sqlalchemy import select
 
 from app.main import app
+from tests.route_utils import iter_api_routes
 from app.db.session import AsyncSessionLocal
 from app.core.entity_registry import ENTITY_MODELS
 from app.core.lab_access import parent_alive_subquery
@@ -32,9 +33,9 @@ CHILD_MODELS = [
 
 
 def _delete_url(etype, eid):
-    """URL DELETE-роута берём из app.routes по имени функции — префиксы не хардкодим."""
+    """URL DELETE-роута берем через iter_api_routes по имени функции — префиксы не хардкодим."""
     fn = _DELETE_FN[etype]
-    for r in app.routes:
+    for r in iter_api_routes():
         ep = getattr(r, "endpoint", None)
         if ep is not None and ep.__name__ == fn and "DELETE" in r.methods:
             return re.sub(r"\{[^}]+\}", str(eid), r.path)

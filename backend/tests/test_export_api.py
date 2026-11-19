@@ -7,6 +7,7 @@ import pytest
 from app.core.deps import get_current_user
 from app.db.session import AsyncSessionLocal
 from app.main import app
+from tests.route_utils import iter_api_routes
 from app.models.entities import EntityTag, Link, ResearchTask, ScaleDef, ScaleValue, Tag
 from tests.conftest import create_test_user
 
@@ -17,7 +18,7 @@ EXPECTED_KEYS = {"exported_at", "user", "hypotheses", "observations", "predictio
 
 
 def _export_path() -> str:
-    return next(r.path for r in app.routes if getattr(r, "path", "").endswith("/me/export"))
+    return next(r.path for r in iter_api_routes() if getattr(r, "path", "").endswith("/me/export"))
 
 
 async def _seed(user_id: int, tag: str):

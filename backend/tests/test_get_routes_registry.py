@@ -3,9 +3,9 @@ REGISTRY — прочитано и подтверждено (класс: при�
 Новый GET без признака защиты и без записи роняет тест: решение о доступе принимается явно."""
 import inspect
 
-from fastapi.routing import APIRoute
 
 from app.main import app
+from tests.route_utils import iter_api_routes
 
 GUARD_TOKENS = ("get_entity_for_view", "get_entity_for_read", "entity_visibility_filter", "opened_via_link",
                 "get_entity_for_lab_manage", "can_link", "lab_scope_condition", "_lab_role", "get_live")
@@ -69,7 +69,7 @@ UNREAD = {
 
 
 def _routes():
-    return [r for r in app.routes if isinstance(r, APIRoute) and "GET" in r.methods]
+    return [r for r in iter_api_routes() if "GET" in r.methods]
 
 
 def _key(r):

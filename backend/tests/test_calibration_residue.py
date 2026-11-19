@@ -5,6 +5,7 @@ import pytest
 from sqlalchemy import func, select, text
 
 from app.main import app
+from tests.route_utils import iter_api_routes
 from app.core.lab_access import entity_visibility_filter, links_alive, links_alive_sql
 from app.db.session import AsyncSessionLocal
 from app.models.entities import EntityTag, Link, Prediction, PredictionCalibrationResidue as Residue, Tag
@@ -15,7 +16,7 @@ from tests.test_soft_delete_api import _build, _delete_url, _login
 
 
 def _route(fn_name, module):
-    for r in app.routes:
+    for r in iter_api_routes():
         ep = getattr(r, "endpoint", None)
         if ep is not None and ep.__name__ == fn_name and ep.__module__.endswith(module):
             return r.path

@@ -4,6 +4,7 @@ import pytest
 from pydantic import BaseModel, ValidationError
 
 import app.main  # noqa: F401  — импортирует все роутеры, схемы становятся видны
+from tests.route_utils import iter_api_routes
 from app.schemas._strict import StrictIn
 
 OUT_SUFFIX = ("Out", "Response", "Page")
@@ -57,7 +58,7 @@ def test_no_route_takes_a_bare_dict_body():
     """Тело запроса — всегда схема: body: dict пишет любые поля и даёт 500 на мусоре."""
     import inspect
     bad = []
-    for r in app.main.app.routes:
+    for r in iter_api_routes():
         ep = getattr(r, "endpoint", None)
         if ep is None:
             continue
