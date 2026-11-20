@@ -166,12 +166,21 @@ async def ensure_translations(
     # Залогиненный без ограничений.
     cache_only = False
     if user is None:
-        if set(body.strings.values()) <= AUTH_UI_STRINGS:
-            ip = (request.client.host if request.client else "unknown")
-            if not _guest_rate_ok(ip):
-                raise HTTPException(status_code=429, detail="Слишком много запросов, подождите минуту")
-        else:
+        white = {k: v for k, v in body.strings.items() if v in AUTH_UI_STRINGS}
+        rest = {k: v for k, v in body.strings.items() if v not in AUTH_UI_STRINGS}
+        if not white:
             cache_only = True
+        else:
+            ip = (request.client.host if request.client else "unknown")
+            rate_ok = _guest_rate_ok(ip)
+            if not rest and not rate_ok:
+                raise HTTPException(status_code=429, detail="Слишком много запросов, подождите минуту")
+            if rest and rate_ok:
+                # Пачка страницы смешанная: модель работает только для белого списка, остальное из кэша.
+                first = await ensure_ui_translations(db, locale, white)
+                second = await ensure_ui_translations(db, locale, rest, cache_only=True)
+                return EnsureResponse(translations={**second.translations, **first.translations}, missing=first.missing)
+            cache_only = bool(rest)
 
     return await ensure_ui_translations(db, locale, body.strings, cache_only=cache_only)
 

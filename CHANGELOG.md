@@ -8,6 +8,11 @@ The project is under active development: some features are unfinished and may no
 
 ## [Unreleased]
 
+### Fixed
+
+- A guest page that mixed sign-in strings with other texts got no translation for the sign-in strings; the model now translates the allowed strings and the rest comes from the cache
+- The cache warm-up script can warm the sign-in strings (`--auth`) and takes the languages from the cache instead of a typed list
+
 ## [0.22.8] - 2026-11-20
 
 ### Changed

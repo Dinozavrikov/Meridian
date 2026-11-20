@@ -36,3 +36,24 @@ async def test_whitelist_contains_critical_strings():
     """Охранный: строки, без которых auth-страницы не переведутся, в whitelist есть."""
     for s in ("Войти", "Регистрация", "Пароль", "Публичный слой", "Публичный слой — вы гость"):
         assert s in AUTH_UI_STRINGS, s
+
+
+@pytest.mark.asyncio
+async def test_guest_mixed_batch_translates_whitelisted_and_leaves_the_rest_to_cache(client, monkeypatch):
+    """Пачка страницы смешанная (белый список + прочее): модель работает для белых строк, не для остальных."""
+    import uuid
+    import app.api.v1.i18n as i18n_mod
+    sent = []
+
+    async def _tr(strings, lang):
+        sent.extend(strings.values())
+        return {k: f"{v} [{lang}]" for k, v in strings.items()}
+    monkeypatch.setattr(i18n_mod, "translate_strings", _tr)
+    loc = "t" + uuid.uuid4().hex[:8]
+    private = "Мой приватный текст"
+    r = await client.post(f"/api/v1/i18n/ensure/{loc}", json={"strings": {"Войти": "Войти", private: private}})
+    assert r.status_code == 200, r.text
+    data = r.json()
+    assert data["translations"].get("Войти") == f"Войти [{loc}]"
+    assert private not in data["translations"]
+    assert private not in sent
