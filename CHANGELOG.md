@@ -8,6 +8,8 @@ The project is under active development: some features are unfinished and may no
 
 ## [Unreleased]
 
+## [0.22.10] - 2026-11-21
+
 ### Fixed
 
 - The client address is read from the proxy header in one place for sign-in sessions, country checks and the guest request limit; the guest limit is now counted per client
