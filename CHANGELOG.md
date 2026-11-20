@@ -10,6 +10,7 @@ The project is under active development: some features are unfinished and may no
 
 ### Fixed
 
+- A guest now sees ready translations of public records (before, the request failed with 401 and the record stayed in the original language); the model never works for a guest, and private records and other record types are not returned
 - The translation mode (interface, everything, content only) is remembered between page reloads; before, a reload silently switched content translation off
 - A guest page that mixed sign-in strings with other texts got no translation for the sign-in strings; the model now translates the allowed strings and the rest comes from the cache
 - The cache warm-up script can warm the sign-in strings (`--auth`) and takes the languages from the cache instead of a typed list

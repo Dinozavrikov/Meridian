@@ -212,7 +212,7 @@ def _content_key(entity_type: str, entity_id: int, field: str) -> str:
 async def ensure_content_translations(
     locale: str,
     body: EnsureContentRequest,
-    user: User = Depends(get_current_user),
+    user: User | None = Depends(get_current_user_optional),
     db: AsyncSession = Depends(get_db),
 ):
     """
@@ -264,6 +264,9 @@ async def ensure_content_translations(
         else:
             to_translate[k] = item.text
             to_translate_items[k] = item
+
+    if to_translate and user is None:
+        return EnsureContentResponse(translations=result)   # гостю только готовое, модель ради него не работает
 
     if to_translate:
         try:

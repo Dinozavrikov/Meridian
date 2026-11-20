@@ -23,11 +23,15 @@ OBS_POST_DERIVED = frozenset({"preview"})   # отрывок заметки со
 FIELD_ATTR = {("message", "text"): "content"}
 
 
-async def _load(db, user: User, entity_type: str, entity_id: int) -> Any:
-    """Запись, если зритель её видит, иначе None."""
+async def _load(db, user: User | None, entity_type: str, entity_id: int) -> Any:
+    """Запись, если зритель ее видит, иначе None. Гость (user=None) видит только публичные записи
+    основных типов и заметки к ним; остальные типы ему не отдаются вовсе."""
+    uid = user.id if user is not None else None
+    if user is None and entity_type not in ENTITY_MODELS and entity_type != "obs_post":
+        return None
     try:
         if entity_type in ENTITY_MODELS:
-            return await get_entity_for_read(db, ENTITY_MODELS[entity_type], entity_id, user.id, hide_as_404=True)  # перевод текста, который зритель вправе читать
+            return await get_entity_for_read(db, ENTITY_MODELS[entity_type], entity_id, uid, hide_as_404=True)  # перевод текста, который зритель вправе читать
         if entity_type == "result":
             res = await db.get(Result, entity_id)
             if res is None:
@@ -41,7 +45,7 @@ async def _load(db, user: User, entity_type: str, entity_id: int) -> Any:
             post = await db.get(ObservationPost, entity_id)
             if post is None:
                 return None
-            await get_entity_for_read(db, ENTITY_MODELS["observation"], post.observation_id, user.id, hide_as_404=True)
+            await get_entity_for_read(db, ENTITY_MODELS["observation"], post.observation_id, uid, hide_as_404=True)
             return post
         if entity_type == "comment":
             from app.api.v1.comments import _check_entity_access
@@ -95,7 +99,7 @@ def _text(entity_type: str, field: str, sent: str, obj: Any) -> str | None:
     return value if isinstance(value, str) and value else None
 
 
-async def resolve_content_items(db, user: User, items: list) -> list:
+async def resolve_content_items(db, user: User | None, items: list) -> list:
     """Оставляет только пункты видимых записей и подставляет в них текст из базы."""
     seen: dict[tuple[str, int], Any] = {}
     out = []
