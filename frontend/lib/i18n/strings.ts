@@ -2465,4 +2465,10 @@ export const STRINGS: Record<string, string> = {
   "termsPage.ending.suspend.text": "Мы можем приостановить или прекратить доступ к сервису при нарушении этих условий.",
   "termsPage.ending.changes.title": "Изменение условий",
   "termsPage.ending.changes.text": "Мы можем обновлять условия. Актуальная версия всегда на этой странице, с номером редакции и датой. Продолжая пользоваться сервисом после изменений, вы соглашаетесь с ними.",
+  "localeSwitcher.aria": "Язык и режим перевода",
+  "localeSwitcher.scopeTitle": "Что переводить",
+  "localeSwitcher.langTitle": "Язык интерфейса",
+  "localeSwitcher.scope.ui": "Интерфейс",
+  "localeSwitcher.scope.both": "Все",
+  "localeSwitcher.scope.content": "Только контент",
 }

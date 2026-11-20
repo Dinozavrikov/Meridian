@@ -2,6 +2,7 @@
 import { useState, useRef, useEffect } from "react"
 import { useStore } from "@/lib/store"
 import { v2 } from "@/lib/theme"
+import { useT } from "@/lib/i18n/useT"
 
 const BASE_LANGS: { code: string; label: string }[] = [
   { code: "ru", label: "RU" },
@@ -28,10 +29,10 @@ type ScopeMode = "ui" | "ui_and_content" | "content"
 // "прогресс-бар": средняя точка "Все" — не промежуточное количество, а
 // сочетание обоих концов, поэтому у нее градиентная (не третья произвольная)
 // заливка.
-const SCOPE_STOPS: { mode: ScopeMode; value: number; label: string }[] = [
-  { mode: "ui",             value: 0,   label: "Интерфейс" },
-  { mode: "ui_and_content", value: 50,  label: "Все" },
-  { mode: "content",        value: 100, label: "Только контент" },
+const SCOPE_STOPS: { mode: ScopeMode; value: number; labelKey: string }[] = [
+  { mode: "ui",             value: 0,   labelKey: "localeSwitcher.scope.ui" },
+  { mode: "ui_and_content", value: 50,  labelKey: "localeSwitcher.scope.both" },
+  { mode: "content",        value: 100, labelKey: "localeSwitcher.scope.content" },
 ]
 
 function needleDeg(value: number) {
@@ -108,6 +109,7 @@ function ScopeGauge({ scope, onPick }: { scope: ScopeMode; onPick: (m: ScopeMode
  * при первом обращении и кэшируется на бэкенде (ensure_translations).
  */
 export function LocaleSwitcher() {
+  const t = useT()
   const locale = useStore(s => s.locale)
   const setLocale = useStore(s => s.setLocale)
   const scope = useStore(s => s.translationScope)
@@ -161,7 +163,7 @@ export function LocaleSwitcher() {
           fontFamily: v2.fontMono, cursor: "pointer",
           transition: "border-color 0.15s, color 0.15s",
         }}
-        aria-label="Язык и режим перевода"
+        aria-label={t("localeSwitcher.aria")}
       >
         <svg width={7} height={7} viewBox="0 0 7 7" style={{ flexShrink: 0 }}>
           <circle cx={3.5} cy={3.5} r={3.5} fill={scope === "ui_and_content" ? "url(#scope-mixed-gradient-trigger)" : scopeDotFill} />
@@ -181,7 +183,7 @@ export function LocaleSwitcher() {
           }} />
 
           <div style={{ fontSize: 9.5, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: v2.t3, marginBottom: 2 }}>
-            Что переводить
+            {t("localeSwitcher.scopeTitle")}
           </div>
           <ScopeGauge scope={scope} onPick={setScope} />
           <div style={{ display: "flex", justifyContent: "space-between", marginTop: -6, marginBottom: 12, padding: "0 2px", gap: 6 }}>
@@ -199,7 +201,7 @@ export function LocaleSwitcher() {
                     transition: "color 0.15s", whiteSpace: "nowrap",
                   }}
                 >
-                  {s.label}
+                  {t(s.labelKey)}
                 </span>
               )
             })}
@@ -208,7 +210,7 @@ export function LocaleSwitcher() {
           <div style={{ height: 0.5, background: v2.bd, margin: "0 -16px 12px" }} />
 
           <div style={{ fontSize: 9.5, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: v2.t3, marginBottom: 8 }}>
-            Язык интерфейса
+            {t("localeSwitcher.langTitle")}
           </div>
           <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
             {langs.map(l => {
