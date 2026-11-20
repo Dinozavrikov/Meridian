@@ -8,6 +8,14 @@ The project is under active development: some features are unfinished and may no
 
 ## [Unreleased]
 
+### Fixed
+
+- The client address is read from the proxy header in one place for sign-in sessions, country checks and the guest request limit; the guest limit is now counted per client
+
+### Changed
+
+- The README lists the host requirements and the current stack; the encryption key is generated with `openssl`, so Python is not needed on the host to start the app
+
 ## [0.22.9] - 2026-11-20
 
 ### Fixed
