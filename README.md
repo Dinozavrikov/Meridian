@@ -28,15 +28,15 @@ See [CHANGELOG.md](CHANGELOG.md) for the full list.
 
 | Layer    | Technology                                       |
 |----------|--------------------------------------------------|
-| Frontend | Next.js, React, TypeScript                       |
-| Backend  | FastAPI (Python 3.12), SQLAlchemy, Alembic       |
+| Frontend | Next.js, React, TypeScript, Tailwind CSS         |
+| Backend  | FastAPI, SQLAlchemy (async), Alembic, Pydantic   |
 | Data     | PostgreSQL with pgvector, Redis                  |
 | AI       | Ollama (local models)                            |
 | Infra    | Docker Compose                            |
 
 ## Quick start (local development)
 
-Requirements: Docker with Compose v2. Ollama is optional (needed only for AI features).
+Requirements: Docker with Compose v2. Ollama is optional (needed only for AI features). Generating the secrets needs `openssl`. To run the app the host needs neither Python nor Node: both run inside the containers (the backend image is built on Python 3.12).
 
 ```bash
 git clone https://github.com/Dinozavrikov/Meridian.git
@@ -47,7 +47,7 @@ cp docker-compose.override.example.yml docker-compose.override.yml
 sed -i "s|^SECRET_KEY=.*|SECRET_KEY=$(openssl rand -hex 32)|" .env
 sed -i "s|^POSTGRES_PASSWORD=.*|POSTGRES_PASSWORD=$(openssl rand -hex 16)|" .env
 sed -i "s|^POSTGRES_TEST_PASSWORD=.*|POSTGRES_TEST_PASSWORD=$(openssl rand -hex 16)|" .env
-sed -i "s|^MESSAGE_ENCRYPTION_KEY=.*|MESSAGE_ENCRYPTION_KEY=$(python3 -c 'import base64,os;print(base64.urlsafe_b64encode(os.urandom(32)).decode())')|" .env
+sed -i "s|^MESSAGE_ENCRYPTION_KEY=.*|MESSAGE_ENCRYPTION_KEY=$(openssl rand -base64 32 | tr '/+' '_-')|" .env
 docker compose up -d --build postgres redis mailpit backend recheck-worker frontend
 ```
 
@@ -172,15 +172,15 @@ Meridian: место, где можно выяснить, правы ли вы. 
 
 | Слой     | Технологии                                       |
 |----------|--------------------------------------------------|
-| Frontend | Next.js, React, TypeScript                       |
-| Backend  | FastAPI (Python 3.12), SQLAlchemy, Alembic       |
+| Frontend | Next.js, React, TypeScript, Tailwind CSS         |
+| Backend  | FastAPI, SQLAlchemy (async), Alembic, Pydantic   |
 | Данные   | PostgreSQL с pgvector, Redis                     |
 | ИИ       | Ollama (локальные модели)                        |
 | Инфра    | Docker Compose                            |
 
 ## Быстрый старт (локальная разработка)
 
-Нужен Docker с Compose v2. Ollama необязателен (нужен только для ИИ-функций).
+Нужен Docker с Compose v2. Ollama необязателен (нужен только для ИИ-функций). Для генерации секретов нужен `openssl`. Чтобы запустить приложение, Python и Node на хосте не нужны: они работают внутри контейнеров (образ backend собран на Python 3.12).
 
 ```bash
 git clone https://github.com/Dinozavrikov/Meridian.git
@@ -191,7 +191,7 @@ cp docker-compose.override.example.yml docker-compose.override.yml
 sed -i "s|^SECRET_KEY=.*|SECRET_KEY=$(openssl rand -hex 32)|" .env
 sed -i "s|^POSTGRES_PASSWORD=.*|POSTGRES_PASSWORD=$(openssl rand -hex 16)|" .env
 sed -i "s|^POSTGRES_TEST_PASSWORD=.*|POSTGRES_TEST_PASSWORD=$(openssl rand -hex 16)|" .env
-sed -i "s|^MESSAGE_ENCRYPTION_KEY=.*|MESSAGE_ENCRYPTION_KEY=$(python3 -c 'import base64,os;print(base64.urlsafe_b64encode(os.urandom(32)).decode())')|" .env
+sed -i "s|^MESSAGE_ENCRYPTION_KEY=.*|MESSAGE_ENCRYPTION_KEY=$(openssl rand -base64 32 | tr '/+' '_-')|" .env
 docker compose up -d --build postgres redis mailpit backend recheck-worker frontend
 ```
 
