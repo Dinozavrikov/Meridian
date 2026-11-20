@@ -8,6 +8,8 @@ The project is under active development: some features are unfinished and may no
 
 ## [Unreleased]
 
+## [0.22.9] - 2026-11-20
+
 ### Fixed
 
 - The language and translation-mode menu is translated like the rest of the interface
