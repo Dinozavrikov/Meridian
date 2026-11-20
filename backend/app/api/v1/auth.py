@@ -1,3 +1,4 @@
+from app.core.client_ip import client_ip
 from app.core.prediction_status import OPEN_PREDICTION_STATUS
 from app.schemas._strict import StrictIn, Short16, Short32, Short128, Short255, LongText, Visibility
 import re
@@ -70,22 +71,6 @@ async def _verify_turnstile(token: str, remote_ip: str) -> bool:
         return False
 
 
-def _client_ip(request: Request) -> str:
-    """IP клиента для гео-проверки. Сайт стоит за nginx (backend не публикует
-    свой порт наружу — см. docker-compose.yml, единственный путь снаружи идет
-    через nginx), который перезаписывает (не добавляет к клиентскому значению)
-    заголовок X-Real-IP собственным $remote_addr — значит X-Real-IP здесь
-    ДОВЕРЕННЫЙ, подделать его в обход nginx невозможно. request.client.host
-    без этого читал бы IP самого nginx-контейнера для всех запросов —
-    геогейтинг увидел бы один internal docker IP на все запросы и
-    fail-open'нул бы всех разом, включая пользователей из РФ, без единой
-    ошибки в логах. Если когда-нибудь появится Cloudflare/другой прокси
-    ПЕРЕД nginx — эту функцию и конфигурацию обратного прокси нужно будет пересмотреть вместе,
-    иначе X-Real-IP снова станет подделываемым (Cloudflare нужно доверять
-    отдельно, см. real_ip_module)."""
-    return request.headers.get("x-real-ip") or (request.client.host if request.client else "")
-
-
 async def _generate_username_from_email(db: AsyncSession, email: str) -> str:
     """Тот же паттерн, что unique_slug_for — база + числовой суффикс при
     коллизии. Локальная часть email очищается под допустимые для username
@@ -108,7 +93,7 @@ async def _issue_tokens(response: Response, user: User, request: Request, db: As
     access = create_access_token(user.username)
     refresh, jti = create_refresh_token(user.username)
     ua = request.headers.get("user-agent", "")[:512]
-    ip = request.client.host if request.client else ""
+    ip = client_ip(request)
     await purge_dead_sessions(db, user.id)
     db.add(SessionModel(user_id=user.id, jti=jti, user_agent=ua, ip_address=ip))
     await db.commit()
@@ -122,7 +107,7 @@ async def register(body: RegisterRequest, request: Request, response: Response, 
         # Honeypot сработал — молча отклоняем как обычную ошибку валидации,
         # не палим боту, что именно его вычислили (не 403 "бот обнаружен").
         raise HTTPException(status_code=400, detail="Не удалось создать аккаунт")
-    if not await _verify_turnstile(body.turnstile_token, _client_ip(request)):
+    if not await _verify_turnstile(body.turnstile_token, client_ip(request)):
         raise HTTPException(status_code=400, detail="Не удалось подтвердить, что вы не робот — попробуйте еще раз")
 
     exists = await db.execute(
@@ -518,7 +503,7 @@ async def google_available(request: Request):
     (см. meridian-web memory — соответствие требованиям законодательства РФ).
     Fail-open на неопределенном IP (см. is_russian_ip) — не блокирует
     легитимных пользователей при сбое геобазы."""
-    return {"available": not is_russian_ip(_client_ip(request))}
+    return {"available": not is_russian_ip(client_ip(request))}
 
 
 @router.get("/google/login")
@@ -528,7 +513,7 @@ async def google_login(request: Request, response: Response):
     должен быть отбит так же, как скрытая кнопка. state — CSRF-защита:
     случайный токен кладем в httponly cookie и требуем его обратно в
     callback как query-параметр; несовпадение = отклоненный запрос."""
-    if is_russian_ip(_client_ip(request)):
+    if is_russian_ip(client_ip(request)):
         raise HTTPException(403, "Авторизация через Google недоступна для пользователей из Российской Федерации в соответствии с требованиями законодательства РФ")
     if not settings.GOOGLE_CLIENT_ID:
         raise HTTPException(503, "Google-авторизация не настроена")
@@ -559,7 +544,7 @@ async def google_callback(
     неотличим от обычного — та же сессия, те же куки)."""
     frontend_base = settings.cors_origins[0] if settings.cors_origins else "/"
 
-    if is_russian_ip(_client_ip(request)):
+    if is_russian_ip(client_ip(request)):
         raise HTTPException(403, "Авторизация через Google недоступна для пользователей из Российской Федерации в соответствии с требованиями законодательства РФ")
 
     if error or not code:

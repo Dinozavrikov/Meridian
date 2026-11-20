@@ -14,6 +14,7 @@ from app.core.translatable_fields import TRANSLATABLE_FIELDS, MAX_CONTENT_ITEMS,
 from app.core.deps import get_current_user, get_current_user_optional
 from app.services.ai import translate_strings
 from app.core.auth_ui_strings import AUTH_UI_STRINGS
+from app.core.client_ip import client_ip
 import time as _time
 from pydantic import BaseModel
 import hashlib
@@ -171,7 +172,7 @@ async def ensure_translations(
         if not white:
             cache_only = True
         else:
-            ip = (request.client.host if request.client else "unknown")
+            ip = client_ip(request) or "unknown"
             rate_ok = _guest_rate_ok(ip)
             if not rest and not rate_ok:
                 raise HTTPException(status_code=429, detail="Слишком много запросов, подождите минуту")
