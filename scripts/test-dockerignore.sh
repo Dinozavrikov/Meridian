@@ -7,12 +7,27 @@ cd "$(dirname "${BASH_SOURCE[0]}")/.."
 T="$(mktemp -d)"
 CAN=(backend/.env.canary backend/.env.production backend/app/.env.local
      frontend/.env.canary frontend/.env.local frontend/lib/.env.nested)
+
+# Канарейки не должны совпасть с настоящими файлами: cleanup удаляет их при выходе и стер бы чужой
+# .env.local. Проверка стоит ДО trap, иначе сам отказ запустил бы удаление.
+for f in "${CAN[@]}"; do
+  if [ -e "$f" ]; then
+    echo "ОШИБКА: $f уже существует, а скрипт удаляет канарейки при выходе. Перенеси файл и запусти снова." >&2
+    rm -rf "$T"; exit 1
+  fi
+done
+# Базовый образ берем из backend/Dockerfile, чтобы версия Python жила в одном месте.
+BASE="$(sed -n 's/^FROM[[:space:]]\{1,\}\([^[:space:]]\{1,\}\).*/\1/p' backend/Dockerfile | head -1)"
+case "$BASE" in
+  ''|*'$'*) echo "ОШИБКА: не удалось определить образ из backend/Dockerfile (получено: '$BASE')" >&2; rm -rf "$T"; exit 1 ;;
+esac
 cleanup() { rm -rf "$T"; rm -f "${CAN[@]}"; }
 trap cleanup EXIT
 touch "${CAN[@]}"
 
 cat > "$T/Dockerfile.probe" <<'DF'
-FROM python:3.12-slim
+ARG BASE
+FROM ${BASE}
 ARG MARK
 COPY . /ctx
 RUN find /ctx -name '.env*' | sed 's/^/CTXENV /'; test -f "/ctx/${MARK}" && echo PROBE_PRESENT
@@ -21,7 +36,7 @@ DF
 FAIL=0
 probe() {  # контекст, файл-контроль
   local ctx="$1" mark="$2" log="$T/$1.log"
-  if ! docker build --no-cache --progress=plain --build-arg "MARK=$mark" \
+  if ! docker build --no-cache --progress=plain --build-arg "BASE=$BASE" --build-arg "MARK=$mark" \
       -f "$T/Dockerfile.probe" "$ctx" >"$log" 2>&1; then
     echo "  ОШИБКА: $ctx: пробная сборка не удалась" >&2; tail -5 "$log" >&2; FAIL=1; return
   fi
