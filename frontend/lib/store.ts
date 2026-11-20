@@ -30,6 +30,7 @@ interface AppStore {
   // всегда делал до появления этого поля.
   translationScope: "ui" | "ui_and_content" | "content"
   setTranslationScope: (v: "ui" | "ui_and_content" | "content") => void
+  restoreTranslationScope: () => void
   translations: Record<string, string>
   setTranslations: (v: Record<string, string> | ((prev: Record<string, string>) => Record<string, string>)) => void
   dynamicTranslations: Record<string, string>
@@ -48,6 +49,10 @@ interface AppStore {
   openAuthGate: () => void
   closeAuthGate: () => void
 }
+
+// Режим перевода (интерфейс / все / только контент) человек выбирает сам, поэтому он переживает перезагрузку,
+// в отличие от языка (тот всегда берется из браузера).
+const SCOPE_KEY = "translation-scope:v1"
 
 function getInitialLocale(): string {
   if (typeof window === "undefined") return "ru"
@@ -78,7 +83,17 @@ export const useStore = create<AppStore>(set => ({
   locale: getInitialLocale(),
   setLocale: v => set({ locale: v }),
   translationScope: "ui",
-  setTranslationScope: v => set({ translationScope: v }),
+  setTranslationScope: v => {
+    set({ translationScope: v })
+    try { localStorage.setItem(SCOPE_KEY, v) } catch { /* приватный режим: работает до перезагрузки */ }
+  },
+  // Вызывается из эффекта после монтирования: на сервере и при первой отрисовке режим "ui".
+  restoreTranslationScope: () => {
+    try {
+      const v = localStorage.getItem(SCOPE_KEY)
+      if (v === "ui" || v === "ui_and_content" || v === "content") set({ translationScope: v })
+    } catch { /* нет хранилища: остается "ui" */ }
+  },
   translations: {},
   setTranslations: v => set(s => ({ translations: typeof v === "function" ? v(s.translations) : v })),
   dynamicTranslations: {},

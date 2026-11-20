@@ -8,7 +8,7 @@ if (typeof window !== "undefined") {
   }
 }
 import { QueryClient, QueryClientProvider, QueryCache } from "@tanstack/react-query"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { useStore } from "@/lib/store"
 import { AuthGateModal } from "@/components/layout/auth-gate-modal"
 
@@ -36,6 +36,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
       },
     }),
   }))
+  // Режим перевода выбирает человек и он переживает перезагрузку; читаем после монтирования,
+  // чтобы первая отрисовка совпала с серверной.
+  useEffect(() => { useStore.getState().restoreTranslationScope() }, [])
   return (
     <QueryClientProvider client={qc}>
       {children}
