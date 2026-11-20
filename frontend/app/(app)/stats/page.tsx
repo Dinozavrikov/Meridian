@@ -66,7 +66,7 @@ export default function StatsPage() {
     ...Object.keys(data?.pred_by_status ?? {}),
     ...Object.keys(data?.wv_by_status ?? {}),
   ]))
-  const dt = useDynamicTranslate(statusNames)
+  const dt = useDynamicTranslate(statusNames, { noYo: true })
 
   if (isLoading) return (
     <PageShell>

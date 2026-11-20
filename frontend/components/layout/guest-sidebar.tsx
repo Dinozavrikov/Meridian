@@ -8,14 +8,14 @@ import { collectStrings } from "@/lib/i18n/collect-strings"
 const PAGE_STRINGS = [
   "Публичный слой",
   "Вы смотрите Meridian как гость. Через полгода ",
-  "будет казаться, что вы всегда знали, чем всё закончится",
+  "будет казаться, что вы всегда знали, чем все закончится",
   ", если не зафиксировать это сейчас.",
   "Зарегистрироваться",
   "Войти",
 ]
 
 // Гостевая колонка — не урезанный Sidebar, а честная витрина: посетитель
-// видит тот же зелёный "публичный" акцент, что и везде в системе видимости
+// видит тот же зеленый "публичный" акцент, что и везде в системе видимости
 // (VisibilitySelect / OrbitSelector), а не generic "залогиньтесь".
 const PUBLIC_GREEN = "#27AE60"
 
@@ -58,7 +58,7 @@ export function GuestSidebar() {
       </div>
 
       <p style={{ fontSize: 12, color: "#9696a5", lineHeight: 1.6, margin: "0 0 24px", textAlign: "left" }}>
-        {dt("Вы смотрите Meridian как гость. Через полгода ")}<strong style={{ color: "#f2efe9", fontWeight: 600 }}>{dt("будет казаться, что вы всегда знали, чем всё закончится")}</strong>{dt(", если не зафиксировать это сейчас.")}
+        {dt("Вы смотрите Meridian как гость. Через полгода ")}<strong style={{ color: "#f2efe9", fontWeight: 600 }}>{dt("будет казаться, что вы всегда знали, чем все закончится")}</strong>{dt(", если не зафиксировать это сейчас.")}
       </p>
 
       <div style={{ marginTop: "auto", display: "flex", flexDirection: "column", gap: 8, alignSelf: "stretch" }}>

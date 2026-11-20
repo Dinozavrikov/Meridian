@@ -11,7 +11,7 @@ MAX_BODY_BYTES = 2 * 1024 * 1024  # хватит на любую статью; �
 
 
 class UnsafeURLError(ValueError):
-    """URL ведёт не на публичный адрес интернета или схема не http/https."""
+    """URL ведет не на публичный адрес интернета или схема не http/https."""
 
 
 async def _resolve(host: str, port: int) -> list[str]:
@@ -35,7 +35,7 @@ async def _assert_public_url(url: httpx.URL) -> None:
     except OSError:
         raise UnsafeURLError("Адрес не разрешается")
     if not addrs or not all(_is_public_ip(a) for a in addrs):
-        raise UnsafeURLError("URL ведёт во внутреннюю сеть")
+        raise UnsafeURLError("URL ведет во внутреннюю сеть")
 
 
 async def _fetch_html(url: str, headers: dict, transport) -> str:
@@ -43,7 +43,7 @@ async def _fetch_html(url: str, headers: dict, transport) -> str:
         current = httpx.URL(url)
     except httpx.InvalidURL:
         raise UnsafeURLError("Некорректный URL")
-    # Редиректы ведём сами: каждый хоп проверяется так же, как первый URL.
+    # Редиректы ведем сами: каждый хоп проверяется так же, как первый URL.
     async with httpx.AsyncClient(timeout=25, follow_redirects=False, transport=transport) as client:
         for _ in range(MAX_REDIRECTS + 1):
             await _assert_public_url(current)

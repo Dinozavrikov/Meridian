@@ -73,8 +73,8 @@ const PCOLOR: Record<string, string> = { "низкий": "#555", "средний
 // ── Form ─────────────────────────────────────────────────────────────────
 function QForm({ initial, labs, onSave, onCancel }: any) {
   const t = useT()
-  const dtStatus = useDynamicTranslate(STATUSES)
-  const dtPriority = useDynamicTranslate(PRIORITIES)
+  const dtStatus = useDynamicTranslate(STATUSES, { noYo: true })
+  const dtPriority = useDynamicTranslate(PRIORITIES, { noYo: true })
   const [form, setForm] = useState({
     title: initial?.title ?? "", text: initial?.text ?? "",
     status: initial?.status ?? "открыт", priority: initial?.priority ?? "средний",
@@ -153,7 +153,7 @@ export function QDetail({ q, onEdit, tab: rawTab, setTab, extraTabs, renderExtra
   const translatedTitle = useTranslatedField("question", q.id, "title", q.title, owner)
   const translatedText = useTranslatedField("question", q.id, "text", q.text, owner)
   const translatedAnswer = useTranslatedField("question", q.id, "answer", q.answer, owner)
-  const dtPriority = useDynamicTranslate(PRIORITIES)
+  const dtPriority = useDynamicTranslate(PRIORITIES, { noYo: true })
   const dateStr = formatEntityStampFull(q.created_at ?? q.date_created, locale) ?? ""
   const updateScale = useMutation({
     mutationFn: (patch: Record<string, number | null>) => questionApi.update(q.id, { ...q, tags: q.tags ?? [], ...patch }),
@@ -342,7 +342,7 @@ function QuestionsPageInner() {
   })
   const { page, setPage, pageCount, paged, pageSize } = usePagination(sorted)
   const listTr = useListContentTranslation("question", paged, ["title"], (q: any) => isOwner(user, q))
-  const dtPriority = useDynamicTranslate(PRIORITIES)
+  const dtPriority = useDynamicTranslate(PRIORITIES, { noYo: true })
 
   const create = useMutation({
     mutationFn: ({ _links, _images, _pendingFiles, ...body }: any) => questionApi.create(body),

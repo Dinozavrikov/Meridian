@@ -7,7 +7,7 @@ const STAGES = OBSERVATION_STATUSES
 
 /** Статус наблюдения — это путь созревания мысли, а не ярлык. */
 export function MaturationStepper({ status }: { status: string }) {
-  const dt = useDynamicTranslate(STAGES)
+  const dt = useDynamicTranslate(STAGES, { noYo: true })
   const idx = STAGES.indexOf(status)
   if (idx === -1) return null
   const c = typeColor.observation

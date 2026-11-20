@@ -75,7 +75,7 @@ async def create_pred(body: PredCreate, background_tasks: BackgroundTasks, share
     if body.status in CLOSED_PREDICTION_STATUSES:
         # Закрытие — только /close: вклад прогноза в сигнал гипотезы считается там
         # (process_prediction_close), а прогноз, созданный сразу закрытым, в него никогда бы не попал.
-        raise HTTPException(400, "Создать прогноз сразу закрытым нельзя: закройте его кнопкой проверки, иначе он не попадёт в калибровку")
+        raise HTTPException(400, "Создать прогноз сразу закрытым нельзя: закройте его кнопкой проверки, иначе он не попадет в калибровку")
     slug_source = body.title.strip() if body.title and body.title.strip() else body.text[:60]
     slug = await unique_slug_for(db, Prediction, slug_source)
     # Единая точка входа для lab_id/visibility (как в observations.py/hypotheses.py) —
@@ -138,7 +138,7 @@ async def update_pred(eid: int, body: PredUpdate, background_tasks: BackgroundTa
     pred = (await db.execute(select(Prediction).where(Prediction.id == eid, Prediction.user_id == user.id, Prediction.deleted_at.is_(None)))).scalar_one_or_none()
     if not pred:
         raise HTTPException(404, "Не найдено")
-    # Пропущенное клиентом поле остаётся как есть, а не сбрасывается к умолчанию схемы: раньше PUT
+    # Пропущенное клиентом поле остается как есть, а не сбрасывается к умолчанию схемы: раньше PUT
     # без confidence/visibility/lab_id/confirms_hypothesis_if_true молча обнулял их (так сохранял
     # DetailPanel.updateScale). Явно присланный null по-прежнему очищает поле.
     for name in ("title", "hypothesis_id", "status", "confidence", "result_notes",
@@ -148,7 +148,7 @@ async def update_pred(eid: int, body: PredUpdate, background_tasks: BackgroundTa
     if pred.status in CLOSED_PREDICTION_STATUSES and body.hypothesis_id != pred.hypothesis_id:
         # Вклад закрытого прогноза уже влит в сигнал исходной гипотезы и не переносится: смена привязки
         # оставила бы вклад в старой гипотезе, а связь — в новой.
-        raise HTTPException(400, "Нельзя менять гипотезу закрытого прогноза: его исход уже учтён в сигнале гипотезы")
+        raise HTTPException(400, "Нельзя менять гипотезу закрытого прогноза: его исход уже учтен в сигнале гипотезы")
     ensure_prediction_visibility_not_frozen(pred, body.visibility, body.lab_id)   # лаборатория и видимость закрытого заморожены
     if body.hypothesis_id and body.hypothesis_id != pred.hypothesis_id:
         new_hyp = await can_link(db, Hypothesis, body.hypothesis_id, user.id)  # линк = публикация — то же правило, что при создании
@@ -159,7 +159,7 @@ async def update_pred(eid: int, body: PredUpdate, background_tasks: BackgroundTa
         await grant_publication(db, impacts, user.id)
     if pred.status in CLOSED_PREDICTION_STATUSES and body.confidence != pred.confidence:
         # Вклад в сигнал гипотезы посчитан по confidence на момент закрытия и не пересчитывается,
-        # а калибровка читает confidence живьём — правка задним числом позволяла бы «улучшить»
+        # а калибровка читает confidence живьем — правка задним числом позволяла бы «улучшить»
         # уверенность, зная исход.
         raise HTTPException(400, "Нельзя менять уверенность закрытого прогноза: она уже учтена в калибровке")
     if body.status != pred.status and (body.status in CLOSED_PREDICTION_STATUSES or pred.status in CLOSED_PREDICTION_STATUSES):
@@ -286,7 +286,7 @@ async def list_reflections(eid: int, user: User = Depends(get_current_user), db:
 
 @router.post("/{eid}/reflections/insights/manual", response_model=PredictionReflectionInsightOut)
 async def manual_insight(eid: int, user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
-    """Кнопка 'промежуточный результат' — синхронный вызов, пользователь ждёт ответ.
+    """Кнопка 'промежуточный результат' — синхронный вызов, пользователь ждет ответ.
     Сравнивает первую и последнюю версию факторов на стадии creation."""
     pred = await require_owned_entity(db, "prediction", eid, user)
     insight = await run_manual_diff(db, eid)
@@ -299,7 +299,7 @@ async def manual_insight(eid: int, user: User = Depends(get_current_user), db: A
 async def list_insights(eid: int, triggered_by: Optional[str] = None, user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
     """Используется фронтом для poll'инга после close_pred — авто-diff при
     резолюции считается в фоне (BackgroundTasks), и на момент ответа close
-    его ещё может не быть готово."""
+    его еще может не быть готово."""
     pred = await require_owned_entity(db, "prediction", eid, user)
     q = select(EntityReflectionInsight).where(EntityReflectionInsight.entity_type == "prediction", EntityReflectionInsight.entity_id == eid)
     if triggered_by:

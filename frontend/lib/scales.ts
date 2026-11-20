@@ -40,7 +40,7 @@ export const DEFAULT_SCALES: Scale[] = [
     description: "Насколько гипотеза устойчива к опровержению",
     levels: [
       { value: 0,  label: "Нестабильна",     desc: "Легко опровергается" },
-      { value: 3,  label: "Слабая",          desc: "Есть серьёзные контраргументы" },
+      { value: 3,  label: "Слабая",          desc: "Есть серьезные контраргументы" },
       { value: 5,  label: "Средняя",         desc: "Баланс подтверждений и сомнений" },
       { value: 7,  label: "Устойчивая",      desc: "Редкие опровержения" },
       { value: 10, label: "Очень устойчива", desc: "Практически не опровергается" },
@@ -52,10 +52,10 @@ export const DEFAULT_SCALES: Scale[] = [
     description: "Сколько усилий требует дальнейшая проверка",
     levels: [
       { value: 0,  label: "Без усилий",    desc: "Проверяется автоматически" },
-      { value: 3,  label: "Лёгкая",        desc: "Несколько наблюдений" },
+      { value: 3,  label: "Легкая",        desc: "Несколько наблюдений" },
       { value: 5,  label: "Средняя",       desc: "Требует планирования" },
-      { value: 7,  label: "Тяжёлая",       desc: "Нужен эксперимент" },
-      { value: 10, label: "Очень тяжёлая", desc: "Требует значительных ресурсов" },
+      { value: 7,  label: "Тяжелая",       desc: "Нужен эксперимент" },
+      { value: 10, label: "Очень тяжелая", desc: "Требует значительных ресурсов" },
     ],
   },
   {
@@ -66,7 +66,7 @@ export const DEFAULT_SCALES: Scale[] = [
       { value: 0,  label: "Безопасно",       desc: "Ошибка ничего не стоит" },
       { value: 3,  label: "Низкий риск",     desc: "Последствия легко обратимы" },
       { value: 5,  label: "Умеренный риск",  desc: "Заметные, но не критичные потери" },
-      { value: 7,  label: "Высокий риск",    desc: "Серьёзные последствия" },
+      { value: 7,  label: "Высокий риск",    desc: "Серьезные последствия" },
       { value: 10, label: "Критический риск", desc: "Потенциально непоправимые потери" },
     ],
   },
@@ -79,7 +79,7 @@ export const DEFAULT_SCALES: Scale[] = [
       { value: 2, label: "Неуверенность", desc: "Больше вопросов чем ответов" },
       { value: 3, label: "Нейтрально",    desc: "Равновесие аргументов" },
       { value: 4, label: "Уверен",        desc: "Есть весомые основания" },
-      { value: 5, label: "Убеждён",       desc: "Многократно проверено" },
+      { value: 5, label: "Убежден",       desc: "Многократно проверено" },
     ],
   },
   {
@@ -113,7 +113,7 @@ export const DEFAULT_SCALES: Scale[] = [
     min: 0, max: 100, step: 5, group_by: "none", color: "#4A90D9", builtin: true,
     description: "Насколько выполнена исследовательская задача",
     levels: [
-      { value: 0,   label: "Не начата",      desc: "Работа ещё не велась" },
+      { value: 0,   label: "Не начата",      desc: "Работа еще не велась" },
       { value: 25,  label: "В начале пути",  desc: "Первые шаги сделаны" },
       { value: 50,  label: "На середине",    desc: "Половина работы позади" },
       { value: 75,  label: "Почти готово",   desc: "Остались детали" },
@@ -135,7 +135,7 @@ export const DEFAULT_SCALES: Scale[] = [
 /**
  * Применяет перевод к builtin-шкале (name/description/levels).
  * НЕ трогает кастомные пользовательские шкалы (builtin=false) — их
- * текст задаёт сам пользователь, машинный перевод к нему не применяется.
+ * текст задает сам пользователь, машинный перевод к нему не применяется.
  */
 export function translateScale<T extends Scale>(scale: T, dt: (s: string) => string): T {
   if (!scale.builtin) return scale

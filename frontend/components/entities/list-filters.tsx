@@ -33,7 +33,7 @@ export function ListFilters({
 }: ListFiltersProps) {
   const [open, setOpen] = useState(false)
   const t = useT()
-  const dt = useDynamicTranslate(statuses)
+  const dt = useDynamicTranslate(statuses, { noYo: true })
   const activeStatusCount = Object.values(activeStatuses).filter(Boolean).length
   const totalActive = activeStatusCount + (showVisibility ? activeVisibility.length : 0)
 

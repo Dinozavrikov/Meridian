@@ -83,7 +83,9 @@ export function FeedGroupCard({ group, isNew = false, onTopic, full = false }: {
   // пользовательский текст записей — контентным (ct/ensure ниже).
   const customRelations = [...members.map(m => m.relation), ...group.internal.map(l => l.kind)]
     .filter(r => relationKind(r) === "other")
-  const dt = useDynamicTranslate(collectStrings([core.status ?? "", ...customRelations].filter(Boolean)))
+  // Названия связей может задать человек, поэтому без noYo; статус задает система.
+  const dt = useDynamicTranslate(collectStrings(customRelations.filter(Boolean)))
+  const dtStatus = useDynamicTranslate(collectStrings([core.status ?? ""].filter(Boolean)), { noYo: true })
   const relLabel = (rel: string) => {
     const k = relationKind(rel)
     return k === "confirm" ? t("linkType.confirms") : k === "refute" ? t("linkType.refutes")
@@ -222,7 +224,7 @@ export function FeedGroupCard({ group, isNew = false, onTopic, full = false }: {
             <i className="mf-dot" aria-hidden="true" />{typeRu[core.type] ?? core.type}
           </span>
           {core.status && (
-            <span className="mf-pill" data-testid="feed-status" style={cvar(statusColor[core.status] ?? NEUTRAL)}>{dt(core.status)}</span>
+            <span className="mf-pill" data-testid="feed-status" style={cvar(statusColor[core.status] ?? NEUTRAL)}>{dtStatus(core.status)}</span>
           )}
           {isNew && <span className="mf-new" data-testid="feed-new">{t("feedGroups.newBadge")}</span>}
         </div>

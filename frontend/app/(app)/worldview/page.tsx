@@ -68,7 +68,7 @@ const STATUSES = ["гипотеза", "частично подтверждает
 // ── Form ─────────────────────────────────────────────────────────────────
 function WvForm({ initial, onSave, onCancel }: any) {
   const t = useT()
-  const dt = useDynamicTranslate(STATUSES)
+  const dt = useDynamicTranslate(STATUSES, { noYo: true })
   const [form, setForm] = useState({
     date: initial?.date ?? format(new Date(), "yyyy-MM-dd"),
     belief: initial?.belief ?? "", status: initial?.status ?? "гипотеза",

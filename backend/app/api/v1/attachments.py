@@ -58,7 +58,7 @@ router = APIRouter(tags=["attachments"])
 
 # Техническая защита памяти (не продуктовый лимит): файлы читаются в память
 # по одному, но за запрос их не должно быть неограниченно много. Нужен и
-# потолок nginx (client_max_body_size 20M на весь запрос) — фронт шлёт по одному.
+# потолок nginx (client_max_body_size 20M на весь запрос) — фронт шлет по одному.
 MAX_FILES_PER_REQUEST = 10
 
 
@@ -82,12 +82,12 @@ async def _get_owned(db: AsyncSession, entity_type: str, entity_id: int,
     вложения проверяется тем же способом, что и в delete_attachment).
 
     Родитель обязан быть жив (не soft-deleted) — решение Алексея (26.09):
-    пока сущность лежит в корзине, её вложения нельзя удалять/заменять/
+    пока сущность лежит в корзине, ее вложения нельзя удалять/заменять/
     восстанавливать — сначала восстановите саму сущность. Сам entity-level
     restore/permanent-delete (soft_delete.py/trash.py) этой проверки не
     касается и работает независимо от состояния вложений.
 
-    Возвращает (attachment, parent_entity) — parent отдаётся вызывающему
+    Возвращает (attachment, parent_entity) — parent отдается вызывающему
     коду, чтобы не читать его повторно там, где нужны его visibility/lab_id
     (см. restore_attachment_version) — одно чтение вместо двух отдельных."""
     att = (await db.execute(
@@ -103,7 +103,7 @@ async def _get_owned(db: AsyncSession, entity_type: str, entity_id: int,
         raise HTTPException(404, "Вложение не найдено")
     parent = await db.get(ENTITY_MODELS[entity_type], entity_id)
     if parent is None or getattr(parent, "deleted_at", None) is not None:
-        raise HTTPException(404, "Сущность в корзине — сначала восстановите её")
+        raise HTTPException(404, "Сущность в корзине — сначала восстановите ее")
     return att, parent
 
 
@@ -157,7 +157,7 @@ async def list_attachments(entity_type: str, entity_id: int,
 async def upload_attachments(entity_type: str, entity_id: int,
     files: List[UploadFile] = File(...),
     user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
-    """Каждый файл валидируется независимо: принятые сохраняются, отклонённые
+    """Каждый файл валидируется независимо: принятые сохраняются, отклоненные
     попадают в errors. Если не принят ни один — 400."""
     _check_entity_type(entity_type)
     await require_owned_entity(db, entity_type, entity_id, user)
@@ -285,7 +285,7 @@ async def replace_attachment_text(entity_type: str, entity_id: int, attachment_i
     payload: AttachmentTextReplace,
     user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
     """Замена инлайн-текста (code/document). Файл на диске переписывается тем
-    же путём, что и при загрузке — storage_path в модели NOT NULL для всех
+    же путем, что и при загрузке — storage_path в модели NOT NULL для всех
     kind, включая текстовые. filename здесь НЕ меняется (нет нового файла,
     неоткуда взять новое имя) — язык (language) можно переопределить явно."""
     _check_entity_type(entity_type)
@@ -370,7 +370,7 @@ async def restore_attachment_version(entity_type: str, entity_id: int, attachmen
     /file и /text: текущее состояние перед восстановлением само уходит в
     новую версию. Файл версии КОПИРУЕТСЯ в новый storage_path (не
     расшаривается ссылка) — иначе просроченный по возрасту файл версии мог
-    бы быть физически удалён GC, пока на него ссылается живое вложение."""
+    бы быть физически удален GC, пока на него ссылается живое вложение."""
     _check_entity_type(entity_type)
     att, parent = await _get_owned(db, entity_type, entity_id, attachment_id, user)
     version = await db.get(EntityAttachmentVersion, version_id)

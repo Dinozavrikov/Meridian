@@ -47,7 +47,7 @@ export function ObservationForm({
   initial, onSave, onCancel, labs = [], lockedLabId = null, header, showLinkPicker = true, submitting = false, error = null,
 }: ObservationFormProps) {
   const t = useT()
-  const dt = useDynamicTranslate(OBSERVATION_STATUSES)
+  const dt = useDynamicTranslate(OBSERVATION_STATUSES, { noYo: true })
   const user = useStore(s => s.user)
   const authorValue = initial?.author ?? user?.display_name ?? user?.username ?? ""
 

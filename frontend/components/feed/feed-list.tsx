@@ -80,7 +80,7 @@ export function FeedList({ groups, isNew }: { groups: FeedGroup[]; isNew: (g: Fe
   const locale = useStore(s => s.locale) as string | undefined
   const { ct, ensure } = useContentT()
   const isOwn = (it: FeedItem) => !!user && user.username === it.author_username
-  const dt = useDynamicTranslate(collectStrings(groups.map(g => g.core.status ?? "").filter(Boolean)))
+  const dt = useDynamicTranslate(collectStrings(groups.map(g => g.core.status ?? "").filter(Boolean)), { noYo: true })
 
   // Чужие записи переводятся контентным движком (свои — никогда), как в карточке.
   const ensureKey = groups.map(g => g.key).join("|")

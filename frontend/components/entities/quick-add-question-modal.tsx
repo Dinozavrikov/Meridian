@@ -37,8 +37,8 @@ function emptyForm(labId?: number | null) {
 
 export function QuickAddQuestionModal({ open, onClose, targetType, targetId, targetLabel, onCreated, labId }: QuickAddQuestionModalProps) {
   const t = useT()
-  const dtStatus = useDynamicTranslate(STATUSES)
-  const dtPriority = useDynamicTranslate(PRIORITIES)
+  const dtStatus = useDynamicTranslate(STATUSES, { noYo: true })
+  const dtPriority = useDynamicTranslate(PRIORITIES, { noYo: true })
   const { data: labs = [] } = useMyLabs(open)
   const [form, setForm] = useState(() => emptyForm(labId))
   const [linkType, setLinkType] = useState("связано")

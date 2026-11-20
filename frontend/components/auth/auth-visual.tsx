@@ -21,7 +21,7 @@ export function AuthVisual() {
           className="text-xs mb-8"
           style={{ color: v2.t3, textTransform: "uppercase", letterSpacing: "0.15em", fontWeight: 600, fontFamily: "'Space Grotesk', sans-serif" }}
         >
-          Как растёт уверенность
+          Как растет уверенность
         </div>
         <div className="flex flex-col gap-5">
           {levels.map((level, i) => {

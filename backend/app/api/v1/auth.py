@@ -43,8 +43,8 @@ TURNSTILE_VERIFY_URL = "https://challenges.cloudflare.com/turnstile/v0/siteverif
 
 async def _verify_turnstile(token: str, remote_ip: str) -> bool:
     """Проверка Turnstile-токена на стороне Cloudflare. Fail-CLOSED (в отличие
-    от geoip's fail-open) — здесь неопределённость должна блокировать
-    регистрацию, не пропускать её: цена ложного срабатывания (реальный
+    от geoip's fail-open) — здесь неопределенность должна блокировать
+    регистрацию, не пропускать ее: цена ложного срабатывания (реальный
     человек изредка получает ошибку, может попробовать снова) намного ниже
     цены пропуска (боты проходят молча, если сервис верификации недоступен)."""
     if not settings.TURNSTILE_SECRET_KEY:
@@ -63,7 +63,7 @@ async def _verify_turnstile(token: str, remote_ip: str) -> bool:
             result = resp.json()
             success = result.get("success", False) is True
             if not success:
-                print(f"[auth] Turnstile отклонён Cloudflare: {result}", flush=True)
+                print(f"[auth] Turnstile отклонен Cloudflare: {result}", flush=True)
             return success
     except Exception as e:
         print(f"[auth] Turnstile verify не удался: {type(e).__name__}: {e}", flush=True)
@@ -72,7 +72,7 @@ async def _verify_turnstile(token: str, remote_ip: str) -> bool:
 
 def _client_ip(request: Request) -> str:
     """IP клиента для гео-проверки. Сайт стоит за nginx (backend не публикует
-    свой порт наружу — см. docker-compose.yml, единственный путь снаружи идёт
+    свой порт наружу — см. docker-compose.yml, единственный путь снаружи идет
     через nginx), который перезаписывает (не добавляет к клиентскому значению)
     заголовок X-Real-IP собственным $remote_addr — значит X-Real-IP здесь
     ДОВЕРЕННЫЙ, подделать его в обход nginx невозможно. request.client.host
@@ -89,7 +89,7 @@ def _client_ip(request: Request) -> str:
 async def _generate_username_from_email(db: AsyncSession, email: str) -> str:
     """Тот же паттерн, что unique_slug_for — база + числовой суффикс при
     коллизии. Локальная часть email очищается под допустимые для username
-    символы (буквы/цифры/подчёркивание/дефис, см. RegisterRequest.username_valid);
+    символы (буквы/цифры/подчеркивание/дефис, см. RegisterRequest.username_valid);
     если после очистки короче 3 символов — достраивается до 'user'."""
     local = email.split("@")[0]
     base = re.sub(r"[^\w-]", "", local, flags=re.UNICODE)
@@ -123,7 +123,7 @@ async def register(body: RegisterRequest, request: Request, response: Response, 
         # не палим боту, что именно его вычислили (не 403 "бот обнаружен").
         raise HTTPException(status_code=400, detail="Не удалось создать аккаунт")
     if not await _verify_turnstile(body.turnstile_token, _client_ip(request)):
-        raise HTTPException(status_code=400, detail="Не удалось подтвердить, что вы не робот — попробуйте ещё раз")
+        raise HTTPException(status_code=400, detail="Не удалось подтвердить, что вы не робот — попробуйте еще раз")
 
     exists = await db.execute(
         select(User).where((User.username == body.username) | (User.email == body.email))
@@ -136,7 +136,7 @@ async def register(body: RegisterRequest, request: Request, response: Response, 
         display_name=body.display_name or body.username,
     )
     db.add(user)
-    await db.flush()  # user.id нужен ниже, но коммитим всё вместе одной транзакцией
+    await db.flush()  # user.id нужен ниже, но коммитим все вместе одной транзакцией
 
     today = date.today().isoformat()
     now = datetime.now(timezone.utc)
@@ -148,7 +148,7 @@ async def register(body: RegisterRequest, request: Request, response: Response, 
     obs = Observation(
         user_id=user.id, date=today, author=user.display_name or user.username,
         title="Первая запись", slug=obs_slug,
-        text="Я завёл(а) аккаунт в Meridian.",
+        text="Я завел(а) аккаунт в Meridian.",
         status="сырое", visibility="private",
     )
     db.add(obs)
@@ -158,8 +158,8 @@ async def register(body: RegisterRequest, request: Request, response: Response, 
     hyp1 = Hypothesis(
         user_id=user.id,
         name=hyp1_name, slug=hyp1_slug,
-        description="Стартовая гипотеза Meridian — проверьте её прямо сейчас, познакомившись с интерфейсом.",
-        falsification_criteria="Если после нескольких примеров в ленте я всё ещё путаю, что делают кнопки подтвердить / опровергнуть / частично — гипотеза неверна.",
+        description="Стартовая гипотеза Meridian — проверьте ее прямо сейчас, познакомившись с интерфейсом.",
+        falsification_criteria="Если после нескольких примеров в ленте я все еще путаю, что делают кнопки подтвердить / опровергнуть / частично — гипотеза неверна.",
         date_created=today, status="идея", visibility="private",
         is_onboarding=True,
     )
@@ -182,8 +182,8 @@ async def register(body: RegisterRequest, request: Request, response: Response, 
     hyp2 = Hypothesis(
         user_id=user.id,
         name=hyp2_name, slug=hyp2_slug,
-        description="Стартовая гипотеза Meridian — раскройте её и добавьте свои наблюдения и прогнозы.",
-        falsification_criteria="Если через 3 дня реальность разойдётся с тем, что я ожидал сейчас, — значит я переоцениваю точность своей интуиции.",
+        description="Стартовая гипотеза Meridian — раскройте ее и добавьте свои наблюдения и прогнозы.",
+        falsification_criteria="Если через 3 дня реальность разойдется с тем, что я ожидал сейчас, — значит я переоцениваю точность своей интуиции.",
         date_created=today, status="идея", visibility="private",
         is_onboarding=True,
     )
@@ -286,7 +286,7 @@ async def update_onboarding(body: OnboardingUpdate, user: User = Depends(get_cur
 
 
 class ProfileUpdate(StrictIn):
-    """Пропущенное поле остаётся как есть; плохой тип, длина или видимость дают 422."""
+    """Пропущенное поле остается как есть; плохой тип, длина или видимость дают 422."""
     display_name: Optional[Short128] = None
     bio: Optional[Annotated[str, StringConstraints(max_length=2000)]] = None
     default_visibility: Optional[Visibility] = None
@@ -429,16 +429,16 @@ async def reset_password(body: ResetPasswordRequest, db: AsyncSession = Depends(
 
     await send_email(
         to=user.email,
-        subject="Пароль в Meridian изменён",
+        subject="Пароль в Meridian изменен",
         body=(
-            "Пароль вашего аккаунта Meridian только что был изменён. Если это были не вы — "
+            "Пароль вашего аккаунта Meridian только что был изменен. Если это были не вы — "
             "срочно запросите новый сброс пароля через 'Забыли пароль?' на странице входа. "
             "Все сессии на других устройствах уже завершены этим действием."
         ),
         html=render_email_html(
-            preheader="Пароль изменён — если это были не вы, действуйте немедленно",
+            preheader="Пароль изменен — если это были не вы, действуйте немедленно",
             body_html=(
-                '<p style="margin:0 0 8px 0;">Пароль вашего аккаунта Meridian только что был изменён.</p>'
+                '<p style="margin:0 0 8px 0;">Пароль вашего аккаунта Meridian только что был изменен.</p>'
                 '<p style="margin:0;padding:12px 16px;background:rgba(231,76,60,0.08);'
                 'border-left:2px solid #E74C3C;border-radius:4px;color:#e0a0a0;">'
                 '<strong>Это были не вы?</strong> Кто-то другой мог получить доступ к вашей почте. '
@@ -500,7 +500,7 @@ async def delete_account(body: AccountDelete, user: User = Depends(get_current_u
         # Google-only аккаунт — пароля никогда не было, подтверждение паролем
         # физически невозможно. Пока нет отдельного подтверждения для этого
         # случая (например, повторный проход через Google) — блокируем явным
-        # 400, а не даём удалить аккаунт без всякого подтверждения вообще.
+        # 400, а не даем удалить аккаунт без всякого подтверждения вообще.
         raise HTTPException(400, "У аккаунта без пароля пока нет способа подтвердить удаление — обратитесь в поддержку")
     if not verify_password(body.password, user.password_hash):
         raise HTTPException(400, "Неверный пароль")
@@ -512,11 +512,11 @@ async def delete_account(body: AccountDelete, user: User = Depends(get_current_u
 
 @router.get("/google/available")
 async def google_available(request: Request):
-    """Фронт дёргает это при загрузке страницы логина, чтобы решить —
+    """Фронт дергает это при загрузке страницы логина, чтобы решить —
     рисовать кнопку 'Войти через Google' или нейтральную плашку. Гео-гейтинг:
     авторизация через Google для пользователей из РФ не предоставляется
     (см. meridian-web memory — соответствие требованиям законодательства РФ).
-    Fail-open на неопределённом IP (см. is_russian_ip) — не блокирует
+    Fail-open на неопределенном IP (см. is_russian_ip) — не блокирует
     легитимных пользователей при сбое геобазы."""
     return {"available": not is_russian_ip(_client_ip(request))}
 
@@ -526,8 +526,8 @@ async def google_login(request: Request, response: Response):
     """Редирект на Google OAuth consent screen. Гео-проверка здесь ТОЖЕ
     (не только на /available) — прямой заход на этот URL, минуя фронт,
     должен быть отбит так же, как скрытая кнопка. state — CSRF-защита:
-    случайный токен кладём в httponly cookie и требуем его обратно в
-    callback как query-параметр; несовпадение = отклонённый запрос."""
+    случайный токен кладем в httponly cookie и требуем его обратно в
+    callback как query-параметр; несовпадение = отклоненный запрос."""
     if is_russian_ip(_client_ip(request)):
         raise HTTPException(403, "Авторизация через Google недоступна для пользователей из Российской Федерации в соответствии с требованиями законодательства РФ")
     if not settings.GOOGLE_CLIENT_ID:
@@ -565,7 +565,7 @@ async def google_callback(
     if error or not code:
         return RedirectResponse(url=f"{frontend_base}/login?google_error=denied")
     if not state or not google_oauth_state or state != google_oauth_state:
-        raise HTTPException(400, "Неверный state — возможная CSRF-атака или истёкшая сессия авторизации")
+        raise HTTPException(400, "Неверный state — возможная CSRF-атака или истекшая сессия авторизации")
 
     async with httpx.AsyncClient(timeout=15) as client:
         token_resp = await client.post(GOOGLE_TOKEN_URL, data={
@@ -616,7 +616,7 @@ async def google_callback(
     redirect = RedirectResponse(url=frontend_base)
     # _issue_tokens вызывает response.set_cookie(...) — куки должны попасть
     # именно в реально возвращаемый объект (redirect), а не в FastAPI-инжектнутый
-    # `response`-параметр (это два разных объекта; FastAPI мёржит заголовки из
+    # `response`-параметр (это два разных объекта; FastAPI мержит заголовки из
     # `response`-параметра только когда эндпоинт возвращает ЕГО ЖЕ, не другой
     # Response). Раньше здесь был баг: куки уходили в response, но реально
     # отдавался redirect — сессия молча терялась.

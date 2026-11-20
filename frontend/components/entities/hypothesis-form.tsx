@@ -30,7 +30,7 @@ export function getMaturity(t: (key: string) => string) {
 
 export function HypForm({ initial, onSave, onCancel, labs, hideLinksAndImages, lockedLabId = null, header, submitting = false, error = null }: any) {
   const t = useT()
-  const dt = useDynamicTranslate(HYPOTHESIS_STATUSES)
+  const dt = useDynamicTranslate(HYPOTHESIS_STATUSES, { noYo: true })
   const today = format(new Date(), "yyyy-MM-dd")
   const [form, setForm] = useState({
     name:         initial?.name         ?? "",

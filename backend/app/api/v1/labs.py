@@ -199,16 +199,16 @@ async def get_lab(lab_id: str, user: Optional[User] = Depends(get_current_user_o
     if not lab.is_public and not member:
         raise HTTPException(403 if user else 401, "Нет доступа")
     cnt = await db.scalar(select(func.count()).where(LabMember.lab_id == lab_id))
-    # Единая политика подсчёта (см. ACCESS_POLICY.md, раздел "Один источник
-    # правды на понятие"): все счётчики здесь считают РОВНО то же самое
-    # множество, что покажут одноимённые вкладки лабы — прямой lab_id, без
+    # Единая политика подсчета (см. ACCESS_POLICY.md, раздел "Один источник
+    # правды на понятие"): все счетчики здесь считают РОВНО то же самое
+    # множество, что покажут одноименные вкладки лабы — прямой lab_id, без
     # union с goal-линками/графом. Раньше здесь было 3 независимые SQL-копии
     # с разной семантикой (прямой lab_id + goal + через гипотезы goal), они
     # расходились с тем, что реально показывал фронт, тремя разными спосо-
     # бами подряд. "Конкурирующие гипотезы" (через EntityHypothesis к цели)
-    # — отдельное понятие, живёт в сайдбаре LabHypothesesRail, сюда не входит.
+    # — отдельное понятие, живет в сайдбаре LabHypothesesRail, сюда не входит.
     obs_cnt = await db.scalar(select(func.count()).where(Observation.lab_id == lab_id, Observation.deleted_at.is_(None)))
-    # Открытые через связь — отдельный счётчик «3 + 2» в бейдже таба; в строгий не входят.
+    # Открытые через связь — отдельный счетчик «3 + 2» в бейдже таба; в строгий не входят.
     # Гость ничего не открывает, поэтому 0 без запроса. Цена: два плана по ~14 мс
     # (12 UNION-веток в opened_via_link_condition) на вызов /labs/{id}. На 2 юзерах —
     # нормально; при росте кэшировать (см. брифа «Известные недоработки», opened_via_link).
@@ -222,8 +222,8 @@ async def get_lab(lab_id: str, user: Optional[User] = Depends(get_current_user_o
         obs_opened_cnt = pred_opened_cnt = 0
     # Гипотезы: конкурирующие по цели (EntityHypothesis) — то же самое
     # множество, что видит сайдбар LabHypothesesRail. "Предложенные" (Hypothesis.
-    # lab_id == lab_id, ещё не прикреплены) сюда не входят — у них своя очередь
-    # и свой счётчик в интерфейсе, не общий "N гипотез".
+    # lab_id == lab_id, еще не прикреплены) сюда не входят — у них своя очередь
+    # и свой счетчик в интерфейсе, не общий "N гипотез".
     if lab.goal_type and lab.goal_id:
         hyp_cnt = await db.scalar(
             select(func.count(distinct(EntityHypothesis.hypothesis_id))).where(
@@ -270,7 +270,7 @@ async def leave_lab(lab_id: str, user: User = Depends(get_current_user), db: Asy
     from app.models.entities import RecordShare as _RS
     await db.execute(_delete(_RS).where(_RS.lab_id == lab_id, _RS.granted_by == user.id))
     await db.delete(member)
-    await db.flush()  # строка участника исчезла до пересчёта: его голоса больше не считаются
+    await db.flush()  # строка участника исчезла до пересчета: его голоса больше не считаются
     from app.services.hypothesis_evidence import recompute_lab_hypotheses
     await recompute_lab_hypotheses(db, lab_id)
     await db.commit()
@@ -287,14 +287,14 @@ async def delete_lab(lab_id: str, user: User = Depends(get_current_user), db: As
     if not lab:
         raise HTTPException(404, "Лаборатория не найдена")
     if lab.owner_id != user.id:
-        raise HTTPException(403, "Только владелец лаборатории может её удалить")
+        raise HTTPException(403, "Только владелец лаборатории может ее удалить")
 
-    # entity.lab_id -> NULL при удалении лабы идёт каскадом на уровне БД
+    # entity.lab_id -> NULL при удалении лабы идет каскадом на уровне БД
     # (ondelete=SET NULL), в обход resolve_lab_attachment. Без этого шага
     # запись осталась бы с visibility="lab" и lab_id=NULL — нелегальная
     # комбинация (ACCESS_POLICY.md, раздел про ATTACH; см. документ п.22).
     # Публичных записей (visibility="public") это не касается — публичная
-    # лаба и так даёт entity visibility="public", это не меняется удалением лабы.
+    # лаба и так дает entity visibility="public", это не меняется удалением лабы.
     from sqlalchemy import update as sa_update
     from app.models.entities import Observation, Hypothesis, Prediction, EntityHypothesis, Link, Worldview, Question, ResearchTask
     for model in (Observation, Hypothesis, Prediction, Worldview, Question, ResearchTask):
@@ -302,8 +302,8 @@ async def delete_lab(lab_id: str, user: User = Depends(get_current_user), db: As
             sa_update(model).where(model.lab_id == lab_id, model.visibility == "lab").values(visibility="private")
         )
 
-    # Следы лаборатории без FK: её стадия (entity_stages, тип "lab"), переводы её названия и описания и переводы
-    # сообщений её заявок (сами заявки уходят каскадом по FK, а их переводы — нет). Каскад реестра знает только
+    # Следы лаборатории без FK: ее стадия (entity_stages, тип "lab"), переводы ее названия и описания и переводы
+    # сообщений ее заявок (сами заявки уходят каскадом по FK, а их переводы — нет). Каскад реестра знает только
     # 6 типов записей (backend/docs/EVENT_LOG_AND_CLEANUP.md), эти строки оставались сиротами.
     from sqlalchemy import delete as sa_delete
     from app.models.entities import EntityStage
@@ -331,7 +331,7 @@ async def get_members(lab_id: str, user: Optional[User] = Depends(get_current_us
     Калибровка видна только участникам лабы, не гостю/не-участнику публичной лабы (prediction.
     visibility='lab'/'public' внутри лабы и так не видны не-участнику в контенте — агрегат не
     должен приоткрывать то, что закрыто; см. прежний докстринг get_lab_calibration). Для такого
-    зрителя n_closed=0, score_pct=None у всех — сам список имён остаётся виден, как и раньше."""
+    зрителя n_closed=0, score_pct=None у всех — сам список имен остается виден, как и раньше."""
     lab_id = await _resolve_lab_id(db, lab_id)
     lab = await db.get(Lab, lab_id)
     if not lab:
@@ -349,7 +349,7 @@ async def get_members(lab_id: str, user: Optional[User] = Depends(get_current_us
     members = list(rows)
 
     calib_by_user: dict[int, tuple[int, Optional[int]]] = {}
-    if member:  # не-участнику публичной лабы калибровку не считаем и не отдаём
+    if member:  # не-участнику публичной лабы калибровку не считаем и не отдаем
         by_user_rows = await rows_for_lab_by_user(db, lab_id)
         for uid, prows in by_user_rows.items():
             n = len(prows)
@@ -369,7 +369,7 @@ async def get_members(lab_id: str, user: Optional[User] = Depends(get_current_us
 
 @router.post("/{lab_id}/hypotheses/{hid}/attach")
 async def attach_proposed_hypothesis(lab_id: str, hid: int, user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
-    """Прикрепить предложенную гипотезу (lab_id=эта лаба, ещё не привязана к
+    """Прикрепить предложенную гипотезу (lab_id=эта лаба, еще не привязана к
     цели) к цели лабы — становится "конкурирующей" (EntityHypothesis). Только
     owner/admin лабы. Технически то же самое, что add_question_hyp/add_task_hyp,
     но вызывается со страницы лабы без похода на страницу цели."""
@@ -399,11 +399,11 @@ async def attach_proposed_hypothesis(lab_id: str, hid: int, user: User = Depends
 @router.post("/{lab_id}/hypotheses/{hid}/reject")
 async def reject_proposed_hypothesis(lab_id: str, hid: int, user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
     """Отклонить предложенную гипотезу — снимает lab_id, гипотеза пропадает
-    из очереди предложений лабы, но НЕ удаляется (остаётся у автора как
+    из очереди предложений лабы, но НЕ удаляется (остается у автора как
     обычная приватная запись).
 
     ОСОЗНАННОЕ ИСКЛЮЧЕНИЕ из общего правила ACCESS_POLICY.md (LAB MANAGE:
-    "не даёт права редактировать содержимое сущности... контент неприкосновенен
+    "не дает права редактировать содержимое сущности... контент неприкосновенен
     для автора, даже для lab admin/owner"): здесь единственное затрагиваемое
     поле — lab_id, поле организационной принадлежности лабе, не контент
     гипотезы (name/description/falsification_criteria и т.п. не трогаются).
@@ -555,11 +555,11 @@ async def lab_signal_summary(lab_id: str, user: User = Depends(get_current_user)
         raise HTTPException(404, "Лаборатория не найдена")
     hyps = (await db.execute(_select(Hypothesis).where(
         Hypothesis.lab_id == lab_id_int, Hypothesis.deleted_at.is_(None)).order_by(Hypothesis.id))).scalars().all()
-    memo: dict = dict()  # общая память ОДНОГО запроса: создаётся здесь, не глобально
+    memo: dict = dict()  # общая память ОДНОГО запроса: создается здесь, не глобально
     out = []
     for hyp in hyps:
         items = []
-        # deleted_at умышленно НЕ фильтруется: прогноз из корзины остаётся в сигнале (как в lab_signal)
+        # deleted_at умышленно НЕ фильтруется: прогноз из корзины остается в сигнале (как в lab_signal)
         preds = (await db.execute(_select(Prediction).where(
             Prediction.hypothesis_id == hyp.id, Prediction.lab_id == hyp.lab_id,
             Prediction.lab_signal_contribution.is_not(None)))).scalars().all()
@@ -590,7 +590,7 @@ async def lab_signal_summary(lab_id: str, user: User = Depends(get_current_user)
         row = {"id": hyp.id, "name": hyp.name, "maturity": level, "next_level": nxt,
                "next_threshold": BASE_THRESHOLDS[nxt] * risk_multiplier(hyp.risk) if nxt is not None else None,
                "lab_total": total, "contributions": items,
-               # вклады окончательно удалённых прогнозов: строки нет, число живёт в «сухом остатке»
+               # вклады окончательно удаленных прогнозов: строки нет, число живет в «сухом остатке»
                "rest": total - sum(i["value"] for i in items)}
         if hyp.user_id == user.id:
             pred_p, obs_p, _lab, tot = await maturity_signal(db, hyp, memo)
@@ -602,7 +602,7 @@ async def lab_signal_summary(lab_id: str, user: User = Depends(get_current_user)
 @router.get("/{lab_id}/files")
 async def list_lab_files(lab_id: str, user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
     """Все файлы (вложения и картинки) ЖИВЫХ записей лаборатории с привязкой к записи — только участникам.
-    Записи в корзине и удалённые вложения не показываются. Сами файлы и действия над ними — на странице записи."""
+    Записи в корзине и удаленные вложения не показываются. Сами файлы и действия над ними — на странице записи."""
     import os
     from sqlalchemy import select as sa_select
     from app.api.v1.entity_stage import _TITLE_ATTR

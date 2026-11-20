@@ -90,7 +90,7 @@ function HistoryList({ entityType, entityId }: { entityType: EntityType; entityI
   const dt = useDynamicTranslate(collectStrings(
     DEFAULT_SCALES.filter(s => s.entity_type === entityType).map(s => s.name),
     wordValues(items),
-  ))
+  ), { noYo: true })
 
   const label = (field: string): string => {
     if (isScaleField(field)) {

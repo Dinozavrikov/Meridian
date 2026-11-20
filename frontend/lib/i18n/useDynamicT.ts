@@ -49,7 +49,7 @@ function flush(locale: string, onResult: (dict: Record<string, string>) => void)
   }).catch(err => console.error("Не удалось перевести динамический текст:", err))
 }
 
-export function useDynamicT() {
+export function useDynamicT(opts: { noYo?: boolean } = {}) {
   const locale = useStore(s => s.locale)
   const dynamicTranslations = useStore(s => s.dynamicTranslations)
   const mergeDynamicTranslations = useStore(s => s.mergeDynamicTranslations)
@@ -90,13 +90,21 @@ export function useDynamicT() {
     }), BATCH_DELAY_MS)
   }, [locale, dynamicTranslations, mergeDynamicTranslations])
 
+  // Ключ перевода и значения в данных остаются прежними (статусы хранятся с буквой йо). По умолчанию
+  // текст не меняется; noYo включают только там, где в dt идут строки, заданные системой (статусы,
+  // приоритеты, стадии): на экран они выходят без этой буквы. Пользовательский текст так не трогаем.
+  const strip = !!opts.noYo
   const dt = useCallback((text: string) => {
-    if (!text || locale === "ru") return text
-    return dynamicTranslations[text] ?? text
-  }, [locale, dynamicTranslations])
+    if (!text) return text
+    const fallback = strip ? noYo(text) : text
+    if (locale === "ru") return fallback
+    return dynamicTranslations[text] ?? fallback
+  }, [locale, dynamicTranslations, strip])
 
   return { dt, ensure }
 }
+
+const noYo = (t: string) => t.replace(/\u0451/g, "\u0435").replace(/\u0401/g, "\u0415")
 
 function localeKey(strings: string[]) {
   return strings.join("\u0001")
@@ -107,8 +115,8 @@ function localeKey(strings: string[]) {
  * Использовать в компонентах, которые рендерят список известных заранее
  * значений (например все статусы страницы) — одним вызовом на весь список.
  */
-export function useDynamicTranslate(strings: string[]) {
-  const { dt, ensure } = useDynamicT()
+export function useDynamicTranslate(strings: string[], opts: { noYo?: boolean } = {}) {
+  const { dt, ensure } = useDynamicT(opts)
   const key = localeKey(strings)
 
   // locale в зависимостях: раньше при смене языка на странице (ru → en без перезагрузки, или язык

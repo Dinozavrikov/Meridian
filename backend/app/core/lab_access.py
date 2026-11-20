@@ -16,7 +16,7 @@ from app.core.prediction_status import CLOSED_PREDICTION_STATUSES
 
 def visibility_from_lab(lab_is_public: bool) -> str:
     """Видимость сущности, привязанной к лабе, полностью определяется публичностью
-    лабы, а не собственным полем visibility — оно больше не задаётся вручную,
+    лабы, а не собственным полем visibility — оно больше не задается вручную,
     пока сущность привязана к лабе (см. labs.py create_lab, tasks.py create/update_task)."""
     return "public" if lab_is_public else "lab"
 
@@ -29,7 +29,7 @@ async def _lab_role(db: AsyncSession, lab_id: int, user_id: int) -> str | None:
 async def resolve_lab_attachment(db: AsyncSession, lab_id: int | None, requested_visibility: str, user_id: int) -> str:
     """Единая точка входа для полей lab_id/visibility при create/update сущности.
     Без lab_id — пользователь свободно выбирает visibility. С lab_id — лаба должна
-    существовать, пользователь обязан быть её участником, а видимость выводится
+    существовать, пользователь обязан быть ее участником, а видимость выводится
     из lab.is_public (visibility_from_lab); requested_visibility в этом случае игнорируется."""
     if not lab_id:
         return requested_visibility
@@ -48,8 +48,8 @@ async def get_entity_for_view(db: AsyncSession, model, entity_id: int, user_id: 
     user_id=None — гость: доступна только public-ветка ниже, свои записи и
     участие в лабе для гостя в принципе не имеют смысла.
 
-    hide_as_404: по умолчанию недоступная сущность даёт 403 (палит факт
-    существования, но не даёт доступ — так везде в проекте, осознанно, см.
+    hide_as_404: по умолчанию недоступная сущность дает 403 (палит факт
+    существования, но не дает доступ — так везде в проекте, осознанно, см.
     ACCESS_POLICY.md). Отдельные фичи (обсуждения в comments.py) намеренно
     не хотят подтверждать даже факт существования — для них hide_as_404=True
     превращает тот же 403 в 404. Логика проверки одна и та же в обоих
@@ -75,7 +75,7 @@ async def get_entity_for_lab_manage(db: AsyncSession, model, entity_id: int, use
                                     *, include_deleted: bool = False):
     """Владелец сущности ИЛИ владелец/админ лабы — может выполнять
     ОРГАНИЗАЦИОННЫЕ операции: привязка/отвязка гипотез, управление шкалами,
-    expectations. НЕ даёт права редактировать содержимое самой сущности
+    expectations. НЕ дает права редактировать содержимое самой сущности
     (текст, поля) — контент неприкосновенен для автора, даже для lab
     admin/owner. Это осознанное ограничение (документ п.8): лаборатория
     как контур организации исследования, не как право переписывать чужие
@@ -99,7 +99,7 @@ def entity_visibility_filter(model, user_id: int | None,
     """Условие для списков сущностей: собственные записи (любой видимости),
     ИЛИ публичные записи любого пользователя, ИЛИ записи, привязанные к лабе,
     где пользователь состоит И которые отданы лаборатории (visibility=='lab'; приватная
-    запись с lab_id не в счёт, публичная с lab_id идёт по ветке public).
+    запись с lab_id не в счет, публичная с lab_id идет по ветке public).
     user_id=None — гость: видит только публичные записи.
 
     requested/lab_id — доп. сужение для страниц статистики (users.py):
@@ -115,7 +115,7 @@ def entity_visibility_filter(model, user_id: int | None,
         base = or_(
             model.user_id == user_id,
             model.visibility == "public",
-            # через лабораторию видно только то, что отдано лаборатории; приватная запись с lab_id не в счёт
+            # через лабораторию видно только то, что отдано лаборатории; приватная запись с lab_id не в счет
             and_(model.visibility == "lab", model.lab_id.in_(member_lab_ids)),
         )
     if requested:
@@ -135,7 +135,7 @@ async def can_link(db: AsyncSession, model, entity_id: int, user_id: int):
     а не приватный внутренний указатель.
 
     Отдельной операции CONTRIBUTE намеренно нет (была get_entity_for_contribute,
-    удалена — неиспользуемый мёртвый код): "добавить вклад в чужую сущность"
+    удалена — неиспользуемый мертвый код): "добавить вклад в чужую сущность"
     уже реализуется этим же паттерном — своя сущность + can_link, без мутации
     чужих данных. Это осознанный архитектурный выбор под будущую федерацию
     лабораторий: каждый инстанс пишет только свои сущности, линк — просто
@@ -150,7 +150,7 @@ async def can_link(db: AsyncSession, model, entity_id: int, user_id: int):
 # ── Soft-delete ──────────────────────────────────────────────────────────
 # Запись в корзине (deleted_at IS NOT NULL) для всех, кроме владельца, не
 # существует — 404, а не 403 (не подтверждаем даже факт существования). Сам
-# владелец видит её только при явном include_deleted=True (restore/permanent).
+# владелец видит ее только при явном include_deleted=True (restore/permanent).
 
 def _is_deleted(obj) -> bool:
     return getattr(obj, "deleted_at", None) is not None
@@ -164,7 +164,7 @@ def _hidden_as_deleted(obj, user_id: int | None, include_deleted: bool) -> bool:
 
 
 async def get_live(db: AsyncSession, model, entity_id: int):
-    """db.get(), который не возвращает soft-deleted запись (None вместо неё).
+    """db.get(), который не возвращает soft-deleted запись (None вместо нее).
     Для мест, где раньше было `obj = await db.get(Model, id); if not obj: ...` —
     без проверки прав, только «жива ли»."""
     obj = await db.get(model, entity_id)
@@ -177,14 +177,14 @@ def parent_alive_subquery(entity_type, entity_id_col):
     """Условие для .where(): у полиморфного родителя (entity_type, entity_id)
     НЕТ soft-deleted записи. Использовать везде, где EntityComment/EntityTag/
     EntityImage/EntityAttachment/SourceDocument/EntityStage/... читаются по
-    entity_type/entity_id, чтобы дети мёртвой сущности не были доступны в
-    обход неё. Дети не помечаются и не трогаются — скрываются только здесь.
+    entity_type/entity_id, чтобы дети мертвой сущности не были доступны в
+    обход нее. Дети не помечаются и не трогаются — скрываются только здесь.
 
     entity_type — колонка (EntityComment.entity_type) или строка; entity_id_col —
     колонка. Работает и для Link: parent_alive_subquery(Link.from_type, Link.from_id).
-    Семантика именно «нет мёртвого родителя», а не «есть живой»: дети родителей
+    Семантика именно «нет мертвого родителя», а не «есть живой»: дети родителей
     вне ENTITY_MODELS (Lab у EntityStage) и уже осиротевшие строки не пропадают
-    из выдачи молча. Родитель берётся через aliased() — иначе при внешнем join
+    из выдачи молча. Родитель берется через aliased() — иначе при внешнем join
     на ту же модель подзапрос теряет FROM по auto-correlation и падает."""
     def _dead(model):
         p = aliased(model)
@@ -198,8 +198,8 @@ def parent_alive_subquery(entity_type, entity_id_col):
 
 def links_alive():
     """Условие для .where() по Link: ни одна из сторон (from/to) не в корзине.
-    Так графы/подсчёты/сервисы не показывают связи с мёртвой записью и не
-    оставляют висячих рёбер. Сами Link не трогаются — при restore связи
+    Так графы/подсчеты/сервисы не показывают связи с мертвой записью и не
+    оставляют висячих ребер. Сами Link не трогаются — при restore связи
     возвращаются вместе с записью."""
     from app.models.entities import Link
     return and_(parent_alive_subquery(Link.from_type, Link.from_id),
@@ -208,13 +208,13 @@ def links_alive():
 
 def not_deleted(model):
     """model.deleted_at IS NULL для soft-deletable моделей, true() для остальных
-    (Result и др. deleted_at не имеют): для generic-кода, который не знает наперёд,
-    какая модель ему придёт."""
+    (Result и др. deleted_at не имеют): для generic-кода, который не знает наперед,
+    какая модель ему придет."""
     return model.deleted_at.is_(None) if is_soft_deletable(model) else true()
 
 
 async def trashed_ids(db: AsyncSession, model, ids) -> set[int]:
-    """Какие из ids лежат в корзине — чтобы не рисовать рёбра/ссылки на мёртвую запись."""
+    """Какие из ids лежат в корзине — чтобы не рисовать ребра/ссылки на мертвую запись."""
     ids = {i for i in ids if i is not None}
     if not ids:
         return set()
@@ -247,9 +247,9 @@ def can_undo(obj, user_id: int | None) -> bool:
 
 
 async def visible_results_stmt(db: AsyncSession, user_id: int | None, lab_id: int | None = None):
-    """Единый запрос «какие Result видит этот зритель» (участник — всё в лабе,
+    """Единый запрос «какие Result видит этот зритель» (участник — все в лабе,
     остальные — по правилам публикации, см. docstring results.py). Его используют
-    и список GET /results, и счётчик results_count в GET /labs/{id}: так бейдж на
+    и список GET /results, и счетчик results_count в GET /labs/{id}: так бейдж на
     вкладке физически не может разойтись со списком."""
     from app.models.entities import Result
     from app.models.social import Lab
@@ -258,7 +258,7 @@ async def visible_results_stmt(db: AsyncSession, user_id: int | None, lab_id: in
         Result.visibility == "lab",
         Result.lab_id.in_(select(Lab.id).where(Lab.is_public == True)),
     )
-    # Те же правила, что у get_result/get_entity_for_view: своё, публичное, «лабораторное» для участника,
+    # Те же правила, что у get_result/get_entity_for_view: свое, публичное, «лабораторное» для участника,
     # опубликованное в публичной лаборатории. lab_id у результата заполнен всегда, поэтому одного членства
     # недостаточно (так показывались чужие приватные черновики), а связи (reachable) результат не публикуют.
     visible = [published_in_public_lab, Result.visibility == "public"]
@@ -274,7 +274,7 @@ async def visible_results_stmt(db: AsyncSession, user_id: int | None, lab_id: in
 # ── Открытие записи через связь ──────────────────────────────────────────
 # Только ЧТЕНИЕ. can_link и все операции записи по-прежнему идут через строгий get_entity_for_view.
 def _edges_subquery():
-    """Все рёбра «запись A связана с записью B» от трёх источников (в обе стороны) с автором ребра:
+    """Все ребра «запись A связана с записью B» от трех источников (в обе стороны) с автором ребра:
     Link (автор Link.user_id), прогноз<->гипотеза (автор = владелец прогноза), EntityHypothesis (автора нет: NULL)."""
     from sqlalchemy import Integer, cast, literal_column, null, union_all
     from app.models.entities import EntityHypothesis, Link, Prediction
@@ -297,7 +297,7 @@ def _edges_subquery():
 
 def open_triples_query(model, entity_type: str):
     """Тройки (id записи N, лаборатория, тип R, id R, владелец N), для которых связь по правилу открывала бы N участникам
-    лаборатории (без учёта согласия и зрителя). Единый источник и для условия чтения, и для бэкфилла согласий."""
+    лаборатории (без учета согласия и зрителя). Единый источник и для условия чтения, и для бэкфилла согласий."""
     from sqlalchemy import literal_column, union_all
     e = _edges_subquery()
     n = aliased(model)
@@ -323,8 +323,8 @@ def opened_via_link_condition(model, entity_type: str, user_id: int, lab_id: int
     """SQL-условие «запись открыта зрителю через связь»: правило open_triples_query (живая связь, автор связи = владелец N,
     R отдана лаборатории, владелец N в ней состоит, ни N, ни R не в корзине) И строка согласия record_shares И зритель
     состоит в лаборатории. Согласие нужно, чтобы смена видимости соседней записи или вступление автора в лабораторию
-    ничего не открывали молча. R обязана быть лабораторной сама, поэтому дальше одного шага это не течёт.
-    Удалили связь, и доступ исчез без пересчёта."""
+    ничего не открывали молча. R обязана быть лабораторной сама, поэтому дальше одного шага это не течет.
+    Удалили связь, и доступ исчез без пересчета."""
     from app.models.entities import RecordShare
     t = open_triples_query(model, entity_type).subquery()
     sh, me = aliased(RecordShare), aliased(LabMember)
@@ -359,7 +359,7 @@ async def can_read_via_link(db: AsyncSession, model, entity_id: int, user_id: in
 
 async def get_entity_for_read(db: AsyncSession, model, entity_id: int, user_id: int | None, *, hide_as_404: bool = False):
     """get_entity_for_view + запись, открытая через связь. Только для эндпоинтов ЧТЕНИЯ: для записи и can_link
-    остаётся строгий get_entity_for_view (открытие не даёт прав на запись)."""
+    остается строгий get_entity_for_view (открытие не дает прав на запись)."""
     try:
         return await get_entity_for_view(db, model, entity_id, user_id, hide_as_404=hide_as_404)
     except HTTPException as e:
@@ -395,9 +395,9 @@ def _title_of(obj) -> str:
 
 async def publication_impact(db: AsyncSession, a, b, author_id: int | None, *, same_owner_only: bool = False) -> list[dict]:
     """Что откроет связь между a и b = (тип, запись): те же условия, что в opened_via_link_condition, но для ОДНОЙ новой связи.
-    Запись N открывается, если R лабораторная, владелец N состоит в этой лаборатории, N ей ещё не видна, и автор связи =
+    Запись N открывается, если R лабораторная, владелец N состоит в этой лаборатории, N ей еще не видна, и автор связи =
     владелец N (same_owner_only: у связи нет автора, EntityHypothesis; тогда нужен один владелец у обеих сторон).
-    Пусто = ничего не открывается, согласие не нужно. Записи могут быть ещё не сохранены (нужны только user_id/visibility/lab_id)."""
+    Пусто = ничего не открывается, согласие не нужно. Записи могут быть еще не сохранены (нужны только user_id/visibility/lab_id)."""
     from sqlalchemy import func
     from app.models.social import Lab
     out: list[dict] = []
@@ -431,24 +431,24 @@ async def publication_impact(db: AsyncSession, a, b, author_id: int | None, *, s
 
 def ensure_prediction_visibility_not_frozen(pred, new_visibility, new_lab_id) -> None:
     """У закрытого прогноза лаборатория и видимость заморожены: вклад в сигнал лаборатории считается по lab_id,
-    вынос из лаборатории или смена видимости стёрли бы его (track record не «улучшить»). Единая проверка для
+    вынос из лаборатории или смена видимости стерли бы его (track record не «улучшить»). Единая проверка для
     PUT /predictions/{id} и PUT /{type}/{id}/visibility."""
     if pred.status in CLOSED_PREDICTION_STATUSES and (new_lab_id != pred.lab_id or new_visibility != pred.visibility):
-        raise HTTPException(400, "Нельзя менять лабораторию и видимость закрытого прогноза: его вклад уже учтён в сигнале лаборатории")
+        raise HTTPException(400, "Нельзя менять лабораторию и видимость закрытого прогноза: его вклад уже учтен в сигнале лаборатории")
 
 
 async def require_publication_consent(db: AsyncSession, a, b, author_id: int | None, share: ShareChoice, *, same_owner_only: bool = False):
     """Точка входа для каждой операции, которая может раскрыть приватную запись, связанную с записью лаборатории.
     Есть что раскрывать, а share не выбран: 409 needs_consent (в impacts у каждой записи options: me / lab / public).
-    Открывала бы запись не её владелец (админ лаборатории привязал чужое): 403. share вне options: 400.
-    me: связь без раскрытия. lab: вернёт impacts для grant_publication (чтение участникам через связь).
-    public: запись становится публичной в той же транзакции (lab_id остаётся пустым), grant не нужен.
+    Открывала бы запись не ее владелец (админ лаборатории привязал чужое): 403. share вне options: 400.
+    me: связь без раскрытия. lab: вернет impacts для grant_publication (чтение участникам через связь).
+    public: запись становится публичной в той же транзакции (lab_id остается пустым), grant не нужен.
     Если раскрыть можно только «никому» (закрытый прогноз в публичной лаборатории), спрашивать не о чем."""
     impacts = await publication_impact(db, a, b, author_id, same_owner_only=same_owner_only)
     if not impacts:
         return impacts
     if any(i["owner_id"] != author_id for i in impacts):
-        raise HTTPException(403, "Открыть запись лаборатории может только её владелец")
+        raise HTTPException(403, "Открыть запись лаборатории может только ее владелец")
     asking = [i for i in impacts if i["options"] != ["me"]]
     if not asking:
         return []
@@ -484,7 +484,7 @@ async def grant_publication(db: AsyncSession, impacts: list[dict], author_id: in
 
 
 async def revoke_shares(db: AsyncSession, a: tuple[str, int], b: tuple[str, int]) -> None:
-    """Связь между a и b исчезла: согласие на открытие через неё снимается (в обе стороны). Не коммитит.
+    """Связь между a и b исчезла: согласие на открытие через нее снимается (в обе стороны). Не коммитит.
     Если между парой осталась другая связь, запись закроется до нового согласия: безопасное направление."""
     from sqlalchemy import delete
     from app.models.entities import RecordShare as RS
@@ -500,7 +500,7 @@ async def reset_shares_on_visibility_change(db: AsyncSession, entity_type: str, 
     """Видимость или лаборатория записи меняются: согласия record_shares, выданные для прежнего состояния, снимаются
     (возврат в private не воскрешает доступ). Вызывать ДО присваивания новых значений. Не коммитит.
     Пишет событие visibility_changed (только db.add, без flush: иначе автосброс разрежет изменения на два события updated —
-    см. test_update_single_event). Оно поднимает запись в ленте-группах при публикации и несёт видимость НОВОГО состояния;
+    см. test_update_single_event). Оно поднимает запись в ленте-группах при публикации и несет видимость НОВОГО состояния;
     при переходе в private оно приватное и без lab_id (как share_closed) — факт сокрытия не светится."""
     if (new_visibility, new_lab_id) == (obj.visibility, obj.lab_id):
         return

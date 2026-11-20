@@ -25,12 +25,12 @@ function detectBrowserLang(): string | null {
 type ScopeMode = "ui" | "ui_and_content" | "content"
 
 // Дорожка дуги — статичный спектр teal→amber (интерфейс ←→ контент), не
-// "прогресс-бар": средняя точка "Всё" — не промежуточное количество, а
-// сочетание обоих концов, поэтому у неё градиентная (не третья произвольная)
+// "прогресс-бар": средняя точка "Все" — не промежуточное количество, а
+// сочетание обоих концов, поэтому у нее градиентная (не третья произвольная)
 // заливка.
 const SCOPE_STOPS: { mode: ScopeMode; value: number; label: string }[] = [
   { mode: "ui",             value: 0,   label: "Интерфейс" },
-  { mode: "ui_and_content", value: 50,  label: "Всё" },
+  { mode: "ui_and_content", value: 50,  label: "Все" },
   { mode: "content",        value: 100, label: "Только контент" },
 ]
 
@@ -54,7 +54,7 @@ function stopFill(mode: ScopeMode): string {
  * Компактная версия дугового gauge из PracticeInstrument (калибровка на
  * дашборде) — та же техника (стрелка, вращаемая через CSS transform), но
  * дорожка теперь статичный градиент-спектр (не strokeDasharray-прогресс —
- * средняя позиция "Всё" не "50% чего-то", а сочетание обоих полюсов, прогресс-
+ * средняя позиция "Все" не "50% чего-то", а сочетание обоих полюсов, прогресс-
  * бар давал неверное впечатление количества).
  */
 function ScopeGauge({ scope, onPick }: { scope: ScopeMode; onPick: (m: ScopeMode) => void }) {

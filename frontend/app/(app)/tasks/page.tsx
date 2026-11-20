@@ -859,7 +859,7 @@ export function TaskDetail({ task, allHyps, onEdit, canEdit = true, extraTabs, r
 // ── Task form ──────────────────────────────────────────────────────────────
 function TaskForm({ initial, onSave, onCancel, labs }: any) {
   const t = useT()
-  const dt = useDynamicTranslate(STATUSES)
+  const dt = useDynamicTranslate(STATUSES, { noYo: true })
   const [form, setForm] = useState({
     name: initial?.name ?? "", description: initial?.description ?? "",
     status: initial?.status ?? "открыта",
@@ -908,7 +908,7 @@ function TaskForm({ initial, onSave, onCancel, labs }: any) {
                   }}>
                     <AlertTriangle size={15} color="#F5A623" style={{ flexShrink: 0, marginTop: 1 }} />
                     <span style={{ fontSize: 12, color: "#F5D090", lineHeight: 1.4 }}>
-                      Задача становится <strong>публичной</strong> — лаба «{selectedLab?.name}» публичная, и это распространяется на все её цели.
+                      Задача становится <strong>публичной</strong> — лаба «{selectedLab?.name}» публичная, и это распространяется на все ее цели.
                     </span>
                   </div>
                 )}

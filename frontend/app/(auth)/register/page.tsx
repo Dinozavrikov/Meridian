@@ -86,7 +86,7 @@ export default function RegisterPage() {
       if (Object.keys(fields).length > 0) {
         setFieldErrors(fields)
       } else {
-        setError(apiErrorMessage(e, dt("Ошибка регистрации"), dt("Проверьте введённые данные")))
+        setError(apiErrorMessage(e, dt("Ошибка регистрации"), dt("Проверьте введенные данные")))
       }
     } finally {
       setLoading(false)

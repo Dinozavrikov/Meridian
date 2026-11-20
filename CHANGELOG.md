@@ -11,6 +11,7 @@ The project is under active development: some features are unfinished and may no
 ### Changed
 
 - The Russian interface dictionary is written without the letter yo, as the rest of the product texts; a test keeps it that way
+- Error messages, e-mails, sign-in screens and scale labels no longer use the letter yo; statuses are stored as before and shown without it, and user-written text is never changed
 
 ## [0.22.7] - 2026-11-20
 

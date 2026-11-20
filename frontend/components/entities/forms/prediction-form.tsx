@@ -49,7 +49,7 @@ export function PredictionForm({
   header, showLinkPicker = true, submitting = false, error = null,
 }: PredictionFormProps) {
   const t = useT()
-  const dt = useDynamicTranslate(PREDICTION_STATUSES)
+  const dt = useDynamicTranslate(PREDICTION_STATUSES, { noYo: true })
   const locked = isClosedPrediction(initial?.status)   // закрытый: исход и уверенность не редактируются
   const showHypSelect = hyps !== undefined && lockedHypothesisId == null
 

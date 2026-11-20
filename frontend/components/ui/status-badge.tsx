@@ -20,6 +20,6 @@ interface StatusBadgeProps {
  */
 export function StatusBadge({ status, fontSize = 10 }: StatusBadgeProps) {
   const c = (statusColor as Record<string, string>)[status] ?? "#484848"
-  const dt = useDynamicTranslate([status])
+  const dt = useDynamicTranslate([status], { noYo: true })
   return <Pill color={c} dot size={fontSize >= 12 ? "md" : "sm"}>{dt(status)}</Pill>
 }
