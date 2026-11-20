@@ -4,7 +4,7 @@ import { renderHook, act } from "@testing-library/react"
 const h = vi.hoisted(() => ({ post: vi.fn() }))
 vi.mock("@/lib/api", () => ({ api: { post: h.post } }))
 vi.mock("@/lib/store", () => {
-  const state = { locale: "en", translationScope: "all", contentTranslations: {}, mergeContentTranslations: () => {}, resetContentTranslations: () => {} }
+  const state = { locale: "en", translationScope: "ui_and_content", contentTranslations: {}, mergeContentTranslations: () => {}, resetContentTranslations: () => {} }
   return { useStore: (sel: (s: unknown) => unknown) => sel(state) }
 })
 import { useContentT } from "@/lib/i18n/useContentT"

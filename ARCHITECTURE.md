@@ -158,7 +158,7 @@ Alembic. `migrate_with_lock.py` wraps `alembic upgrade head` in advisory lock. `
 ## 4. Data model
 
 ### 4.1 First-class entities
-Six types with `TimestampMixin` and (except `Result`) `SoftDeleteMixin`: `Observation`, `Hypothesis`, `Prediction`, `Worldview`, `Question`, `ResearchTask`. Plus `Result` (not first-class in event log/graph, §11).
+Six types with `TimestampMixin` and `SoftDeleteMixin`: `Observation`, `Hypothesis`, `Prediction`, `Worldview`, `Question`, `ResearchTask`. `Result` is separate: it has no `SoftDeleteMixin` and is not first-class in the event log or graph (§11).
 
 Shared: `id`, `user_id`, `visibility`, `lab_id`. Slugs use `UniqueConstraint` + `soft_delete_index`.
 
@@ -223,7 +223,7 @@ See §3.7.
 
 ## 8. Deployment
 
-Production: `docker-compose.prod.yml` + `Caddyfile`. HTTPS, `max_size 20MB`, `/api/*` → backend, `X-Real-IP` overwritten.
+Production: `docker-compose.prod.yml` + `Caddyfile`. HTTPS, `max_size 20MB`, `/api/*` → backend, `X-Real-IP` overwritten. The backend reads the client address only through `core/client_ip.py`, so any other proxy must overwrite this header too, and the backend port must not be reachable around the proxy.
 
 Backups: `scripts/backup/` with age-encryption. You supply your own age public key; none ships with the repository.
 
@@ -252,7 +252,6 @@ Backups: `scripts/backup/` with age-encryption. You supply your own age public k
 - **No CI** (manual bash tests).
 - **No app-level rate limit** for login (only Turnstile under Caddy).
 - **`/i18n/ensure` rate limit in-memory**.
-- **`Session.ip_address` is Caddy IP**, not client.
 - **`EncryptedText` returns ciphertext** silently.
 - **`_generate_username_from_email` race condition** (500 instead of friendly error).
 - **`translationScope: "content"` placeholder**.
