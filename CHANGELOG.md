@@ -8,6 +8,10 @@ The project is under active development: some features are unfinished and may no
 
 ## [Unreleased]
 
+### Changed
+
+- The Russian interface dictionary is written without the letter yo, as the rest of the product texts; a test keeps it that way
+
 ## [0.22.7] - 2026-11-20
 
 ### Security

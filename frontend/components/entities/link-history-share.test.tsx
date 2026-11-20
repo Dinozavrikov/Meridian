@@ -19,7 +19,7 @@ describe("история связей: события доступа", () => {
     m.list.mockResolvedValue([item({ id: 2, type: "share_opened", reverts_event_id: 1 }), item({ id: 1 })])
     mount()
     expect(await screen.findByText(/Закрыт доступ участникам через связь с «R»/)).toBeTruthy()
-    expect(screen.getByText(/Возвращён доступ участникам через связь с «R»/)).toBeTruthy()
+    expect(screen.getByText(/Возвращен доступ участникам через связь с «R»/)).toBeTruthy()
   })
   it("блокировка отката доступа говорит про доступ, а не про тип связи", async () => {
     m.list.mockResolvedValue([item({ undoable: false, blocked_code: "link_changed" })])
