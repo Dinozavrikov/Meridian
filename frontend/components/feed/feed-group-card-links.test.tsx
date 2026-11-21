@@ -1,6 +1,7 @@
 import React from "react"
 import { describe, it, expect, vi, afterEach, beforeEach } from "vitest"
 import { render, cleanup } from "@testing-library/react"
+import { renderToStaticMarkup } from "react-dom/server"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { STRINGS } from "@/lib/i18n/strings"
 import { FeedGroupCard } from "@/components/feed/feed-group-card"
@@ -84,5 +85,13 @@ describe("FeedGroupCard: ссылки в тексте записи", () => {
     renderCard(group())
     const sent = h.ensure.mock.calls.flatMap(c => c[0]) as { field: string }[]
     expect(sent.some(i => i.field === "preview_html")).toBe(false)
+  })
+})
+
+describe("FeedGroupCard: серверная разметка", () => {
+  it("до монтирования в теле нет ссылок: серверный и клиентский HTML не расходятся", () => {
+    const html = renderToStaticMarkup(<QueryClientProvider client={new QueryClient()}><FeedGroupCard group={group()} /></QueryClientProvider>)
+    expect(html).toContain("вопрос")           // текст записи на месте
+    expect(html).not.toContain("meridian://")  // а разметки ссылок нет
   })
 })

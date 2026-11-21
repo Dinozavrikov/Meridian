@@ -1,19 +1,18 @@
 import type { MetadataRoute } from "next"
-import { GUEST_ALLOWED } from "@/lib/guest-access"
+import { PRERENDERED_PATHS } from "@/lib/guest-access"
 import { fetchSitemapRecords } from "@/lib/feed-server"
 
-// Страницы без логина берутся из lib/guest-access.ts, публичные записи отдает backend.
+// Страницы с готовым серверным текстом (PRERENDERED_PATHS в lib/guest-access.ts) и публичные записи (их отдает backend).
+// Клиентские списки, вход и регистрация сюда не попадают: у них нет текста для поисковика или они закрыты в robots.
 // Динамически: при сборке образа backend недоступен, и записи не попали бы в sitemap.
 export const dynamic = "force-dynamic"
 
 const BASE_URL = "https://miridin.com"
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  // Корень "/" редиректит на /feed: в sitemap идет конечный адрес (он же canonical), а не редирект.
-  const paths = ["/feed", ...GUEST_ALLOWED.filter(p => p !== "/" && p !== "/feed")]
+  const paths = PRERENDERED_PATHS   // /feed уже здесь: корень "/" редиректит на него и в sitemap не нужен
   const pages: MetadataRoute.Sitemap = Array.from(new Set(paths)).map(path => ({
     url: `${BASE_URL}${path}`,
-    lastModified: new Date(),
     changeFrequency: "weekly" as const,
     priority: path === "/feed" ? 1 : 0.7,
   }))

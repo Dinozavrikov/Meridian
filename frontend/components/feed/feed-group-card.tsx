@@ -1,5 +1,5 @@
 "use client"
-import { useEffect, useState, type CSSProperties } from "react"
+import { useEffect, useState, useSyncExternalStore, type CSSProperties } from "react"
 import Link from "next/link"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { Check, ChevronDown, ChevronUp, Globe, Link2, MessageCircle, Pencil, Repeat, StickyNote, X } from "lucide-react"
@@ -145,6 +145,10 @@ export function FeedGroupCard({ group, isNew = false, onTopic, full = false }: {
     if (isOwn(it)) return it.title || plain(it.preview)
     return it.title ? ct(it.type, it.entity_id, "title", it.title) : ct(it.type, it.entity_id, "preview", plain(it.preview))
   }
+  // На сервере нет DOM, и очистка HTML там дает чистый текст, а в браузере текст со ссылками. Если вывести
+  // разметку сразу, серверный и клиентский HTML разойдутся, и ссылки после гидратации останутся мертвыми.
+  // Поэтому текст со ссылками включается только после монтирования, а до него показывается простой текст.
+  const live = useSyncExternalStore(() => () => {}, () => true, () => false)
   // Текст записи со ссылками: HTML очищается и показывается через RichHtml, простой текст экранируется.
   const bodyHtml = (type: string, id: number, raw: string, ownRec: boolean) => {
     if (!raw) return ""
@@ -164,7 +168,13 @@ export function FeedGroupCard({ group, isNew = false, onTopic, full = false }: {
   const coreText = own ? corePreview : ct(core.type, core.entity_id, "preview", corePreview)
   // У записи без заголовка (убеждение) заголовком служит сам текст, абзаца под ним не нужно.
   const heading = coreTitle || coreText
-  const leadHtml = coreTitle ? bodyHtml(core.type, core.entity_id, core.preview, own) : ""
+  const leadHtml = live && coreTitle ? bodyHtml(core.type, core.entity_id, core.preview, own) : ""
+  const leadStyle: CSSProperties | undefined = full ? { display: "block", WebkitLineClamp: "unset", overflow: "visible" } : undefined
+  const notePlain = (n: FeedNote) => {
+    const pv = plain(n.preview)
+    const title = noteTitle(n)
+    return `${title ? `${title}. ` : ""}${pv ? (noteOwn(n) ? pv : ct("obs_post", n.id, "preview", pv)) : ""}`
+  }
 
   // Обсуждение живёт на странице дискуссии (общая для публичной записи), а не разворачивается внутри карточки.
   const discussionType = (core.repost_source_type as string | undefined) ?? core.type
@@ -247,10 +257,11 @@ export function FeedGroupCard({ group, isNew = false, onTopic, full = false }: {
       {core.repost_of ? <RepostQuote repostOf={core.repost_of} /> : null}
 
       <h3 className="mf-title"><Link href={full ? href : discussionHref}>{heading}</Link></h3>
-      {leadHtml && (
-        <RichHtml html={leadHtml} accent={typeColor[core.type] ?? NEUTRAL} className="mf-lead"
-          style={full ? { display: "block", WebkitLineClamp: "unset", overflow: "visible" } : undefined} />
-      )}
+      {coreTitle && coreText && (leadHtml ? (
+        <RichHtml html={leadHtml} accent={typeColor[core.type] ?? NEUTRAL} className="mf-lead" style={leadStyle} />
+      ) : (
+        <div className="mf-lead" style={leadStyle}>{coreText}</div>
+      ))}
 
       {core.type === "observation" && core.status && <div className="mf-stage"><MaturationStepper status={core.status} /></div>}
       {core.type === "prediction" && <div className="mf-stage"><VerifyTrack createdAt={core.created_at} expectedDate={ecd} /></div>}
@@ -301,7 +312,9 @@ export function FeedGroupCard({ group, isNew = false, onTopic, full = false }: {
             <div key={n.id} className="mf-note" data-testid="feed-note">
               <span style={{ color: "var(--mf-t1)", fontWeight: 600 }}>{n.author_display || n.author_username}</span>{" "}
               <span className="mf-time">{timeOf(n.created_at)}</span>
-              {noteHtml(n) && <RichHtml html={noteHtml(n)} accent={typeColor.observation ?? NEUTRAL} className="mf-note-q" />}
+              {live
+                ? (noteHtml(n) && <RichHtml html={noteHtml(n)} accent={typeColor.observation ?? NEUTRAL} className="mf-note-q" />)
+                : (notePlain(n) && <div className="mf-note-q">{notePlain(n)}</div>)}
             </div>
           ))}
           {noteCount > notes.length && (

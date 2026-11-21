@@ -24,7 +24,7 @@ describe("метаданные страницы обсуждения", () => {
     const m = await meta({ title: "Вопрос про сон", preview: "<p>Сколько нужно спать?</p>", visibility: "public" }, "question", "9")
     expect(m.description).toBe("Сколько нужно спать?")
     expect(m.openGraph).toMatchObject({ siteName: "Meridian", url: "/feed/discussion/question/9" })
-    expect(m.twitter).toMatchObject({ card: "summary" })
+    expect(m.twitter).toMatchObject({ card: "summary_large_image" })
   })
 
   it("непубличная запись закрыта от индекса и не отдает свой текст", async () => {

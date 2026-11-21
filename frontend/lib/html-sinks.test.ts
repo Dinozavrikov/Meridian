@@ -8,7 +8,8 @@ const ROOT = process.cwd()
 // Корневой layout: JSON-LD из статического объекта (JSON.stringify констант), данных пользователей
 // там нет — проверено по коду. Если туда когда-нибудь попадёт переменная, исключение надо убрать.
 const EXCLUDED = new Set(["app/layout.tsx"])
-const SAFE_PREFIXES = ["renderableHtml(", "sanitizeHtml(", "resolveHtmlImages(sanitizeHtml("]
+// safeJsonLd: сериализатор JSON-LD, экранирует < > & (lib/json-ld.ts, проверен json-ld.test.ts)
+const SAFE_PREFIXES = ["renderableHtml(", "sanitizeHtml(", "resolveHtmlImages(sanitizeHtml(", "safeJsonLd("]
 
 function sources(): string[] {
   return ["app", "components"].flatMap(dir =>

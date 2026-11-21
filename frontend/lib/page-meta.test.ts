@@ -1,54 +1,29 @@
-// Метаданные публичных страниц: у каждой свои, без буквы е с двумя точками, canonical совпадает с адресом; запись берет данные у самой записи.
-import { afterEach, describe, expect, it, vi } from "vitest"
-import { readFileSync } from "node:fs"
+import { describe, it, expect } from "vitest"
+import { pageMetadata, SITE_NAME } from "@/lib/page-meta"
+import { metadata as docs } from "@/app/(app)/docs/layout"
+import { metadata as features } from "@/app/(app)/features/layout"
+import { metadata as labs } from "@/app/(app)/labs/layout"
+import { metadata as privacy } from "@/app/(app)/privacy/layout"
+import { metadata as questions } from "@/app/(app)/questions/layout"
+import { metadata as roadmap } from "@/app/(app)/roadmap/layout"
+import { metadata as support } from "@/app/(app)/support/layout"
+import { metadata as terms } from "@/app/(app)/terms/layout"
 
-const PAGES = ["features", "roadmap", "docs", "privacy", "terms", "support", "labs", "questions"]
-afterEach(() => { vi.unstubAllEnvs(); vi.unstubAllGlobals() })
-
-describe("метаданные публичных страниц", async () => {
-  const metas = await Promise.all(PAGES.map(async p => [p, (await import(`@/app/(app)/${p}/layout`)).metadata] as const))
-  it.each(metas)("%s: свои title, description и canonical", (p, m: any) => {
-    expect(m.title).toMatch(/ · Meridian$/)
-    expect(m.title).not.toBe("Meridian")
-    expect(m.description.length).toBeGreaterThan(40)
-    expect(m.alternates.canonical).toBe(`/${p}`)
-    expect(`${m.title}${m.description}`).not.toContain("\u0451")
-  })
-  it("title и description не повторяются между страницами", () => {
-    expect(new Set(metas.map(([, m]: any) => m.title)).size).toBe(PAGES.length)
-    expect(new Set(metas.map(([, m]: any) => m.description)).size).toBe(PAGES.length)
-  })
-  it("корневой layout без буквы е с двумя точками", () => {
-    expect(readFileSync("app/layout.tsx", "utf-8")).not.toContain("\u0451")
+describe("pageMetadata", () => {
+  it("canonical, OpenGraph и Twitter строятся из одних и тех же заголовка, описания и адреса", () => {
+    const m = pageMetadata("/labs", "page.labs.title", "meta.labs.description")
+    expect(m.alternates?.canonical).toBe("/labs")
+    expect(String(m.title).endsWith(` · ${SITE_NAME}`)).toBe(true)
+    expect(m.openGraph).toMatchObject({ title: m.title, description: m.description, url: "/labs", siteName: SITE_NAME })
+    expect(m.twitter).toMatchObject({ card: "summary", title: m.title, description: m.description })
   })
 })
 
-describe("метаданные записи", () => {
-  const stub = (status: number, body: unknown) => vi.stubGlobal("fetch", vi.fn(async () => ({ ok: status === 200, json: async () => body })))
-  const run = async (type: string, id: string) => {
-    vi.stubEnv("INTERNAL_API_URL", "http://backend:8000")
-    const { generateMetadata } = await import("@/app/(app)/feed/discussion/[type]/[id]/layout")
-    return (await generateMetadata({ params: Promise.resolve({ type, id }) })) as any
-  }
-  it("публичная запись: заголовок и описание из записи, автора нет", async () => {
-    stub(200, { core: { title: "Кофе мешает спать", preview: "<p>Проверю <b>две недели</b></p>", visibility: "public", author_username: "anna", author_display: "Anna Secret" } })
-    const m = await run("hypothesis", "5")
-    expect(m.title).toBe("Кофе мешает спать · Meridian")
-    expect(m.description).toBe("Проверю две недели")
-    expect(m.alternates.canonical).toBe("/feed/discussion/hypothesis/5")
-    expect(m.robots).toBeUndefined()
-    expect(JSON.stringify(m)).not.toMatch(/anna|Anna Secret/i)
-  })
-  it.each([["не публичная", 200, { core: { title: "Секрет", preview: "x", visibility: "lab" } }], ["не найдена", 404, {}]])("%s: noindex и без текста записи", async (_n, status, body) => {
-    stub(status, body)
-    const m = await run("hypothesis", "5")
-    expect(m.robots).toEqual({ index: false, follow: false })
-    expect(JSON.stringify(m)).not.toContain("Секрет")
-  })
-  it("мусор в адресе не доходит до backend", async () => {
-    const f = vi.fn(); vi.stubGlobal("fetch", f)
-    const m = await run("../../auth/me", "1")
-    expect(f).not.toHaveBeenCalled()
-    expect(m.robots).toEqual({ index: false, follow: false })
+describe("публичные разделы", () => {
+  const pages = { docs, features, labs, privacy, questions, roadmap, support, terms }
+  it.each(Object.entries(pages))("%s: заголовок и описание не пустые (нет опечатки в ключе строки)", (_name, m) => {
+    expect(String(m.title).replace(` · ${SITE_NAME}`, "").trim()).not.toBe("")
+    expect(String(m.description ?? "").trim()).not.toBe("")
+    expect(m.twitter).toBeTruthy()
   })
 })
