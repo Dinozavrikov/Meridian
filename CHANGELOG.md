@@ -8,6 +8,8 @@ The project is under active development: some features are unfinished and may no
 
 ## [Unreleased]
 
+## [0.22.14] - 2026-11-22
+
 ### Added
 
 - Discussion pages of public records have their own share image with the title and the record type, and structured data for search engines; shared links show a large preview
