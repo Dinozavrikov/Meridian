@@ -8,6 +8,8 @@ The project is under active development: some features are unfinished and may no
 
 ## [Unreleased]
 
+## [0.22.11] - 2026-11-21
+
 ### Fixed
 
 - Links inside the text of a record in the feed work again: the card shows the record body and notes with their links instead of stripping them
