@@ -8,6 +8,14 @@ The project is under active development: some features are unfinished and may no
 
 ## [Unreleased]
 
+### Added
+
+- The text of a public record is in the server HTML of its discussion page, and the record title is the main heading of the page, so search engines see what the record says
+
+### Fixed
+
+- Public beliefs are listed in the sitemap again: they had been left out while their pages were hidden from search engines, which is no longer the case
+
 ## [0.22.14] - 2026-11-22
 
 ### Added
