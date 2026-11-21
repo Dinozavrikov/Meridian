@@ -1,13 +1,13 @@
 import type { Metadata } from "next"
 import { STRINGS } from "@/lib/i18n/strings"
-import { SITE_NAME } from "@/lib/page-meta"
+import { shareMetadata } from "@/lib/page-meta"
+
+const title = STRINGS["feed.meta.title"]
+const description = STRINGS["feed.meta.description"]
 
 export const metadata: Metadata = {
-  title: STRINGS["feed.meta.title"],
-  description: STRINGS["feed.meta.description"],
-  alternates: { canonical: "/feed" },
-  openGraph: { title: STRINGS["feed.meta.title"], description: STRINGS["feed.meta.description"], url: "/feed", siteName: SITE_NAME },
-  twitter: { card: "summary", title: STRINGS["feed.meta.title"], description: STRINGS["feed.meta.description"] },
+  title, description, alternates: { canonical: "/feed" },
+  ...shareMetadata("/feed", title, description),
 }
 
 export default function FeedLayout({ children }: { children: React.ReactNode }) {

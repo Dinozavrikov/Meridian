@@ -15,7 +15,7 @@ describe("pageMetadata", () => {
     expect(m.alternates?.canonical).toBe("/labs")
     expect(String(m.title).endsWith(` · ${SITE_NAME}`)).toBe(true)
     expect(m.openGraph).toMatchObject({ title: m.title, description: m.description, url: "/labs", siteName: SITE_NAME })
-    expect(m.twitter).toMatchObject({ card: "summary", title: m.title, description: m.description })
+    expect(m.twitter).toMatchObject({ card: "summary_large_image", title: m.title, description: m.description })
   })
 })
 

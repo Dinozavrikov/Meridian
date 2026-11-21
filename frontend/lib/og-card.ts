@@ -1,9 +1,9 @@
 import { STRINGS } from "@/lib/i18n/strings"
 import { typeColor } from "@/lib/theme"
 import { plain } from "@/lib/feed-groups"
-import { SITE_NAME } from "@/lib/page-meta"
+import { OG_SIZE, SITE_NAME } from "@/lib/page-meta"
 
-export const OG_SIZE = { width: 1200, height: 630 } as const
+export { OG_SIZE }
 
 const BRAND_COLOR = "#8892A6"
 const MAX_TITLE = 150
