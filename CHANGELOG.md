@@ -8,6 +8,15 @@ The project is under active development: some features are unfinished and may no
 
 ## [Unreleased]
 
+### Fixed
+
+- Public beliefs without a title are no longer hidden from search engines: the title is taken from the text
+- Shared links of discussion pages carry the site name and a Twitter card
+
+### Changed
+
+- The site root redirects to the feed permanently, and the sitemap lists the final addresses instead of the redirecting root
+
 ## [0.22.12] - 2026-11-21
 
 ### Fixed
