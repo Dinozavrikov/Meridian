@@ -9,13 +9,13 @@ export const dynamic = "force-dynamic"
 const BASE_URL = "https://miridin.com"
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const paths = ["/", ...GUEST_ALLOWED.filter(p => p !== "/feed")]
-  // "/" уже редиректит на /feed, поэтому не дублируем /feed отдельно от корня
+  // Корень "/" редиректит на /feed: в sitemap идет конечный адрес (он же canonical), а не редирект.
+  const paths = ["/feed", ...GUEST_ALLOWED.filter(p => p !== "/" && p !== "/feed")]
   const pages: MetadataRoute.Sitemap = Array.from(new Set(paths)).map(path => ({
     url: `${BASE_URL}${path}`,
     lastModified: new Date(),
     changeFrequency: "weekly" as const,
-    priority: path === "/" ? 1 : 0.7,
+    priority: path === "/feed" ? 1 : 0.7,
   }))
   const records: MetadataRoute.Sitemap = (await fetchSitemapRecords()).map(r => {
     const when = new Date(r.updated_at)
