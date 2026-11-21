@@ -16,9 +16,10 @@ from app.models.social import Conversation, EntityComment, Lab, LabJoinRequest, 
 from app.models.user import User
 
 MAX_DERIVED_TEXT = 600
-BASE_DERIVED = frozenset({"title", "preview", "preview_title", "preview_excerpt"})
+MAX_DERIVED_HTML = 4000   # preview_html: превью с разметкой, href съедает длину
+BASE_DERIVED = frozenset({"title", "preview", "preview_html", "preview_title", "preview_excerpt"})
 RESULT_DERIVED = frozenset({"preview"})
-OBS_POST_DERIVED = frozenset({"preview"})   # отрывок заметки собирает фронтенд из content
+OBS_POST_DERIVED = frozenset({"preview", "preview_html"})   # отрывок заметки собирает фронтенд из content
 # Имя поля на фронтенде -> колонка модели, если они различаются.
 FIELD_ATTR = {("message", "text"): "content"}
 
@@ -94,7 +95,8 @@ async def _load(db, user: User | None, entity_type: str, entity_id: int) -> Any:
 def _text(entity_type: str, field: str, sent: str, obj: Any) -> str | None:
     derived = BASE_DERIVED if entity_type in ENTITY_MODELS else RESULT_DERIVED if entity_type == "result" else OBS_POST_DERIVED if entity_type == "obs_post" else frozenset()
     if field in derived:
-        return sent if len(sent) <= MAX_DERIVED_TEXT else None
+        limit = MAX_DERIVED_HTML if field == "preview_html" else MAX_DERIVED_TEXT
+        return sent if len(sent) <= limit else None
     value = getattr(obj, FIELD_ATTR.get((entity_type, field), field), None)
     return value if isinstance(value, str) and value else None
 

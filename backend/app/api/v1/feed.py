@@ -6,6 +6,7 @@ from sqlalchemy.orm import aliased
 from app.core.prediction_status import CLOSED_PREDICTION_STATUSES
 from app.db.session import get_db
 from app.models.entities import Observation, Hypothesis, Question, Prediction, Worldview, Link, Event, EntityHypothesis, EntityTag, Tag
+from app.services.html_truncate import truncate_html
 from app.services.feed_groups import Edge, Node, build_groups, star_around
 from app.models.social import EntityComment
 from app.models.social import Lab, LabMember, HypothesisPost, PostComment, ObservationPost, Repost
@@ -121,7 +122,7 @@ async def _enrich(items, entity_type: str, db: AsyncSession) -> list[FeedItem]:
         text  = getattr(item, "text", None) or getattr(item, "description", "") or ""
         fi = FeedItem(
             id=item.id, entity_id=item.id, type=entity_type,
-            title=title[:128], preview=text[:256],
+            title=title[:128], preview=truncate_html(text, 256),
             author_username=user.username, author_display=user.display_name,
             author_avatar_url=user.avatar_url,
             visibility=item.visibility, created_at=item.created_at,
@@ -357,7 +358,7 @@ def _record_item(etype: str, obj, user, *, full: bool = False) -> FeedItem:
     return FeedItem(
         id=obj.id, entity_id=obj.id, type=etype,
         title=(content["title"] or "") if full else (content["title"] or "")[:128],
-        preview=(content["text"] or "") if full else (content["text"] or "")[:256],
+        preview=(content["text"] or "") if full else truncate_html(content["text"] or "", 256),
         author_username=user.username if user else "", author_display=(user.display_name if user else "") or "",
         author_avatar_url=user.avatar_url if user else None,
         visibility=obj.visibility, created_at=_utc(obj.created_at), lab_id=obj.lab_id,
@@ -471,7 +472,7 @@ async def _attach_notes(db: AsyncSession, card_items: list[FeedItem], limit: int
         select(inner).where(inner.c.rn <= limit).order_by(inner.c.oid, inner.c.rn)
     )).all():
         notes[r.oid].append(FeedNoteOut(
-            id=r.id, title=r.title or "", preview=(r.content or "")[:300],
+            id=r.id, title=r.title or "", preview=truncate_html(r.content, 300),
             author_username=r.username, author_display=r.display or "", created_at=_utc(r.created_at)))
     for it in obs_cards:
         it.note_count = counts.get(it.entity_id, 0)

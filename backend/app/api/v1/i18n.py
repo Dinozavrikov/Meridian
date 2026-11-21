@@ -15,6 +15,7 @@ from app.core.deps import get_current_user, get_current_user_optional
 from app.services.ai import translate_strings
 from app.core.auth_ui_strings import AUTH_UI_STRINGS
 from app.core.client_ip import client_ip
+from app.services.html_translate import mask_html, restore_html
 import time as _time
 from pydantic import BaseModel
 import hashlib
@@ -256,6 +257,7 @@ async def ensure_content_translations(
     result: dict[str, str] = {}
     to_translate: dict[str, str] = {}
     to_translate_items: dict[str, ContentItem] = {}
+    masks: dict[str, list[str]] = {}   # preview_html: теги, вынутые из текста до перевода
 
     for item in items:
         k = _content_key(item.entity_type, item.entity_id, item.field)
@@ -263,7 +265,10 @@ async def ensure_content_translations(
         if row and row.source_hash == hashes[k]:
             result[k] = row.translated_text
         else:
-            to_translate[k] = item.text
+            if item.field == "preview_html":
+                to_translate[k], masks[k] = mask_html(item.text)
+            else:
+                to_translate[k] = item.text
             to_translate_items[k] = item
 
     if to_translate and user is None:
@@ -276,6 +281,7 @@ async def ensure_content_translations(
             _log_translate_failure("ensure-content", locale, len(to_translate), e)
             return EnsureContentResponse(translations=result, missing=list(to_translate))
 
+        translated = {k: (restore_html(v, masks[k]) if k in masks else v) for k, v in translated.items()}
         for k, v in translated.items():
             result[k] = v
 
