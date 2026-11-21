@@ -8,6 +8,8 @@ The project is under active development: some features are unfinished and may no
 
 ## [Unreleased]
 
+## [0.22.16] - 2026-11-22
+
 ### Fixed
 
 - The share image of a public record is drawn again: it answered with an error because its fonts were read in a way the server does not support
