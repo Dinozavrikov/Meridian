@@ -1201,6 +1201,7 @@ export const STRINGS: Record<string, string> = {
   "discussion.deleteConfirm": "Удалить комментарий?",
   "discussion.reply": "Ответить",
   "feedGroups.graphOpen": "Открыть граф связей",
+  "feedGroups.graphOpenCta": "Открыть граф связей",
   "feedGroups.graphModalTitle": "Граф связей",
   "discussion.repost": "Репост",
   "discussion.sentiment": "Настроение обсуждения",

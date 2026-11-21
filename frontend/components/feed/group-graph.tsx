@@ -1,5 +1,6 @@
 "use client"
 import { lazy, Suspense, useState } from "react"
+import { ChevronRight } from "lucide-react"
 import { useT } from "@/lib/i18n/useT"
 import { GRAPH_SIZE, graphModel } from "@/lib/feed-dossier"
 import { plain, type FeedGroup } from "@/lib/feed-groups"
@@ -23,8 +24,7 @@ export function GroupGraph({ group }: { group: FeedGroup }) {
   return (
     <>
       <button type="button" className="mf-graph-open" data-testid="group-graph-open"
-        aria-label={t("feedGroups.graphOpen")} title={t("feedGroups.graphOpen")} onClick={() => setOpen(true)}
-        style={{ background: "none", border: "none", padding: 0, cursor: "pointer", display: "block", color: "inherit", font: "inherit" }}>
+        aria-label={t("feedGroups.graphOpen")} title={t("feedGroups.graphOpen")} onClick={() => setOpen(true)}>
         <svg className="mf-graph" data-testid="group-graph" viewBox={`0 0 ${GRAPH_SIZE} ${GRAPH_SIZE}`}
           width={GRAPH_SIZE} height={GRAPH_SIZE} role="img" aria-label={t("feedGroups.graphLabel", { n: group.size })}>
           <g strokeWidth={2} strokeLinecap="round" fill="none">
@@ -44,6 +44,11 @@ export function GroupGraph({ group }: { group: FeedGroup }) {
           <circle cx={m.core.x} cy={m.core.y} r={17} fill="none" stroke={m.core.fill} strokeOpacity={0.3} />
           <circle data-testid="graph-core" cx={m.core.x} cy={m.core.y} r={m.core.r} fill={m.core.fill} />
         </svg>
+        <span className="mf-graph-cta" data-testid="group-graph-cta" aria-hidden="true">
+          <span className="mf-graph-cta-t">{t("feedGroups.graphOpenCta")}</span>
+          <span className="mf-graph-cta-n">{group.size}</span>
+          <ChevronRight size={16} aria-hidden="true" />
+        </span>
       </button>
       {open && (
         <Modal open onClose={() => setOpen(false)} title={t("feedGroups.graphModalTitle")} size="lg">

@@ -97,7 +97,7 @@ const CARD = `
 .mf-mark{display:grid;flex:none;place-items:center;width:20px;height:20px;border-radius:6px;background:color-mix(in srgb,var(--c) 16%,transparent);color:var(--c)}
 .mf-chip{flex:none;padding:2px 8px;border-radius:999px;background:var(--mf-hover);color:var(--c,var(--mf-t3));font-size:11px}
 .mf-count{display:inline-flex;align-items:center;gap:3px;flex:none;font-family:var(--mf-mono);font-size:11px;color:var(--mf-t4)}
-.mf-graph{align-self:center;color:var(--mf-t3)}
+.mf-graph{align-self:center;color:var(--mf-t3)}.mf-graph-open{display:block;padding:0;border:0;background:none;color:inherit;font:inherit;cursor:pointer}.mf-graph-cta{display:none}
 .mf-link{display:inline-flex;align-items:center;gap:4px;padding:4px 0;border:0;background:none;color:var(--mf-accent);font-size:12.5px;cursor:pointer;text-decoration:none}
 .mf-link:hover{text-decoration:underline}
 .mf-muted{margin:0;font-size:12.5px;color:var(--mf-t4)}
@@ -136,7 +136,7 @@ ${compact(".mf-layout")}
 .mf-card{padding:16px;border-radius:14px}
 .mf-title{font-size:17px}
 .mf-ev{grid-template-columns:minmax(0,1fr)}
-.mf-graph{display:none}
+.mf-graph-open{display:flex;align-items:center;gap:12px;width:100%;min-height:52px;padding:6px 14px 6px 10px;border:1px solid var(--mf-ln1);border-radius:14px;-webkit-tap-highlight-color:transparent;transition:border-color .15s,transform .1s}.mf-graph-open:active{transform:scale(.985);border-color:var(--mf-t3)}.mf-graph-open:focus-visible{outline:2px solid var(--mf-t2);outline-offset:2px}.mf-graph{width:44px;height:44px;flex:none}.mf-graph-cta{display:flex;flex:1;align-items:center;gap:8px;min-width:0;font-size:13.5px;font-weight:600;color:var(--mf-t1)}.mf-graph-cta-t{flex:1;text-align:left}.mf-graph-cta-n{min-width:22px;padding:2px 7px;border-radius:999px;border:1px solid var(--mf-ln1);font-size:11.5px;font-weight:600;text-align:center;color:var(--mf-t3)}
 .mf-lbl{display:none}
 .mf-foot-r{width:100%;margin-left:0}
 }
