@@ -8,6 +8,11 @@ The project is under active development: some features are unfinished and may no
 
 ## [Unreleased]
 
+### Fixed
+
+- The share image of a public record is drawn again: it answered with an error because its fonts were read in a way the server does not support
+- A discussion page rendered while the backend is briefly unavailable is no longer kept without the record text
+
 ## [0.22.15] - 2026-11-22
 
 ### Added
