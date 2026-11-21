@@ -8,6 +8,8 @@ The project is under active development: some features are unfinished and may no
 
 ## [Unreleased]
 
+## [0.22.17] - 2026-11-22
+
 ### Fixed
 
 - Section pages (feed, observations, hypotheses and others) have the page type and a share image with its size in their link previews; before, these tags were missing
