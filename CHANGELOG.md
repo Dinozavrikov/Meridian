@@ -8,6 +8,16 @@ The project is under active development: some features are unfinished and may no
 
 ## [Unreleased]
 
+### Added
+
+- Discussion pages of public records have their own share image with the title and the record type, and structured data for search engines; shared links show a large preview
+- The observations, hypotheses, predictions and beliefs pages have their own title, description and canonical address
+
+### Changed
+
+- The sitemap lists only pages that have text for search engines and public records, without invented modification dates
+- In feed cards the links inside a record text appear right after the page loads, so the server and the browser draw the same markup
+
 ## [0.22.13] - 2026-11-21
 
 ### Fixed
