@@ -8,6 +8,8 @@ The project is under active development: some features are unfinished and may no
 
 ## [Unreleased]
 
+## [0.22.12] - 2026-11-21
+
 ### Fixed
 
 - The graph button in feed cards is visible on phones: it is a full-width row with a caption and a counter instead of a hidden thumbnail
