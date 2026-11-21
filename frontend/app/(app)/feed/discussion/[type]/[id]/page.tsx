@@ -2,6 +2,9 @@ import { fetchEntityGroup } from "@/lib/feed-server"
 import type { FeedGroup } from "@/lib/feed-groups"
 import { DiscussionClient } from "./discussion-client"
 
+// Динамически, как лента: иначе страница, отрисованная в момент сбоя backend, осталась бы в кэше без текста записи.
+export const dynamic = "force-dynamic"
+
 /** Серверная часть страницы обсуждения: забирает группу записи, чтобы ее текст был в HTML.
  *  Для непубличной записи сервер получает 404 и передает null, клиент грузит ее сам, с куками. */
 export default async function DiscussionPage({ params }: { params: Promise<{ type: string; id: string }> }) {
