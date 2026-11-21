@@ -1,5 +1,4 @@
 "use client"
-import { useParams } from "next/navigation"
 import { useQuery } from "@tanstack/react-query"
 import Link from "next/link"
 import { ArrowLeft } from "lucide-react"
@@ -12,17 +11,21 @@ import { safeEntityHref } from "@/lib/entity-routes"
 import { FeedGroupCard } from "@/components/feed/feed-group-card"
 import { FeedStyles } from "@/components/feed/feed-styles"
 import { DiscussionPanel } from "@/components/discussion/discussion-panel"
+import type { FeedGroup } from "@/lib/feed-groups"
 
-/** Страница обсуждения записи: карточка записи целиком (текст, все связи и заметки), под ней обсуждение. */
-export default function DiscussionPage() {
-  const { type, id } = useParams<{ type: string; id: string }>()
+/** Страница обсуждения записи: карточка записи целиком (текст, все связи и заметки), под ней обсуждение.
+ *  initialGroup: группа, отрисованная на сервере (анонимный запрос, только публичная запись). Она нужна,
+ *  чтобы текст записи был в HTML для поисковиков; для человека считается устаревшей и сразу обновляется. */
+export function DiscussionClient({ type, id, initialGroup }: { type: string; id: string; initialGroup: FeedGroup | null }) {
   const entityId = Number(id)
   const t = useT()
 
   const { data: group, isLoading } = useQuery({
-    queryKey: ["feed", "group-entity", type, entityId],   // под префиксом "feed": новый комментарий обновляет и счётчик
+    queryKey: ["feed", "group-entity", type, entityId],   // под префиксом "feed": новый комментарий обновляет и счетчик
     queryFn: () => feedApi.groupEntity(type, entityId),
     retry: false,
+    initialData: initialGroup ?? undefined,
+    initialDataUpdatedAt: 0,   // серверные данные анонимные: показать сразу, но тут же перезапросить с правами человека
   })
   const owner = group?.core?.author_username as string | undefined
 

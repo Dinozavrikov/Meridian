@@ -168,6 +168,7 @@ export function FeedGroupCard({ group, isNew = false, onTopic, full = false }: {
   const coreText = own ? corePreview : ct(core.type, core.entity_id, "preview", corePreview)
   // У записи без заголовка (убеждение) заголовком служит сам текст, абзаца под ним не нужно.
   const heading = coreTitle || coreText
+  const Title = full ? "h1" : "h3"   // у страницы записи заголовок главный, в ленте один из многих
   const leadHtml = live && coreTitle ? bodyHtml(core.type, core.entity_id, core.preview, own) : ""
   const leadStyle: CSSProperties | undefined = full ? { display: "block", WebkitLineClamp: "unset", overflow: "visible" } : undefined
   const notePlain = (n: FeedNote) => {
@@ -256,7 +257,7 @@ export function FeedGroupCard({ group, isNew = false, onTopic, full = false }: {
 
       {core.repost_of ? <RepostQuote repostOf={core.repost_of} /> : null}
 
-      <h3 className="mf-title"><Link href={full ? href : discussionHref}>{heading}</Link></h3>
+      <Title className="mf-title"><Link href={full ? href : discussionHref}>{heading}</Link></Title>
       {coreTitle && coreText && (leadHtml ? (
         <RichHtml html={leadHtml} accent={typeColor[core.type] ?? NEUTRAL} className="mf-lead" style={leadStyle} />
       ) : (

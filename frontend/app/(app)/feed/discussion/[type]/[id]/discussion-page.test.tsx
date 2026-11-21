@@ -1,10 +1,11 @@
 import React from "react"
+import { renderToStaticMarkup } from "react-dom/server"
 import { describe, it, expect, vi, afterEach, beforeEach } from "vitest"
 import { render, screen, cleanup, waitFor } from "@testing-library/react"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { STRINGS } from "@/lib/i18n/strings"
 import { safeEntityHref } from "@/lib/entity-routes"
-import DiscussionPage from "@/app/(app)/feed/discussion/[type]/[id]/page"
+import { DiscussionClient } from "@/app/(app)/feed/discussion/[type]/[id]/discussion-client"
 
 const h = vi.hoisted(() => ({
   store: { user: null as null | { id: number; username: string } },
@@ -67,7 +68,7 @@ const talk = { id: 3, author_username: "guest", stance: "confirm", content: "DIS
 
 function renderPage() {
   const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } })
-  return render(<QueryClientProvider client={qc}><DiscussionPage /></QueryClientProvider>)
+  return render(<QueryClientProvider client={qc}><DiscussionClient type="hypothesis" id="7" initialGroup={null} /></QueryClientProvider>)
 }
 
 beforeEach(() => {
@@ -134,5 +135,20 @@ describe("страница обсуждения: «прочитано»", () => 
     await screen.findByTestId("courtroom")
     await new Promise(r => setTimeout(r, 50))
     expect(h.markSeen).not.toHaveBeenCalled()
+  })
+})
+
+describe("страница обсуждения: серверная отрисовка", () => {
+  const render = (initialGroup: unknown) => renderToStaticMarkup(
+    <QueryClientProvider client={new QueryClient()}>
+      <DiscussionClient type="hypothesis" id="7" initialGroup={initialGroup as never} />
+    </QueryClientProvider>)
+
+  it("с готовой группой карточка записи есть в серверном HTML", () => {
+    expect(render({ core: { author_username: "a", lab_id: null }, members: [] })).toContain('data-testid="card"')
+  })
+
+  it("без группы карточки в серверном HTML нет", () => {
+    expect(render(null)).not.toContain('data-testid="card"')
   })
 })

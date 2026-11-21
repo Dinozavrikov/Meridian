@@ -85,6 +85,6 @@ describe("FeedGroupCard: full (страница обсуждения)", () => {
     cleanup()
     const full = renderCard(true)
     expect(screen.queryByTestId("feed-discussion")).toBeNull()
-    expect(full.container.querySelector("h3 a")?.getAttribute("href")).toBe(safeEntityHref("hypothesis", 1))
+    expect(full.container.querySelector("h1 a")?.getAttribute("href")).toBe(safeEntityHref("hypothesis", 1))
   })
 })
