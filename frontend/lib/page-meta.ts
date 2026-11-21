@@ -8,7 +8,7 @@ export const SITE_NAME = "Meridian"
 export const OG_SIZE = { width: 1200, height: 630 } as const
 
 /** Общая картинка сайта для страниц, у которых нет картинки своей записи. Рисуется на /og. */
-export const SITE_IMAGE = { url: "/og.png", ...OG_SIZE, alt: SITE_NAME } as const
+export const SITE_IMAGE = { url: "/og", ...OG_SIZE, alt: SITE_NAME } as const
 
 const str = (key: string) => (STRINGS as Record<string, string>)[key] ?? ""
 
