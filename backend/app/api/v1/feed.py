@@ -781,8 +781,8 @@ async def public_graph_teaser(db: AsyncSession = Depends(get_db)):
     return {"nodes": nodes, "edges": edges, "approximate": True}
 
 
-# Типы записей для sitemap: у убеждений нет заголовка, их страница обсуждения закрыта от индекса (noindex).
-SITEMAP_TYPES = ("observation", "hypothesis", "prediction", "question", "task")
+# Типы записей для sitemap. У убеждений заголовка нет, заголовком страницы обсуждения служит их текст.
+SITEMAP_TYPES = ("observation", "hypothesis", "prediction", "question", "task", "worldview")
 
 
 @router.get("/public/sitemap")

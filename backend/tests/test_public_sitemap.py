@@ -32,7 +32,6 @@ async def test_only_public_alive_records_are_listed(client):
     assert not ({priv["id"], in_lab["id"], gone["id"]} & ids), "приватная, лабораторная или удаленная запись попала в sitemap"
     assert all(set(x) == {"type", "id", "updated_at"} for x in data), "в перечне только тип, id и время"
     assert "SITEMAP-" not in json.dumps(data), "текст записи попал в перечень"
-    assert all(x["type"] != "worldview" for x in data), "у убеждений нет заголовка, их страница закрыта от индекса"
 
 
 @pytest.mark.asyncio
@@ -45,3 +44,18 @@ async def test_record_made_private_leaves_the_sitemap(client):
     await _set("hypothesis", rec["id"], visibility="private")
     _, after = await _listing(client)
     assert rec["id"] not in after
+
+
+@pytest.mark.asyncio
+async def test_public_worldview_is_listed_and_private_is_not(client):
+    await create_test_user("sitemap_wv")
+    await _login(client, "sitemap_wv")
+    pub = await client.post("/api/v1/worldview/", json={"date": "2026-11-01", "belief": "SITEMAP-WV-PUBLIC", "visibility": "public"})
+    priv = await client.post("/api/v1/worldview/", json={"date": "2026-11-01", "belief": "SITEMAP-WV-PRIVATE", "visibility": "private"})
+    assert pub.status_code in (200, 201), pub.text
+    assert priv.status_code in (200, 201), priv.text
+    data, _ = await _listing(client)
+    ids = {x["id"] for x in data if x["type"] == "worldview"}
+    assert pub.json()["id"] in ids, "публичное убеждение должно быть в перечне"
+    assert priv.json()["id"] not in ids, "приватное убеждение в перечне"
+    assert "SITEMAP-WV" not in json.dumps(data), "текст убеждения попал в перечень"
