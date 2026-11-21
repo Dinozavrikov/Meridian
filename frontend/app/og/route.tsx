@@ -6,5 +6,10 @@ import { renderOgCard } from "@/lib/og-render"
 export const dynamic = "force-static"
 
 export async function GET() {
-  return renderOgCard(ogCard(null, ""))
+  const res = await renderOgCard(ogCard(null, ""))
+  const buffer = await res.arrayBuffer()
+  const headers = new Headers(res.headers)
+  headers.set("Content-Length", buffer.byteLength.toString())
+  headers.set("Cache-Control", "public, max-age=86400, immutable")
+  return new Response(buffer, { headers })
 }
