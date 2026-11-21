@@ -8,6 +8,8 @@ The project is under active development: some features are unfinished and may no
 
 ## [Unreleased]
 
+## [0.22.13] - 2026-11-21
+
 ### Fixed
 
 - Public beliefs without a title are no longer hidden from search engines: the title is taken from the text
