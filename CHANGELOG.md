@@ -8,6 +8,8 @@ The project is under active development: some features are unfinished and may no
 
 ## [Unreleased]
 
+## [0.22.15] - 2026-11-22
+
 ### Added
 
 - The text of a public record is in the server HTML of its discussion page, and the record title is the main heading of the page, so search engines see what the record says
