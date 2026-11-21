@@ -24,10 +24,12 @@ vi.mock("@/lib/i18n/useContentT", () => ({
   useContentT: () => ({ ct: (_a: string, _b: number, _c: string, fb: string) => fb, ensure: vi.fn() }),
 }))
 vi.mock("@/lib/i18n/useDynamicT", () => ({ useDynamicTranslate: () => (s: string) => s }))
-vi.mock("@/lib/api", () => ({
-  obsApi: { delete: vi.fn() }, hypApi: { delete: vi.fn() }, predApi: { delete: vi.fn() }, wvApi: { delete: vi.fn() },
-  questionApi: { delete: vi.fn() }, taskApi: { delete: vi.fn() }, trashApi: { restore: vi.fn() },
-}))
+vi.mock("@/lib/api", async () => {
+  const actual = await vi.importActual<Record<string, unknown>>("@/lib/api")
+  return { ...actual,
+    obsApi: { delete: vi.fn() }, hypApi: { delete: vi.fn() }, predApi: { delete: vi.fn() }, wvApi: { delete: vi.fn() },
+    questionApi: { delete: vi.fn() }, taskApi: { delete: vi.fn() }, trashApi: { restore: vi.fn() } }
+})
 vi.mock("@/lib/confirm", () => ({ askConfirmText: vi.fn() }))
 vi.mock("@/lib/toast", () => ({ toast: vi.fn() }))
 vi.mock("@/components/ui/avatar", () => ({ Avatar: () => null }))

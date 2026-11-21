@@ -9,6 +9,10 @@ import { escapeHtml, sanitizeHtml } from "@/lib/sanitize-html"
 
 const HTML_TAG_RE = /<[a-z][\s\S]*>/i
 
+export function isHtml(raw: string | null | undefined): boolean {
+  return !!raw && HTML_TAG_RE.test(raw)
+}
+
 export function renderableHtml(raw: string | null | undefined): string {
   if (!raw) return ""
   if (HTML_TAG_RE.test(raw)) return resolveHtmlImages(sanitizeHtml(raw))

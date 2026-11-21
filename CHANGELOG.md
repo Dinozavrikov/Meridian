@@ -8,6 +8,25 @@ The project is under active development: some features are unfinished and may no
 
 ## [Unreleased]
 
+### Fixed
+
+- Links inside the text of a record in the feed work again: the card shows the record body and notes with their links instead of stripping them
+- Feed previews are cut by visible text, so a link is no longer lost when the cut falls inside a tag
+
+### Changed
+
+- Translating a record in the feed keeps its links: tags are set aside before the model sees the text and put back from the original, so an address can never be altered by the translation
+
+## [0.22.10] - 2026-11-21
+
+### Fixed
+
+- The client address is read from the proxy header in one place for sign-in sessions, country checks and the guest request limit; the guest limit is now counted per client
+
+### Changed
+
+- The README lists the host requirements and the current stack; the encryption key is generated with `openssl`, so Python is not needed on the host to start the app
+
 ## [0.22.9] - 2026-11-20
 
 ### Fixed

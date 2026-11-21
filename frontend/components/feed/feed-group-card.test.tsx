@@ -38,7 +38,10 @@ vi.mock("@/lib/i18n/useContentT", () => ({
   useContentT: () => ({ ct: (_a: string, _b: number, _c: string, fallback: string) => h.ct.prefix + fallback, ensure: h.ensure }),
 }))
 vi.mock("@/lib/i18n/useDynamicT", () => ({ useDynamicTranslate: () => (s: string) => h.dyn.prefix + s }))
-vi.mock("@/lib/api", () => h.apis)
+vi.mock("@/lib/api", async () => {
+  const actual = await vi.importActual<Record<string, unknown>>("@/lib/api")
+  return { ...actual, ...h.apis }   // карточка зовет resolveHtmlImages через renderableHtml
+})
 vi.mock("@/lib/confirm", () => ({ askConfirmText: h.confirm }))
 vi.mock("@/lib/toast", () => ({ toast: h.toast }))
 vi.mock("@/components/ui/avatar", async () => {
@@ -117,10 +120,10 @@ describe("FeedGroupCard: шапка", () => {
     expect(document.querySelector(".mf-lead")).toBeNull()
   })
 
-  it("есть заголовок и текст: текст идёт абзацем без разметки", () => {
+  it("есть заголовок и текст: текст идет абзацем, безопасная разметка сохраняется", () => {
     const { container } = renderCard(group([], {}, { preview: "<p>только <b>текст</b></p>" }))
     expect(container.querySelector(".mf-lead")!.textContent).toBe("только текст")
-    expect(container.querySelector("b")).toBeNull()
+    expect(container.querySelector(".mf-lead b")?.textContent).toBe("текст")
   })
 
   it("время: сегодня — только время, вчера — с датой, язык интерфейса учитывается", () => {
@@ -274,11 +277,11 @@ describe("FeedGroupCard: заметки, связи вне карточки и �
   const notes = [1, 2, 3].map(i => ({ id: i, title: "", preview: `<p>текст <b>заметки</b> ${i}</p>`,
     author_username: "u", author_display: "Автор", created_at: local(6, 10) }))
 
-  it("у наблюдения: заметки без разметки и «и ещё N»; у других типов заметок нет", () => {
+  it("у наблюдения: заметки с безопасной разметкой и «и еще N»; у других типов заметок нет", () => {
     const { container, unmount } = renderCard(group([], {}, { type: "observation", notes, note_count: 5 }))
     expect(screen.getAllByTestId("feed-note")).toHaveLength(3)
-    expect(screen.getByText(/текст заметки 1/)).not.toBeNull()
-    expect(container.querySelector("b")).toBeNull()
+    expect(container.querySelector(".mf-note-q")!.textContent).toBe("текст заметки 1")
+    expect(container.querySelector(".mf-note-q b")).not.toBeNull()
     expect(within(screen.getByTestId("feed-group-notes")).getByText(tt("feedGroups.notesMore", { n: 2 }))).not.toBeNull()
     unmount()
     renderCard(group([], {}, { notes, note_count: 3 }))
@@ -447,7 +450,7 @@ describe("FeedGroupCard: заметки к наблюдению и перево�
     h.store.user = { username: "me" }
     renderCard(obsGroup("other", [note(5, "other"), note(6, "me")]))
     const sent = sentFor()
-    expect(sent.filter(x => x.entityId === 5).map(x => x.field).sort()).toEqual(["preview", "title"])
+    expect(sent.filter(x => x.entityId === 5).map(x => x.field).sort()).toEqual(["preview_html", "title"])
     expect(sent.some(x => x.entityId === 6)).toBe(false)
   })
 

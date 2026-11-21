@@ -22,6 +22,9 @@ import { RepostQuote } from "@/components/feed/repost-quote"
 import { MaturationStepper } from "@/components/feed/maturation-stepper"
 import { VerifyTrack } from "@/components/feed/verify-track"
 import { GroupGraph } from "@/components/feed/group-graph"
+import { RichHtml } from "@/components/entities/rich-html"
+import { renderableHtml, isHtml } from "@/lib/render-safe-html"
+import { escapeHtml } from "@/lib/sanitize-html"
 import { REL_COLOR, evidenceBalance, nextCheck } from "@/lib/feed-dossier"
 import {
   MEMBERS_COLLAPSED, UPDATED_GAP_MS, plain, relationKind, splitMembers, type FeedGroup, type FeedItem, type FeedNote, type FeedRef, type RelationKind,
@@ -118,14 +121,17 @@ export function FeedGroupCard({ group, isNew = false, onTopic, full = false }: {
       if (isOwn(it)) continue
       if (it.title) items.push({ entityType: it.type, entityId: it.entity_id, field: "title", text: it.title })
       const pv = plain(it.preview)
-      if (pv) items.push({ entityType: it.type, entityId: it.entity_id, field: "preview", text: pv })
+      if (it === core && it.title && isHtml(it.preview)) {   // тело записи со ссылками: переводится вместе с разметкой
+        items.push({ entityType: it.type, entityId: it.entity_id, field: "preview_html", text: it.preview })
+      } else if (pv) items.push({ entityType: it.type, entityId: it.entity_id, field: "preview", text: pv })
     }
     if (core.type === "observation") {   // заметки к наблюдению: переводятся по автору заметки, а не карточки
       for (const n of core.notes ?? []) {
         if (user && user.username === n.author_username) continue
         if (n.title) items.push({ entityType: "obs_post", entityId: n.id, field: "title", text: n.title })
         const pv = plain(n.preview)
-        if (pv) items.push({ entityType: "obs_post", entityId: n.id, field: "preview", text: pv })
+        if (isHtml(n.preview)) items.push({ entityType: "obs_post", entityId: n.id, field: "preview_html", text: n.preview })
+        else if (pv) items.push({ entityType: "obs_post", entityId: n.id, field: "preview", text: pv })
       }
     }
     for (const r of [...group.internal.flatMap(l => [l.a, l.b]), ...group.outside]) {
@@ -139,18 +145,26 @@ export function FeedGroupCard({ group, isNew = false, onTopic, full = false }: {
     if (isOwn(it)) return it.title || plain(it.preview)
     return it.title ? ct(it.type, it.entity_id, "title", it.title) : ct(it.type, it.entity_id, "preview", plain(it.preview))
   }
-  const noteText = (n: FeedNote) => {
-    const pv = plain(n.preview)
-    if (user && user.username === n.author_username) return `${n.title ? `${n.title}. ` : ""}${pv}`
-    const title = n.title ? ct("obs_post", n.id, "title", n.title) : ""
-    return `${title ? `${title}. ` : ""}${pv ? ct("obs_post", n.id, "preview", pv) : ""}`
+  // Текст записи со ссылками: HTML очищается и показывается через RichHtml, простой текст экранируется.
+  const bodyHtml = (type: string, id: number, raw: string, ownRec: boolean) => {
+    if (!raw) return ""
+    if (!isHtml(raw)) return renderableHtml(ownRec ? plain(raw) : ct(type, id, "preview", plain(raw)))
+    return renderableHtml(ownRec ? raw : ct(type, id, "preview_html", raw))
+  }
+  const noteOwn = (n: FeedNote) => !!user && user.username === n.author_username
+  const noteTitle = (n: FeedNote) => (!n.title ? "" : noteOwn(n) ? n.title : ct("obs_post", n.id, "title", n.title))
+  const noteHtml = (n: FeedNote) => {
+    const body = bodyHtml("obs_post", n.id, n.preview, noteOwn(n))
+    const title = noteTitle(n)
+    if (!title) return body
+    return body ? `${escapeHtml(title)}. ${body}` : escapeHtml(title)   // заголовок и текст в одной строке, как раньше
   }
   const coreTitle = own ? core.title : ct(core.type, core.entity_id, "title", core.title)
   const corePreview = plain(core.preview)
   const coreText = own ? corePreview : ct(core.type, core.entity_id, "preview", corePreview)
   // У записи без заголовка (убеждение) заголовком служит сам текст, абзаца под ним не нужно.
   const heading = coreTitle || coreText
-  const lead = coreTitle ? coreText : ""
+  const leadHtml = coreTitle ? bodyHtml(core.type, core.entity_id, core.preview, own) : ""
 
   // Обсуждение живёт на странице дискуссии (общая для публичной записи), а не разворачивается внутри карточки.
   const discussionType = (core.repost_source_type as string | undefined) ?? core.type
@@ -233,11 +247,9 @@ export function FeedGroupCard({ group, isNew = false, onTopic, full = false }: {
       {core.repost_of ? <RepostQuote repostOf={core.repost_of} /> : null}
 
       <h3 className="mf-title"><Link href={full ? href : discussionHref}>{heading}</Link></h3>
-      {lead && (
-        <p className="mf-lead"
-          style={full ? { display: "block", WebkitLineClamp: "unset", overflow: "visible", whiteSpace: "pre-wrap" } : undefined}>
-          {lead}
-        </p>
+      {leadHtml && (
+        <RichHtml html={leadHtml} accent={typeColor[core.type] ?? NEUTRAL} className="mf-lead"
+          style={full ? { display: "block", WebkitLineClamp: "unset", overflow: "visible" } : undefined} />
       )}
 
       {core.type === "observation" && core.status && <div className="mf-stage"><MaturationStepper status={core.status} /></div>}
@@ -289,7 +301,7 @@ export function FeedGroupCard({ group, isNew = false, onTopic, full = false }: {
             <div key={n.id} className="mf-note" data-testid="feed-note">
               <span style={{ color: "var(--mf-t1)", fontWeight: 600 }}>{n.author_display || n.author_username}</span>{" "}
               <span className="mf-time">{timeOf(n.created_at)}</span>
-              <div className="mf-note-q">{noteText(n)}</div>
+              {noteHtml(n) && <RichHtml html={noteHtml(n)} accent={typeColor.observation ?? NEUTRAL} className="mf-note-q" />}
             </div>
           ))}
           {noteCount > notes.length && (

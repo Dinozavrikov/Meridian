@@ -104,7 +104,7 @@ const CARD = `
 .mf-notes{display:flex;flex-direction:column;gap:6px;margin-top:12px;padding:12px 14px;border:1px solid var(--mf-ln1);border-radius:10px}
 .mf-notes-h{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--mf-t3)}
 .mf-note{font-size:12.5px;line-height:1.5;color:var(--mf-t2)}
-.mf-note-q{display:-webkit-box;overflow:hidden;-webkit-box-orient:vertical;-webkit-line-clamp:2}
+.mf-note-q{display:-webkit-box;overflow:hidden;-webkit-box-orient:vertical;-webkit-line-clamp:2}.mf-lead p,.mf-note-q p{margin:0}.mf-note-q>p:first-of-type{display:inline}
 .mf-block{display:flex;align-items:center;flex-wrap:wrap;gap:6px;margin-top:10px;font-size:12px;color:var(--mf-t3)}
 .mf-ref{display:inline-flex;align-items:center;gap:5px;max-width:220px;padding:2px 9px;border:1px solid var(--mf-ln2);border-radius:999px;color:var(--mf-t2);text-decoration:none}
 .mf-ref:hover{border-color:var(--mf-ln3);color:var(--mf-t1)}
