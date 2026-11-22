@@ -8,6 +8,18 @@ The project is under active development: some features are unfinished and may no
 
 ## [Unreleased]
 
+### Added
+
+- Sign-in and password reset attempts are limited by address, by name and by e-mail; after too many attempts a message asks to try again later, and a stranger from another address cannot lock the owner out
+
+### Fixed
+
+- The forgot-password page no longer says the e-mail was sent when the attempt limit is reached
+
+### Changed
+
+- The architecture notes describe the client address, feed previews, translation of record text with links and search sharing, and their guard test no longer finds names in the document itself
+
 ## [0.22.18] - 2026-11-22
 
 ### Fixed
