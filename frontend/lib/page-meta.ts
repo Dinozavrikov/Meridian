@@ -7,8 +7,8 @@ export const SITE_NAME = "Meridian"
 /** Размер картинки для соцсетей. Единственное место: картинки записей и сайта берут его отсюда. */
 export const OG_SIZE = { width: 1200, height: 630 } as const
 
-/** Общая картинка сайта для страниц, у которых нет картинки своей записи. Рисуется на /og. */
-export const SITE_IMAGE = { url: "/og.png", ...OG_SIZE, alt: SITE_NAME } as const
+/** Общая картинка сайта для страниц без картинки своей записи: app/opengraph-image.tsx (лого и подпись). */
+export const SITE_IMAGE = { url: "/opengraph-image", ...OG_SIZE, alt: SITE_NAME } as const
 
 const str = (key: string) => (STRINGS as Record<string, string>)[key] ?? ""
 

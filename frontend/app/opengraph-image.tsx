@@ -1,8 +1,9 @@
 import { ImageResponse } from "next/og"
+import { ogFonts } from "@/lib/og-fonts"
+import { OG_SIZE, SITE_NAME } from "@/lib/page-meta"
 
-export const runtime = "edge"
-export const alt = "Meridian"
-export const size = { width: 1200, height: 630 }
+export const alt = SITE_NAME
+export const size = OG_SIZE
 export const contentType = "image/png"
 
 export default async function OGImage() {
@@ -11,7 +12,7 @@ export default async function OGImage() {
       <div style={{
         width: "100%", height: "100%", display: "flex", flexDirection: "column",
         alignItems: "center", justifyContent: "center",
-        background: "#0b0d14", position: "relative",
+        background: "#0b0d14", position: "relative", fontFamily: "PT Serif",
       }}>
         <div style={{
           position: "absolute", inset: 0,
@@ -22,7 +23,7 @@ export default async function OGImage() {
             <path d="M6.5 1L12 6.5L6.5 12L1 6.5L6.5 1Z" stroke="#4A90D9" strokeWidth="1" fill="none" />
             <path d="M6.5 3.5L9.5 6.5L6.5 9.5L3.5 6.5L6.5 3.5Z" fill="#4A90D930" stroke="#4A90D960" strokeWidth="0.6" />
           </svg>
-          <div style={{ display: "flex", fontSize: 64, fontWeight: 800, color: "#f2efe9", letterSpacing: "-0.02em" }}>
+          <div style={{ display: "flex", fontSize: 64, fontWeight: 700, color: "#f2efe9", letterSpacing: "-0.02em" }}>
             MER<span style={{ color: "#4dcfa6" }}>I</span>DIAN
           </div>
         </div>
@@ -31,6 +32,6 @@ export default async function OGImage() {
         </div>
       </div>
     ),
-    { ...size }
+    { ...size, fonts: await ogFonts() }
   )
 }

@@ -1,5 +1,7 @@
 import { describe, it, expect } from "vitest"
-import { SITE_NAME } from "@/lib/page-meta"
+import { existsSync } from "node:fs"
+import { join } from "node:path"
+import { SITE_IMAGE, SITE_NAME } from "@/lib/page-meta"
 import { metadata as feed } from "@/app/(app)/feed/layout"
 import { metadata as docs } from "@/app/(app)/docs/layout"
 import { metadata as features } from "@/app/(app)/features/layout"
@@ -34,14 +36,22 @@ describe("метаданные разделов", () => {
 
 describe("превью для соцсетей у разделов", () => {
   it.each(Object.entries(pages))("%s: есть og:type и картинка с размерами, Twitter с большой картинкой", (_name, m) => {
-    expect(m.openGraph).toMatchObject({ type: "website", images: [{ url: "/og.png", width: 1200, height: 630 }] })
-    expect(m.twitter).toMatchObject({ card: "summary_large_image", images: ["/og.png"] })
+    expect(m.openGraph).toMatchObject({ type: "website", images: [{ url: SITE_IMAGE.url, width: 1200, height: 630 }] })
+    expect(m.twitter).toMatchObject({ card: "summary_large_image", images: [SITE_IMAGE.url] })
   })
 })
 
 describe("превью для соцсетей у разделов", () => {
   it.each(Object.entries(pages))("%s: есть og:type и картинка с размерами, Twitter с большой картинкой", (_name, m) => {
-    expect(m.openGraph).toMatchObject({ type: "website", images: [{ url: "/og.png", width: 1200, height: 630 }] })
-    expect(m.twitter).toMatchObject({ card: "summary_large_image", images: ["/og.png"] })
+    expect(m.openGraph).toMatchObject({ type: "website", images: [{ url: SITE_IMAGE.url, width: 1200, height: 630 }] })
+    expect(m.twitter).toMatchObject({ card: "summary_large_image", images: [SITE_IMAGE.url] })
+  })
+})
+
+describe("общая картинка сайта", () => {
+  it("адрес ведет на настоящий файл или маршрут картинки, а не в пустоту", () => {
+    const name = SITE_IMAGE.url.replace(/^\//, "")
+    const exists = existsSync(join(process.cwd(), "app", `${name}.tsx`)) || existsSync(join(process.cwd(), "public", name))
+    expect(exists).toBe(true)
   })
 })
