@@ -28,6 +28,17 @@ class Settings(BaseSettings):
     TURNSTILE_SECRET_KEY: str = ""
     MESSAGE_ENCRYPTION_KEY: str
     COOKIE_SECURE: str = ""  # "true"/"false"; пусто = автоматически: Secure включен при ENVIRONMENT=production (за HTTPS так и нужно)
+    # Ограничение частоты (core/rate_limit.py): число обращений за окно в секундах.
+    RATE_LIMIT_LOGIN_IP: int = 30
+    RATE_LIMIT_LOGIN_IP_WINDOW: int = 600
+    RATE_LIMIT_LOGIN_PAIR: int = 10       # неудачных входов под одним именем с одного адреса: его запирает только свой адрес
+    RATE_LIMIT_LOGIN_PAIR_WINDOW: int = 900
+    RATE_LIMIT_LOGIN_USER: int = 100      # неудач под одним именем со всех адресов вместе: потолок против распределенного подбора
+    RATE_LIMIT_LOGIN_USER_WINDOW: int = 3600
+    RATE_LIMIT_RESET_IP: int = 10
+    RATE_LIMIT_RESET_IP_WINDOW: int = 3600
+    RATE_LIMIT_RESET_EMAIL: int = 3
+    RATE_LIMIT_RESET_EMAIL_WINDOW: int = 3600
 
     @property
     def cors_origins(self) -> List[str]:

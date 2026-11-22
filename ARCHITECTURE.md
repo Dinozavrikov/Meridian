@@ -164,6 +164,10 @@ Alembic. `migrate_with_lock.py` wraps `alembic upgrade head` in advisory lock. `
 
 Feed cards carry a preview of the record text, which is HTML from the editor. `services/html_truncate.py::truncate_html` cuts it by visible text, not by characters of markup, so a link is never lost to a cut inside a tag and a long address does not eat the budget. The full text is sent only for a single record page.
 
+### 3.13 Rate limiting
+
+`core/rate_limit.py` counts requests per window in Redis. The counter and its expiry are set in one script, so a key can never be left without a lifetime. Sign-in is limited by address, by the pair of name and address, and by name alone: a stranger from another address cannot lock the owner out, while a guessing run spread over many addresses still meets the per-name ceiling. Password reset is limited by address and by e-mail, and unknown e-mails are counted too, so the answer does not reveal which accounts exist. Names and e-mails are stored as hashes. The thresholds are settings (`RATE_LIMIT_LOGIN_PAIR` and its neighbors in `core/config.py`). If Redis is unavailable, requests pass and a warning is logged, in line with the failure table below.
+
 ---
 ## 4. Data model
 
@@ -231,7 +235,7 @@ See §3.7.
 | Failure | Handling |
 |---|---|
 | Ollama down | 503, app runs |
-| Redis down | Silent degradation |
+| Redis down | Silent degradation; rate limits are not applied and a warning is logged |
 | PostgreSQL down | 500 |
 | Turnstile down | **Fail-closed** (sign-up blocked) |
 | GeoIP missing | **Fail-open** (country unknown) |
@@ -270,7 +274,8 @@ Backups: `scripts/backup/` with age-encryption. You supply your own age public k
 ## 11. Known limitations
 
 - **No CI** (manual bash tests).
-- **No app-level rate limit** for login (only Turnstile under Caddy).
+- **Sign-up has no app-level rate limit**: only the proxy and Turnstile stand in front of it.
+- **Two older counters** in the contradiction and question endpoints set the expiry in a separate call, so a crash between the two calls can leave a key without a lifetime. They should move to `core/rate_limit.py`.
 - **`/i18n/ensure` rate limit in-memory**.
 - **`EncryptedText` returns ciphertext** silently.
 - **`_generate_username_from_email` race condition** (500 instead of friendly error).

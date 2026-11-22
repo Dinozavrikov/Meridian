@@ -1,4 +1,5 @@
 from app.core.client_ip import client_ip
+from app.core.rate_limit import enforce, ensure_not_blocked, forget, record_failure, subject_key
 from app.core.prediction_status import OPEN_PREDICTION_STATUS
 from app.schemas._strict import StrictIn, Short16, Short32, Short128, Short255, LongText, Visibility
 import re
@@ -194,6 +195,13 @@ async def register(body: RegisterRequest, request: Request, response: Response, 
 
 @router.post("/login", response_model=UserOut)
 async def login(body: LoginRequest, request: Request, response: Response, db: AsyncSession = Depends(get_db)):
+    ip = client_ip(request)
+    await enforce("login-ip", ip, settings.RATE_LIMIT_LOGIN_IP, settings.RATE_LIMIT_LOGIN_IP_WINDOW)
+    user_key = subject_key(body.username)
+    pair_key = subject_key(f"{body.username}\n{ip}")
+    await ensure_not_blocked("login-pair", pair_key, settings.RATE_LIMIT_LOGIN_PAIR)
+    await ensure_not_blocked("login-user", user_key, settings.RATE_LIMIT_LOGIN_USER)
+
     # Обычный поиск по username.
     result = await db.execute(select(User).where(User.username == body.username))
     user = result.scalar_one_or_none()
@@ -208,12 +216,13 @@ async def login(body: LoginRequest, request: Request, response: Response, db: As
         )
         user = result.scalar_one_or_none()
 
-    if not user:
+    if not user or not user.password_hash or not verify_password(body.password, user.password_hash):
+        await record_failure("login-pair", pair_key, settings.RATE_LIMIT_LOGIN_PAIR_WINDOW)
+        await record_failure("login-user", user_key, settings.RATE_LIMIT_LOGIN_USER_WINDOW)
         raise HTTPException(status_code=401, detail="Неверные данные")
 
-    if not user.password_hash or not verify_password(body.password, user.password_hash):
-        raise HTTPException(status_code=401, detail="Неверные данные")
-
+    await forget("login-pair", pair_key)
+    await forget("login-user", user_key)
     await _issue_tokens(response, user, request, db)
     return user
 
@@ -328,11 +337,14 @@ async def change_password(body: PasswordChange, user: User = Depends(get_current
 
 
 @router.post("/forgot-password")
-async def forgot_password(body: ForgotPasswordRequest, db: AsyncSession = Depends(get_db)):
+async def forgot_password(body: ForgotPasswordRequest, request: Request, db: AsyncSession = Depends(get_db)):
     """
     Всегда возвращает {"ok": True} независимо от того, найден ли email —
     иначе ответ раскрывал бы существование аккаунта перебором почт.
     """
+    # Считаются все запросы, в том числе с неизвестной почтой: так ответ не выдает, есть ли такой аккаунт.
+    await enforce("forgot-ip", client_ip(request), settings.RATE_LIMIT_RESET_IP, settings.RATE_LIMIT_RESET_IP_WINDOW)
+    await enforce("forgot-email", subject_key(body.email), settings.RATE_LIMIT_RESET_EMAIL, settings.RATE_LIMIT_RESET_EMAIL_WINDOW)
     user = (await db.execute(select(User).where(User.email == body.email))).scalar_one_or_none()
     if user:
         if user.password_hash is None:
@@ -385,7 +397,8 @@ async def forgot_password(body: ForgotPasswordRequest, db: AsyncSession = Depend
 
 
 @router.post("/reset-password")
-async def reset_password(body: ResetPasswordRequest, db: AsyncSession = Depends(get_db)):
+async def reset_password(body: ResetPasswordRequest, request: Request, db: AsyncSession = Depends(get_db)):
+    await enforce("reset-ip", client_ip(request), settings.RATE_LIMIT_RESET_IP, settings.RATE_LIMIT_RESET_IP_WINDOW)
     token_hash = hashlib.sha256(body.token.encode()).hexdigest()
     now = datetime.now(timezone.utc)
     rt = (await db.execute(

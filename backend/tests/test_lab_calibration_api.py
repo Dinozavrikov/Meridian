@@ -15,11 +15,16 @@ from tests.conftest import add_lab_member, create_test_user
 # Минимальный валидный PNG (1x1, прозрачный) — реальная загрузка через POST /users/me/avatar,
 # не JSON-заглушка (см. обсуждение: тест должен проверять реальное поведение, а не только
 # текстовый маркер/наличие поля в схеме).
-_TINY_PNG = bytes.fromhex(
-    "89504e470d0a1a0a0000000d494844440000000100000001080600000"
-    "01f15c4890000000a49444154789c6360000002000155a9f5c9000000"
-    "0049454e44ae426082"
-)
+def _make_tiny_png() -> bytes:
+    """Настоящий PNG: загрузка аватара теперь проверяет, что файл читается как изображение."""
+    import io
+    from PIL import Image
+    buf = io.BytesIO()
+    Image.new("RGB", (8, 8), (30, 120, 200)).save(buf, "PNG")
+    return buf.getvalue()
+
+
+_TINY_PNG = _make_tiny_png()
 
 
 async def _login(client, username, password="pass12345"):

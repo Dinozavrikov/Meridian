@@ -159,3 +159,30 @@ async def test_user(db_session):
     await db_session.commit()
     await db_session.refresh(user)
     yield user
+
+
+@pytest_asyncio.fixture(autouse=True)
+async def _clear_rate_limits():
+    """Свежий пул соединений Redis на каждый тест и пустые счетчики ограничения частоты.
+
+    Глобальный клиент приложения держит соединения, привязанные к циклу событий того теста, где они созданы;
+    цикл закрывается вместе с тестом, и следующий тест получил бы соединение с чужим закрытым циклом
+    (RuntimeError, а в лимитере молчаливый пропуск запроса). Старый пул не закрываем: его транспорты
+    принадлежат мертвому циклу, закрытие дало бы ту же ошибку. Счетчики rl:* чистим, иначе сотни входов
+    с одного адреса за прогон набора упирались бы в лимит."""
+    from redis.asyncio import ConnectionPool
+    from app.core.config import settings
+    from app.db.redis import redis_client
+    pool = ConnectionPool.from_url(settings.REDIS_URL, decode_responses=True)
+    redis_client.connection_pool = pool
+    try:
+        keys = [k async for k in redis_client.scan_iter("rl:*")]
+        if keys:
+            await redis_client.delete(*keys)
+    except Exception:
+        pass
+    yield
+    try:
+        await pool.disconnect()
+    except Exception:
+        pass
