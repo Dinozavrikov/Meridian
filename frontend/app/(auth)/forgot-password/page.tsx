@@ -8,6 +8,7 @@ import { v2, theme } from "@/lib/theme"
 import { AuthVisual } from "@/components/auth/auth-visual"
 import { useDynamicTranslate } from "@/lib/i18n/useDynamicT"
 import { collectStrings } from "@/lib/i18n/collect-strings"
+import { RATE_LIMITED_MESSAGE } from "@/lib/auth-messages"
 
 const PAGE_STRINGS = [
   "От догадки — к уверенности",
@@ -17,6 +18,7 @@ const PAGE_STRINGS = [
   "Отправка...", "Отправить ссылку",
   "Если аккаунт с таким email существует, письмо со ссылкой для сброса пароля уже отправлено. Проверьте почту (и папку «Спам»).",
   "Вернуться ко входу",
+  RATE_LIMITED_MESSAGE,
 ]
 
 export default function ForgotPasswordPage() {
@@ -26,19 +28,23 @@ export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("")
   const [loading, setLoading] = useState(false)
   const [sent, setSent] = useState(false)
+  const [error, setError] = useState("")
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault()
+    setError("")
     setLoading(true)
     try {
       await authApi.forgotPassword(email)
-    } finally {
-      // Один и тот же результат независимо от ответа сервера — бэкенд и так
-      // не раскрывает, существует ли аккаунт (см. forgot_password в auth.py),
-      // а тут дублируем ту же осторожность на случай сетевой ошибки: не
-      // показываем разницу между "не нашли" и "не достучались до сервера".
-      setLoading(false)
       setSent(true)
+    } catch (err: any) {
+      // Лимит попыток: письмо не уйдет, и человеку надо об этом знать (счетчик считает и неизвестные почты,
+      // так что ответ 429 не раскрывает, существует ли аккаунт). Любой другой сбой показывает тот же
+      // осторожный результат, что и успех: бэкенд не раскрывает существование аккаунта, и здесь тоже нет разницы.
+      if (err?.response?.status === 429) setError(dt(RATE_LIMITED_MESSAGE))
+      else setSent(true)
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -83,6 +89,7 @@ export default function ForgotPasswordPage() {
                 autoComplete="email"
                 required
               />
+              {error && <p className="text-xs text-[#E74C3C]" role="alert">{error}</p>}
               <Button variant="primary" className="w-full mt-1" disabled={loading}>
                 {loading ? dt("Отправка...") : dt("Отправить ссылку")}
               </Button>

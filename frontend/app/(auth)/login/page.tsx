@@ -11,6 +11,7 @@ import { AuthVisual } from "@/components/auth/auth-visual"
 import { useDynamicTranslate } from "@/lib/i18n/useDynamicT"
 import { collectStrings } from "@/lib/i18n/collect-strings"
 import { apiErrorMessage } from "@/lib/api-error"
+import { RATE_LIMITED_MESSAGE } from "@/lib/auth-messages"
 
 const PAGE_STRINGS = [
   "От догадки — к уверенности",
@@ -26,6 +27,7 @@ const PAGE_STRINGS = [
   "Войти через Google",
   "Авторизация через Google недоступна для пользователей из Российской Федерации в соответствии с требованиями законодательства РФ.",
   "Геоданные IP предоставлены",
+  RATE_LIMITED_MESSAGE,
 ]
 
 export default function LoginPage() {
@@ -54,7 +56,7 @@ export default function LoginPage() {
       setUser(u)
       router.push("/dashboard")
     } catch (e: any) {
-      setError(apiErrorMessage(e, dt("Ошибка входа")))
+      setError(e?.response?.status === 429 ? dt(RATE_LIMITED_MESSAGE) : apiErrorMessage(e, dt("Ошибка входа")))
     } finally {
       setLoading(false)
     }

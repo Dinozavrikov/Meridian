@@ -10,6 +10,7 @@ import { AuthVisual } from "@/components/auth/auth-visual"
 import { useDynamicTranslate } from "@/lib/i18n/useDynamicT"
 import { collectStrings } from "@/lib/i18n/collect-strings"
 import { apiErrorMessage } from "@/lib/api-error"
+import { RATE_LIMITED_MESSAGE } from "@/lib/auth-messages"
 
 const PAGE_STRINGS = [
   "От догадки — к уверенности",
@@ -24,6 +25,7 @@ const PAGE_STRINGS = [
   "Ссылка недействительна или истекла",
   "Ссылка для сброса пароля недействительна, уже использована, или истек 15-минутный срок ее действия. Запросите новую.",
   "Запросить новую ссылку",
+  RATE_LIMITED_MESSAGE,
 ]
 
 function ResetPasswordForm() {
@@ -60,7 +62,7 @@ function ResetPasswordForm() {
       if (e?.response?.status === 400) {
         setInvalidToken(true)
       } else {
-        setError(apiErrorMessage(e, dt("Ссылка недействительна или истекла")))
+        setError(e?.response?.status === 429 ? dt(RATE_LIMITED_MESSAGE) : apiErrorMessage(e, dt("Ссылка недействительна или истекла")))
       }
     } finally {
       setLoading(false)
