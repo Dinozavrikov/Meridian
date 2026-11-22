@@ -16,14 +16,20 @@ function walk(dir: string, out: string[] = []): string[] {
   return out
 }
 
-let cache: { paths: string[]; corpus: string } | null = null
+const DOC = "ARCHITECTURE.md"
+let cache: { paths: string[]; corpusPaths: string[]; corpus: string } | null = null
 function index() {
   if (!cache) {
     const files = walk(REPO)
-    cache = { paths: files.map(f => f.slice(REPO.length + 1)), corpus: files.map(f => readFileSync(f, "utf-8")).join("\n").toLowerCase() }
+    const rel = (f: string) => f.slice(REPO.length + 1)
+    // Сам документ не источник своих ссылок: иначе любое слово в нем нашло бы себя, и проверка ничего бы не ловила.
+    const sources = files.filter(f => rel(f) !== DOC)
+    cache = { paths: files.map(rel), corpusPaths: sources.map(rel), corpus: sources.map(f => readFileSync(f, "utf-8")).join("\n").toLowerCase() }
   }
   return cache
 }
+
+export const corpusPaths = () => index().corpusPaths
 
 const isCodeName = (t: string) => /^[A-Za-z_][A-Za-z0-9_]*$/.test(t) && (/_/.test(t) || /[a-z][A-Z]/.test(t) || /^[A-Z]{3,}$/.test(t))
 const isFilePath = (t: string) => /^[\w./-]+\.(py|ts|tsx|sh|yml|md|json)$/.test(t) || t === "Caddyfile"

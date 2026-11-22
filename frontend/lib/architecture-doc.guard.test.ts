@@ -2,7 +2,7 @@
 import { describe, expect, it } from "vitest"
 import { readFileSync } from "node:fs"
 import { resolve } from "node:path"
-import { missingReferences, volatileNumbers, REPO } from "@/lib/test-utils/architecture-doc"
+import { missingReferences, volatileNumbers, corpusPaths, REPO } from "@/lib/test-utils/architecture-doc"
 
 const text = readFileSync(resolve(REPO, "ARCHITECTURE.md"), "utf-8")
 
@@ -22,6 +22,10 @@ describe("ARCHITECTURE.md", () => {
   })
   it("все идентификаторы и файлы, на которые он ссылается, есть в репозитории", () => {
     expect(missingReferences(text)).toEqual([])
+  })
+  it("сам документ не входит в источники своих ссылок", () => {
+    expect(corpusPaths()).not.toContain("ARCHITECTURE.md")
+    expect(corpusPaths()).toContain("backend/app/main.py")
   })
   it("проверка ссылок ловит несуществующее", () => {
     const fake = ["NO", "SUCH", "THING", "ZZ"].join("_")

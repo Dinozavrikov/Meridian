@@ -1,6 +1,6 @@
 # Meridian — Architecture
 
-> **Status:** living document, last reviewed 2026-11-18.
+> **Status:** living document, last reviewed 2026-11-22.
 > **Scope:** how Meridian is put together — components, responsibilities, invariants, tradeoffs.
 > **Out of scope:** per-endpoint API reference (FastAPI serves it at `/api/docs`), prompt engineering (see `backend/docs/LLM_ROUTING.md`), backup procedures (see `backend/docs/BACKUP.md`), access policy rules (see `backend/docs/ACCESS_POLICY.md`), changelog (see `CHANGELOG.md`).
 > **How to keep this accurate:** see §15.
@@ -137,6 +137,8 @@ Two pipelines.
 Server: `/i18n/ensure` and `/i18n/ensure-content`. Whitelist `_ROWS` in `translatable_fields.py`. `ensure_ui_translations` is the shared core of the endpoint and of `scripts/warm_i18n.py`. A guest gets ready translations from the cache only and never makes the model work, except for the strings in `AUTH_UI_STRINGS`, which are rate-limited in memory. A new language is therefore filled by a signed-in user or by the warm-up script, not by guests.
 
 Frontend: `lib/i18n/` with `chunked-loader`, `useT`, `useContentT`, `useDynamicT`. The loader sends strings in sequential batches: keys the screen already asked for through `useT` go first, and a batch is capped by text volume (`CHUNK_MAX_CHARS`) because the reverse proxy cuts a request after a minute. `translationScope: "content"` is placeholder.
+
+Record text with links is translated as the field `preview_html`. `services/html_translate.py` replaces every tag with a numbered marker before the model sees the text and puts the tags back from the original afterwards, so an address can never be changed by the translation. If a marker is lost, duplicated or the model adds markup of its own, the translation falls back to plain text without links. The translation mode is kept in the browser (`restoreTranslationScope` in `store.ts`). `useT` does not read it, so the interface follows the language alone, and only the content hook honors the mode. Statuses stored with the letter yo are shown without it through `useDynamicT` with the option `noYo`.
 ### 3.8 AI / LLM routing
 
 `llm_router.py` routes 5 tasks (`translate`, `analysis`, `reflection`, `vision`, `embedding`) with budget-aware truncation (`_water_fill`, `fit_texts`).
@@ -153,6 +155,14 @@ Local Ollama only. Without it, app runs, AI features unavailable.
 ### 3.10 Database migrations
 
 Alembic. `migrate_with_lock.py` wraps `alembic upgrade head` in advisory lock. `create_all()` deliberately removed.
+
+### 3.11 Client address
+
+`core/client_ip.py::client_ip` is the only place that reads the client address: country checks, sign-in session records and the guest rate limit all use it. It trusts `X-Real-IP`, so the proxy must overwrite that header with the client address, and the backend port must not be reachable around the proxy. Reading the connection address directly would give the address of the proxy for every client.
+
+### 3.12 Feed previews
+
+Feed cards carry a preview of the record text, which is HTML from the editor. `services/html_truncate.py::truncate_html` cuts it by visible text, not by characters of markup, so a link is never lost to a cut inside a tag and a long address does not eat the budget. The full text is sent only for a single record page.
 
 ---
 ## 4. Data model
@@ -190,7 +200,16 @@ See §3.7.
 `entities/`, `ui/`, `labs/`, `layout/`, `feed/`, etc. under `frontend/components/`.
 
 ### 5.6 Guard tests
-`*.guard.test.ts` — no hardcoded ru, no native alerts, no trackers, etc.
+`*.guard.test.ts` — no hardcoded ru, no native alerts, no trackers, etc. `html-sinks.test.ts` allows `dangerouslySetInnerHTML` only with sanitized HTML (`sanitizeHtml`, `renderableHtml`) or `safeJsonLd`.
+
+### 5.7 Search and sharing
+
+- The language is not part of the URL: interface language and content language are switched independently, and a record has one canonical address.
+- Public pages with server text are listed in `PRERENDERED_PATHS` (`guest-access.ts`). `sitemap.ts` lists exactly those plus public records from `/feed/public/sitemap`. Client-only lists, sign-in pages and pages closed in `robots.ts` are not listed.
+- The discussion page is split in two: `page.tsx` is a server component that fetches the record group with `fetchEntityGroup` and passes it to `discussion-client.tsx` as initial data, so the record text is in the server HTML. The data is anonymous, so it is marked stale and refetched with the rights of the person. A record the guest cannot see gives `null`, and the client loads it itself.
+- `generateMetadata` in the discussion layout builds the title, description and OpenGraph from the record. Only a public record is indexable, and the author is never put into metadata. `articleJsonLd` builds the structured data and `safeJsonLd` is the only serializer allowed inside a script tag.
+- Section pages use `pageMetadata`: title, description, canonical address and share tags come from one place. The share image of a record is `opengraph-image.tsx` next to the discussion page and draws text only for a public record. The site image is `app/opengraph-image.tsx`. Fonts are read from `assets/fonts` through `ogFonts`, because a `fetch` of a file address does not work in the server runtime.
+- Link text inside feed cards appears after mount. The server has no DOM and cleans HTML differently, so the first render is plain text (`useSyncExternalStore` with a server value) and the markup of the server and the browser stay equal.
 
 ---
 ## 6. Cross-cutting invariants
@@ -232,6 +251,7 @@ Backups: `scripts/backup/` with age-encryption. You supply your own age public k
 - **Backend**: pytest + real PostgreSQL + real Ollama.
 - **Frontend**: vitest + Playwright.
 - **Infra**: bash scripts in `scripts/`. **No GitHub Actions**.
+- **Routes**: tests walk the routes through `iter_api_routes` (`tests/route_utils.py`), because FastAPI wraps included routers.
 
 ## 10. Design tradeoffs
 
@@ -254,12 +274,13 @@ Backups: `scripts/backup/` with age-encryption. You supply your own age public k
 - **`/i18n/ensure` rate limit in-memory**.
 - **`EncryptedText` returns ciphertext** silently.
 - **`_generate_username_from_email` race condition** (500 instead of friendly error).
-- **`translationScope: "content"` placeholder**.
+- **`translationScope: "content"` is a placeholder**: only the content hook reads the scope, the interface follows the language alone.
 - **`/api/health` reports a hardcoded version `1.0.0`**, unrelated to the product version.
 - **`API_BASE_URL` default `localhost:8000`**.
 - **`Result` outside event log.** `DELETE` uses `db.delete(res)`. Cascade doesn't run (`Result` not in `ENTITY_MODELS`). `EntityMention` cleanup expected by test but not visible. Needs attention.
 - **`_ENTITY_MODELS` duplicated** in `recheck_worker.py` and `contradiction_recheck.py`.
 - **`print()` instead of `logger`** in workers.
+- **Translation of record text with links is best effort**: when the model loses a marker, the translation keeps the text and drops the links.
 
 ---
 ## 12. Contributor recipes
