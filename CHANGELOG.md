@@ -8,6 +8,8 @@ The project is under active development: some features are unfinished and may no
 
 ## [Unreleased]
 
+## [0.22.18] - 2026-11-22
+
 ### Fixed
 
 - Link previews of section pages use the site image with the logo and the caption instead of a plain one-word card
