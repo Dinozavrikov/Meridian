@@ -98,3 +98,22 @@ def save_processed(processed: ProcessedImage, directory: str) -> tuple[str, str]
     with open(os.path.join(directory, thumb_filename), "wb") as f:
         f.write(processed.thumb_bytes)
     return filename, thumb_filename
+
+
+AVATAR_DIM = 512        # аватар показывается кружком в десятки пикселей; 512 хватает для любых экранов
+QUALITY_AVATAR = 85
+
+
+def process_avatar(raw: bytes) -> bytes:
+    """Аватар: поворот по EXIF, ресайз по большей стороне до AVATAR_DIM (маленькие не увеличиваются),
+    WebP. ValueError, если это не изображение: тип из заголовка клиента ничего не доказывает."""
+    try:
+        img = ImageOps.exif_transpose(Image.open(io.BytesIO(raw)))
+        if img.mode not in ("RGB", "RGBA"):
+            img = img.convert("RGBA" if img.mode in ("LA", "P", "PA") else "RGB")
+        img = _resize_to_fit(img, AVATAR_DIM)
+        buf = io.BytesIO()
+        img.save(buf, "WEBP", quality=QUALITY_AVATAR, method=4)
+    except Exception as e:  # битый файл, неизвестный формат, слишком большая картинка
+        raise ValueError("не удалось прочитать изображение") from e
+    return buf.getvalue()

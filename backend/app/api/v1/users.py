@@ -344,6 +344,8 @@ import os
 import uuid
 from fastapi import UploadFile, File
 from app.schemas.auth import UserOut
+from starlette.concurrency import run_in_threadpool
+from app.services.image_processing import process_avatar
 
 AVATAR_DIR = "uploads/avatars"
 ALLOWED_TYPES = {"image/jpeg": "jpg", "image/png": "png", "image/webp": "webp"}
@@ -359,6 +361,12 @@ async def upload_avatar(file: UploadFile = File(...), user: User = Depends(get_c
     if len(data) > MAX_AVATAR_SIZE:
         raise HTTPException(400, "Файл больше 5 МБ")
 
+    # Сначала обработка: так битый файл не удалит прежний аватар, а на диск попадает только маленький WebP.
+    try:
+        data = await run_in_threadpool(process_avatar, data)
+    except ValueError:
+        raise HTTPException(400, "Не удалось прочитать изображение")
+
     os.makedirs(AVATAR_DIR, exist_ok=True)
 
     if user.avatar_url:
@@ -366,7 +374,7 @@ async def upload_avatar(file: UploadFile = File(...), user: User = Depends(get_c
         if os.path.isfile(old_path):
             os.remove(old_path)
 
-    ext = ALLOWED_TYPES[file.content_type]
+    ext = "webp"   # после обработки это всегда WebP, какой бы тип ни прислал клиент
     filename = f"{user.id}_{uuid.uuid4().hex}.{ext}"
     filepath = f"{AVATAR_DIR}/{filename}"
     with open(filepath, "wb") as f:
