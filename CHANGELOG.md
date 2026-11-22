@@ -8,6 +8,8 @@ The project is under active development: some features are unfinished and may no
 
 ## [Unreleased]
 
+## [0.22.19] - 2026-11-23
+
 ### Added
 
 - Sign-in and password reset attempts are limited by address, by name and by e-mail; after too many attempts a message asks to try again later, and a stranger from another address cannot lock the owner out
