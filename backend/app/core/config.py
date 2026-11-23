@@ -39,6 +39,8 @@ class Settings(BaseSettings):
     RATE_LIMIT_RESET_IP_WINDOW: int = 3600
     RATE_LIMIT_RESET_EMAIL: int = 3
     RATE_LIMIT_RESET_EMAIL_WINDOW: int = 3600
+    RATE_LIMIT_REGISTER_IP: int = 10      # регистраций с одного адреса за окно; считаются попытки, прошедшие проверку Turnstile
+    RATE_LIMIT_REGISTER_IP_WINDOW: int = 3600
 
     @property
     def cors_origins(self) -> List[str]:

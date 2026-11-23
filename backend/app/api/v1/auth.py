@@ -2,6 +2,7 @@ from app.core.client_ip import client_ip
 from app.core.rate_limit import enforce, ensure_not_blocked, forget, record_failure, subject_key
 from app.core.prediction_status import OPEN_PREDICTION_STATUS
 from app.schemas._strict import StrictIn, Short16, Short32, Short128, Short255, LongText, Visibility
+import logging
 import re
 import secrets
 import hashlib
@@ -32,6 +33,7 @@ from typing import Annotated, Optional
 from pydantic import BaseModel, EmailStr, StringConstraints, field_validator
 
 router = APIRouter(prefix="/auth", tags=["auth"])
+logger = logging.getLogger(__name__)
 def cookie_opts() -> dict:
     """Параметры кук входа. Secure читается из настроек при каждом вызове, а не при импорте: так его проверяет тест."""
     return dict(httponly=True, samesite="lax", secure=settings.cookie_secure)
@@ -110,6 +112,9 @@ async def register(body: RegisterRequest, request: Request, response: Response, 
         raise HTTPException(status_code=400, detail="Не удалось создать аккаунт")
     if not await _verify_turnstile(body.turnstile_token, client_ip(request)):
         raise HTTPException(status_code=400, detail="Не удалось подтвердить, что вы не робот — попробуйте еще раз")
+
+    # Считаются только попытки, прошедшие проверку Turnstile: бот, не прошедший ее, не должен занимать счетчик общего адреса.
+    await enforce("register-ip", client_ip(request), settings.RATE_LIMIT_REGISTER_IP, settings.RATE_LIMIT_REGISTER_IP_WINDOW)
 
     exists = await db.execute(
         select(User).where((User.username == body.username) | (User.email == body.email))
@@ -336,6 +341,42 @@ async def change_password(body: PasswordChange, user: User = Depends(get_current
     return {"ok": True}
 
 
+async def _issue_reset_link(db: AsyncSession, user: User) -> str:
+    """Выдает одноразовый токен сброса пароля (в базе лежит только его хеш) и возвращает ссылку для письма."""
+    raw_token = secrets.token_urlsafe(32)
+    token_hash = hashlib.sha256(raw_token.encode()).hexdigest()
+    expires_at = datetime.now(timezone.utc) + timedelta(minutes=RESET_LINK_MINUTES)
+    db.add(PasswordResetToken(user_id=user.id, token_hash=token_hash, expires_at=expires_at))
+    await db.commit()
+    return f"https://miridin.com/reset-password?token={raw_token}"
+
+
+async def _notify_password_disabled(user: User) -> None:
+    """Письмо владельцу почты: к аккаунту привязан Google, прежний пароль отключен. Сбой отправки вход не ломает."""
+    try:
+        await send_email(
+            to=user.email,
+            subject="Вход через Google в Meridian: прежний пароль отключен",
+            body=(
+                f"Вы только что вошли через Google в аккаунт Meridian на {user.email}. "
+                "Раньше у этого аккаунта был пароль. Теперь он отключен, а все прежние сессии завершены. Записи и настройки на месте.\n\n"
+                "Если хотите входить и по паролю, нажмите «Забыли пароль?» на странице входа: мы пришлем ссылку, по которой можно задать новый. "
+                "Если вход через Google выполняли не вы, смените пароль своего Google-аккаунта."
+            ),
+            html=render_email_html(
+                preheader="Аккаунт привязан к Google, данные на месте",
+                body_html=(
+                    f'<p style="margin:0 0 8px 0;">Вы только что вошли через Google в аккаунт Meridian на {esc(user.email)}.</p>'
+                    '<p style="margin:0 0 8px 0;">Раньше у этого аккаунта был пароль. Теперь он отключен, а все прежние сессии завершены. Записи и настройки на месте.</p>'
+                    '<p style="margin:0 0 8px 0;">Если хотите входить и по паролю, нажмите «Забыли пароль?» на странице входа: мы пришлем ссылку, по которой можно задать новый.</p>'
+                    '<p style="margin:0;font-size:13px;color:rgba(242,239,233,0.45);">Если вход через Google выполняли не вы, смените пароль своего Google-аккаунта.</p>'
+                ),
+            ),
+        )
+    except Exception as e:
+        logger.warning("письмо об отключении пароля не отправлено (%s)", type(e).__name__)
+
+
 @router.post("/forgot-password")
 async def forgot_password(body: ForgotPasswordRequest, request: Request, db: AsyncSession = Depends(get_db)):
     """
@@ -348,33 +389,31 @@ async def forgot_password(body: ForgotPasswordRequest, request: Request, db: Asy
     user = (await db.execute(select(User).where(User.email == body.email))).scalar_one_or_none()
     if user:
         if user.password_hash is None:
-            # Google-only аккаунт — своего пароля нет, восстанавливать нечего.
+            # Аккаунт без пароля (вход только через Google): ссылка позволяет добавить пароль. Получает ее владелец почты,
+            # а сам сброс ставит пароль так же, как у обычного аккаунта.
+            reset_url = await _issue_reset_link(db, user)
             await send_email(
                 to=user.email,
-                subject="Восстановление пароля в Meridian",
+                subject="Пароль для аккаунта Meridian",
                 body=(
-                    f"Аккаунт Meridian на {user.email} использует вход через Google — "
-                    "отдельного пароля у него нет. Чтобы войти, используйте кнопку "
-                    "«Войти через Google» на странице входа."
+                    f"Аккаунт Meridian на {user.email} сейчас входит через Google, пароля у него нет. "
+                    f"Если хотите входить и по паролю, задайте его по ссылке (действует {reset_ttl_text()}): {reset_url}\n\n"
+                    "Если вы не запрашивали это письмо, ничего делать не нужно: вход через Google продолжит работать."
                 ),
                 html=render_email_html(
-                    preheader="Этот аккаунт входит через Google",
+                    preheader="Ссылка, чтобы задать пароль. Вход через Google продолжит работать",
                     body_html=(
-                        f'<p style="margin:0 0 8px 0;">Вы запросили восстановление пароля для аккаунта '
-                        f'Meridian, привязанного к {esc(user.email)}.</p>'
-                        '<p style="margin:0;">Этот аккаунт использует вход через Google — отдельного пароля '
-                        'у него нет. Чтобы войти, используйте кнопку «Войти через Google» на странице входа.</p>'
+                        f'<p style="margin:0 0 8px 0;">Вы запросили восстановление пароля для аккаунта Meridian, привязанного к {esc(user.email)}.</p>'
+                        '<p style="margin:0 0 8px 0;">Сейчас этот аккаунт входит через Google, пароля у него нет. Если хотите входить и по паролю, задайте его по ссылке.</p>'
+                        f'<p style="margin:0 0 16px 0;">Ссылка действует {reset_ttl_text()}.</p>'
+                        f'{email_button(reset_url, "Задать пароль")}'
+                        '<p style="margin:20px 0 0 0;font-size:13px;color:rgba(242,239,233,0.45);">'
+                        'Если вы не запрашивали это письмо, ничего делать не нужно: вход через Google продолжит работать.</p>'
                     ),
                 ),
             )
         else:
-            raw_token = secrets.token_urlsafe(32)
-            token_hash = hashlib.sha256(raw_token.encode()).hexdigest()
-            expires_at = datetime.now(timezone.utc) + timedelta(minutes=RESET_LINK_MINUTES)
-            db.add(PasswordResetToken(user_id=user.id, token_hash=token_hash, expires_at=expires_at))
-            await db.commit()
-
-            reset_url = f"https://miridin.com/reset-password?token={raw_token}"
+            reset_url = await _issue_reset_link(db, user)
             await send_email(
                 to=user.email,
                 subject="Восстановление пароля в Meridian",
@@ -598,9 +637,18 @@ async def google_callback(
     if not user:
         user = (await db.execute(select(User).where(User.email == email))).scalar_one_or_none()
         if user:
+            had_password = user.password_hash is not None
             user.google_id = google_id
+            if had_password:
+                # Почта при регистрации не подтверждается: аккаунт с этим адресом и паролем мог завести кто угодно заранее
+                # и ждать, пока владелец адреса войдет через Google. Google подтвердил владение адресом, пароль нет,
+                # поэтому пароль отключается, а прежние сессии завершаются. Записи и настройки остаются.
+                user.password_hash = None
+                await db.execute(update(SessionModel).where(SessionModel.user_id == user.id).values(revoked=True))
             await db.commit()
             await db.refresh(user)
+            if had_password:
+                await _notify_password_disabled(user)
         else:
             username = await _generate_username_from_email(db, email)
             user = User(

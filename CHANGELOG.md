@@ -8,6 +8,15 @@ The project is under active development: some features are unfinished and may no
 
 ## [Unreleased]
 
+### Added
+
+- Registration is limited by address; after too many attempts a message asks to try again later
+- An account that signs in only through Google can now set a password: "Forgot password" sends a link instead of a refusal
+
+### Fixed
+
+- An account created in advance with someone else's e-mail no longer stays open to its creator after the owner signs in through Google: the old password is turned off, other sessions end, the owner gets a letter, and the records stay
+
 ## [0.22.19] - 2026-11-23
 
 ### Added
