@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest"
 import { readFileSync } from "node:fs"
 import { join } from "node:path"
-import { RATE_LIMITED_MESSAGE } from "@/lib/auth-messages"
+import { GOOGLE_ERROR_MESSAGES, GOOGLE_ERROR_STRINGS, RATE_LIMITED_MESSAGE } from "@/lib/auth-messages"
 
 /**
  * Охранный тест: гость переводит строки страниц входа только из белого списка бэкенда (AUTH_UI_STRINGS),
@@ -41,5 +41,18 @@ describe("строки страниц входа и белый список го
     const declared = new Set(literals(block(src)))
     const used = [...src.matchAll(/\bdt\(\s*("(?:[^"\\]|\\.)*")/g)].map(m => JSON.parse(m[1]) as string)
     expect(used.filter(s => !declared.has(s))).toEqual([])
+  })
+
+  it("сообщения об ошибках Google-входа есть в белом списке бэкенда и в PAGE_STRINGS страницы входа", () => {
+    expect(GOOGLE_ERROR_STRINGS.filter(s => !whitelist.has(s))).toEqual([])
+    expect(block(source("login"))).toContain("GOOGLE_ERROR_STRINGS")
+  })
+
+  it("каждый код google_error, который отдает бэкенд, известен фронтенду, и мертвых кодов нет", () => {
+    const api = readFileSync(join(process.cwd(), "..", "backend/app/api/v1/auth.py"), "utf-8")
+    const codes = [...new Set([...api.matchAll(/google_error=([a-z_]+)/g)].map(m => m[1]))]
+    expect(codes.length).toBeGreaterThan(5)
+    expect(codes.filter(c => !Object.prototype.hasOwnProperty.call(GOOGLE_ERROR_MESSAGES, c))).toEqual([])
+    expect(Object.keys(GOOGLE_ERROR_MESSAGES).filter(c => !codes.includes(c))).toEqual([])
   })
 })

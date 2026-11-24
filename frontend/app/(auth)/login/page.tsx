@@ -11,7 +11,7 @@ import { AuthVisual } from "@/components/auth/auth-visual"
 import { useDynamicTranslate } from "@/lib/i18n/useDynamicT"
 import { collectStrings } from "@/lib/i18n/collect-strings"
 import { apiErrorMessage } from "@/lib/api-error"
-import { RATE_LIMITED_MESSAGE } from "@/lib/auth-messages"
+import { GOOGLE_ERROR_STRINGS, googleErrorMessage, RATE_LIMITED_MESSAGE } from "@/lib/auth-messages"
 
 const PAGE_STRINGS = [
   "От догадки — к уверенности",
@@ -28,6 +28,7 @@ const PAGE_STRINGS = [
   "Авторизация через Google недоступна для пользователей из Российской Федерации в соответствии с требованиями законодательства РФ.",
   "Геоданные IP предоставлены",
   RATE_LIMITED_MESSAGE,
+  ...GOOGLE_ERROR_STRINGS,
 ]
 
 export default function LoginPage() {
@@ -40,6 +41,17 @@ export default function LoginPage() {
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
   const [googleAvailable, setGoogleAvailable] = useState<boolean | null>(null)
+
+  // Бэкенд возвращает сюда с ?google_error=<код>, если вход через Google не состоялся: без этого человек видел бы пустую форму.
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    const code = params.get("google_error")
+    if (code === null) return
+    setError(googleErrorMessage(code))
+    params.delete("google_error")
+    const rest = params.toString()
+    window.history.replaceState(null, "", window.location.pathname + (rest ? "?" + rest : ""))
+  }, [])
 
   useEffect(() => {
     authApi.googleAvailable()
