@@ -217,3 +217,28 @@ async def test_google_login_does_not_take_over_an_account_linked_to_another_goog
     assert not sent, "письмо об отключении пароля не уходило"
     r = await client.post(LOGIN, json={"username": "owner", "password": "pass12345"}, headers=IP)
     assert r.status_code == 200, "пароль владельца не тронут"
+
+
+@pytest.mark.asyncio
+async def test_google_callback_from_a_blocked_region_goes_back_to_the_sign_in_page(client, monkeypatch):
+    sent = _capture_mail(monkeypatch)
+    _fake_google(monkeypatch, sub="g-ru", email="ru@example.com")
+    monkeypatch.setattr(auth_module, "is_russian_ip", lambda ip: True)
+    r = await _google_callback(client)
+    assert 300 <= r.status_code < 400
+    assert "google_error=region_blocked" in r.headers["location"]
+    async with AsyncSessionLocal() as db:
+        assert (await db.execute(select(User).where(User.google_id == "g-ru"))).scalar_one_or_none() is None
+    assert not sent
+
+
+@pytest.mark.asyncio
+async def test_google_callback_with_a_wrong_state_goes_back_to_the_sign_in_page(client, monkeypatch):
+    _fake_google(monkeypatch, sub="g-state", email="state@example.com")
+    client.cookies.clear()
+    r = await client.get(GOOGLE_CALLBACK, params={"code": "c", "state": "other"},
+                         headers={**IP, "Cookie": "google_oauth_state=s"})
+    assert 300 <= r.status_code < 400
+    assert "google_error=state_mismatch" in r.headers["location"]
+    async with AsyncSessionLocal() as db:
+        assert (await db.execute(select(User).where(User.google_id == "g-state"))).scalar_one_or_none() is None

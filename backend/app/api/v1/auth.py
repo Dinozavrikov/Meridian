@@ -596,13 +596,14 @@ async def google_callback(
     неотличим от обычного — та же сессия, те же куки)."""
     frontend_base = settings.cors_origins[0] if settings.cors_origins else "/"
 
+    # Отказы идут редиректом на страницу входа: после Google браузер показывает ответ как страницу, и сырой JSON вместо формы ничего не объясняет.
     if is_russian_ip(client_ip(request)):
-        raise HTTPException(403, "Авторизация через Google недоступна для пользователей из Российской Федерации в соответствии с требованиями законодательства РФ")
+        return RedirectResponse(url=f"{frontend_base}/login?google_error=region_blocked")
 
     if error or not code:
         return RedirectResponse(url=f"{frontend_base}/login?google_error=denied")
     if not state or not google_oauth_state or state != google_oauth_state:
-        raise HTTPException(400, "Неверный state — возможная CSRF-атака или истекшая сессия авторизации")
+        return RedirectResponse(url=f"{frontend_base}/login?google_error=state_mismatch")
 
     async with httpx.AsyncClient(timeout=15) as client:
         token_resp = await client.post(GOOGLE_TOKEN_URL, data={
