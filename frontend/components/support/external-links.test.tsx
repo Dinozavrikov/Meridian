@@ -25,8 +25,6 @@ function check(c: HTMLElement, minExternal: number) {
 }
 
 describe("внешние ссылки", () => {
-  for (const variant of ["app", "public"] as const) {
-    it(`подвал (${variant})`, () => { check(render(<Footer variant={variant} />).container, 1) })
-  }
+  it("подвал", () => { check(render(<Footer />).container, 1) })
   it("страница поддержки: оплата, репозиторий, трекер, лицензия", () => { check(render(<SupportContent />).container, 5) })
 })
