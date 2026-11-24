@@ -29,6 +29,6 @@ describe("поля ввода на сенсорных экранах", () => {
   it("получают 16px правилом вне слоев, чтобы iOS не приближал страницу при фокусе", () => {
     const touch = topLevelBlocks(css).filter(b => /hover:\s*none/.test(b.prelude) && /pointer:\s*coarse/.test(b.prelude))
     expect(touch.length).toBeGreaterThan(0)
-    expect(touch.map(b => b.body).join("\n")).toMatch(/input[^{}]*\{[^{}]*font-size:\s*16px/)
+    expect(touch.map(b => b.body).join("\n")).toMatch(/input[^{}]*\{[^{}]*font-size:\s*16px\s*!important/)
   })
 })
