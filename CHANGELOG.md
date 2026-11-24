@@ -20,6 +20,7 @@ The project is under active development: some features are unfinished and may no
 - Signing in through Google can no longer take over an account that is already linked to a different Google account with the same e-mail address: the sign-in is refused and nothing is changed
 - A failed sign-in through Google now explains what went wrong on the sign-in page instead of showing an empty form, and a refusal from a blocked region or an expired Google session comes back to that page instead of a raw error
 - Pinch-to-zoom works again on phones: the page no longer forbids changing the scale, which people with low vision need
+- Text fields use a 16px font on touch screens, so iOS no longer zooms the page in when a field gets focus
 
 ## [0.22.19] - 2026-11-23
 

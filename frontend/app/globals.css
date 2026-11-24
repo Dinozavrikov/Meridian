@@ -591,3 +591,9 @@ html, body {
 .docs-calc label, .docs-calc input[type="number"], .docs-calc select { min-width: 0; max-width: 100%; box-sizing: border-box; }
 .docs-calc input[type="range"] { width: 100%; min-width: 0; }
 @media (max-width: 600px) { .docs-calc .docs-card, .docs-calc > div { padding: 16px; } }
+
+/* Телефоны и планшеты: iOS Safari приближает страницу при фокусе на поле со шрифтом меньше 16px.
+   Правило вне слоев: оно сильнее text-sm из Tailwind (слой utilities), поэтому поля на сенсорных экранах берут 16px. */
+@media (hover: none) and (pointer: coarse) {
+  input, textarea, select { font-size: 16px; }
+}
