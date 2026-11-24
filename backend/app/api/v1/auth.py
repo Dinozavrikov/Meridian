@@ -637,6 +637,10 @@ async def google_callback(
     if not user:
         user = (await db.execute(select(User).where(User.email == email))).scalar_one_or_none()
         if user:
+            if user.google_id:
+                # Адрес уже привязан к другому Google-аккаунту. Перезапись google_id отдала бы аккаунт тому, кто получил
+                # этот адрес позже (например, при переиспользовании корпоративной почты), поэтому отказ без записи в базу.
+                return RedirectResponse(url=f"{frontend_base}/login?google_error=account_linked_other")
             had_password = user.password_hash is not None
             user.google_id = google_id
             if had_password:

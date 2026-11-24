@@ -17,6 +17,7 @@ The project is under active development: some features are unfinished and may no
 
 - An account created in advance with someone else's e-mail no longer stays open to its creator after the owner signs in through Google: the old password is turned off, other sessions end, the owner gets a letter, and the records stay
 - The registration page now shows the attempt limit message instead of a generic error, and its two check messages can be translated for guests
+- Signing in through Google can no longer take over an account that is already linked to a different Google account with the same e-mail address: the sign-in is refused and nothing is changed
 
 ## [0.22.19] - 2026-11-23
 

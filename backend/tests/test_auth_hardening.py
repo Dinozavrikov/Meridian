@@ -197,3 +197,23 @@ async def test_reset_link_is_issued(client, monkeypatch, google_only):
     assert r.status_code == 200
     r = await client.post(LOGIN, json={"username": "link_user", "password": "freshpass123"}, headers=IP)
     assert r.status_code == 200
+
+
+@pytest.mark.asyncio
+async def test_google_login_does_not_take_over_an_account_linked_to_another_google(client, monkeypatch):
+    sent = _capture_mail(monkeypatch)
+    user = await _make_user("owner", google_id="g-owner")
+    before = await _active_jtis(user.id)
+    _fake_google(monkeypatch, sub="g-intruder", email=user.email)
+    r = await _google_callback(client)
+    assert 300 <= r.status_code < 400
+    assert "google_error=account_linked_other" in r.headers["location"]
+    async with AsyncSessionLocal() as db:
+        owner = (await db.execute(select(User).where(User.id == user.id))).scalar_one()
+        intruder = (await db.execute(select(User).where(User.google_id == "g-intruder"))).scalar_one_or_none()
+    assert owner.google_id == "g-owner", "чужой Google не перезаписал привязку"
+    assert intruder is None
+    assert await _active_jtis(user.id) == before, "новая сессия не выдана"
+    assert not sent, "письмо об отключении пароля не уходило"
+    r = await client.post(LOGIN, json={"username": "owner", "password": "pass12345"}, headers=IP)
+    assert r.status_code == 200, "пароль владельца не тронут"
