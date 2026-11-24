@@ -3,9 +3,10 @@ import { readFileSync } from "node:fs"
 import { join } from "node:path"
 
 /**
- * Охрана, а не замер: проверяет, что правило про 16px на сенсорных экранах лежит на верхнем уровне globals.css (вне @layer).
- * Внутри слоя base его перебил бы text-sm из Tailwind, а jsdom этого не покажет: стили не считаются.
- * Фактический размер шрифта полей проверяется замером в браузере (getComputedStyle) в режиме телефона.
+ * Охрана по тексту, а не замер: правило про 16px на сенсорных экранах есть, с !important и на верхнем уровне globals.css.
+ * Решает !important (иначе инлайновые fontSize на полях его перебивают); верхний уровень файла требуется как соглашение,
+ * на результат положение относительно слоев не влияет (проверено в Chromium). Фактический размер полей считает браузерный тест
+ * components/ui/input-touch-font.browser.test.tsx (getComputedStyle в режиме касания), jsdom стили не считает.
  */
 const css = readFileSync(join(process.cwd(), "app", "globals.css"), "utf-8").replace(/\/\*[\s\S]*?\*\//g, "")
 
@@ -26,7 +27,7 @@ function topLevelBlocks(src: string): { prelude: string; body: string }[] {
 }
 
 describe("поля ввода на сенсорных экранах", () => {
-  it("получают 16px правилом вне слоев, чтобы iOS не приближал страницу при фокусе", () => {
+  it("получают 16px с !important на верхнем уровне файла, чтобы iOS не приближал страницу при фокусе", () => {
     const touch = topLevelBlocks(css).filter(b => /hover:\s*none/.test(b.prelude) && /pointer:\s*coarse/.test(b.prelude))
     expect(touch.length).toBeGreaterThan(0)
     expect(touch.map(b => b.body).join("\n")).toMatch(/input[^{}]*\{[^{}]*font-size:\s*16px\s*!important/)

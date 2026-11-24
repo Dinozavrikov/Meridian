@@ -593,8 +593,9 @@ html, body {
 @media (max-width: 600px) { .docs-calc .docs-card, .docs-calc > div { padding: 16px; } }
 
 /* Телефоны и планшеты: iOS Safari приближает страницу при фокусе на поле со шрифтом меньше 16px.
-   Правило вне слоев и с !important: оно сильнее text-sm из Tailwind и инлайновых fontSize на полях (их в коде несколько десятков),
-   поэтому на сенсорных экранах все поля берут 16px, а на десктопе размеры не меняются. */
+   Решает !important: с ним правило сильнее text-sm из Tailwind и инлайновых fontSize на полях (их в коде несколько десятков),
+   а положение относительно слоев на результат не влияет (проверено в Chromium: components/ui/input-touch-font.browser.test.tsx).
+   На сенсорных экранах все поля берут 16px, на десктопе размеры не меняются. */
 @media (hover: none) and (pointer: coarse) {
   input, textarea, select { font-size: 16px !important; }
 }
