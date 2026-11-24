@@ -212,6 +212,7 @@ export const STRINGS: Record<string, string> = {
   "sidebar.newComments": "Новые комментарии",
   "sidebar.settings": "Настройки",
   "sidebar.logout": "Выйти",
+  "sidebar.about": "О Meridian",
   "time.minutesAgo": "{n} мин.",
   "time.hoursAgo": "{n} ч.",
   "time.daysAgo": "{n} дн.",

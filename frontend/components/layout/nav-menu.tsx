@@ -3,7 +3,7 @@ import React, { useState, useRef, useEffect } from "react"
 import Link from "next/link"
 import { ChevronDown, Menu, X } from "lucide-react"
 import { v2 } from "@/lib/theme"
-import { DASHBOARD_ITEM, HEADER_GROUPS, isNavActive, restColor, MENU_TILE, MENU_ICON, type NavGroup, type NavItem } from "@/lib/nav"
+import { DASHBOARD_ITEM, ABOUT_ITEM, HEADER_GROUPS, isNavActive, restColor, MENU_TILE, MENU_ICON, type NavGroup, type NavItem } from "@/lib/nav"
 
 type T = (key: string) => string
 
@@ -173,6 +173,10 @@ export function MobileNav({ pathname, t }: { pathname: string; t: T }) {
               ))}
             </div>
           ))}
+          <div style={{ marginTop: 6 }}>
+            <NavRow item={ABOUT_ITEM} active={isNavActive(pathname, ABOUT_ITEM.href)}
+              t={t} onClick={() => setOpen(false)} />
+          </div>
         </div>
       )}
     </div>

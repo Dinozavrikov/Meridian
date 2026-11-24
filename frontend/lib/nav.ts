@@ -1,7 +1,7 @@
 import {
   Eye, Lightbulb, TrendingUp, Globe, HelpCircle,
   CheckSquare, Network, BarChart2, Scale, Rss, FlaskConical,
-  MessageCircle, Trash2, LayoutDashboard, type LucideIcon,
+  MessageCircle, Trash2, LayoutDashboard, Info, type LucideIcon,
 } from "lucide-react"
 import { typeColor, v2 } from "@/lib/theme"
 
@@ -33,6 +33,11 @@ export type NavGroup = {
 
 export const DASHBOARD_ITEM: NavItem = {
   href: "/dashboard", labelKey: "nav.dashboard", icon: LayoutDashboard, color: v2.teal,
+}
+
+/** Выход на главную страницу сайта: нижний блок боковой панели и мобильное меню. Отдельно от NAV_GROUPS: это не раздел приложения. */
+export const ABOUT_ITEM: NavItem = {
+  href: "/", labelKey: "sidebar.about", icon: Info, color: v2.teal,
 }
 
 export const TRASH_ITEM: NavItem = {

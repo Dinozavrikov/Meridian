@@ -208,3 +208,20 @@ describe("MobileNav", () => {
     expect(hrefsIn(container)).toEqual([])
   })
 })
+
+describe("пункт «О Meridian»", () => {
+  it("боковая панель: иконка ведет на главную и подписана", () => {
+    const { container } = render(<Sidebar />)
+    const about = container.querySelector('a[href="/"]') as HTMLElement | null
+    expect(about, "иконка О Meridian").not.toBeNull()
+    expect(about!.getAttribute("aria-label")).toBe(S["sidebar.about"])
+  })
+
+  it("мобильное меню: строка есть, ведет на главную, клик закрывает меню", () => {
+    const { container } = render(<MobileNav pathname="/x" t={t} />)
+    fireEvent.click(screen.getByRole("button"))
+    expect(hrefsIn(container)).toContain("/")
+    fireEvent.click(screen.getByText(S["sidebar.about"]))
+    expect(hrefsIn(container)).toEqual([])
+  })
+})

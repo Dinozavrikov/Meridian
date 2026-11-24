@@ -10,7 +10,7 @@ import { v2 } from "@/lib/theme"
 import { Tooltip } from "@/components/ui/tooltip"
 import { useT } from "@/lib/i18n/useT"
 import { entityHref } from "@/lib/entity-routes"
-import { NAV_GROUPS, DASHBOARD_ITEM, TRASH_ITEM, isNavActive, restColor, RAIL_WIDTH, SIDEBAR_TILE, SIDEBAR_ICON, type NavItem } from "@/lib/nav"
+import { NAV_GROUPS, DASHBOARD_ITEM, TRASH_ITEM, ABOUT_ITEM, isNavActive, restColor, RAIL_WIDTH, SIDEBAR_TILE, SIDEBAR_ICON, type NavItem } from "@/lib/nav"
 
 type SidebarEntry = { sep: true } | NavItem
 
@@ -174,6 +174,19 @@ export function Sidebar() {
       })}
 
       <div style={{ marginTop: "auto", display: "flex", flexDirection: "column", alignItems: "center", gap: 6 }}>
+        <Tooltip text={t("sidebar.about")}>
+          <Link href={ABOUT_ITEM.href} aria-label={t("sidebar.about")} style={{ textDecoration: "none" }}>
+            <div style={{
+              width: 32, height: 32, borderRadius: 8, display: "flex",
+              alignItems: "center", justifyContent: "center", color: v2.t3, cursor: "pointer",
+              transition: "all 0.12s",
+            }}
+              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = v2.t1; (e.currentTarget as HTMLElement).style.background = v2.surf2 }}
+              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = v2.t3; (e.currentTarget as HTMLElement).style.background = "transparent" }}>
+              <ABOUT_ITEM.icon size={17} />
+            </div>
+          </Link>
+        </Tooltip>
         <Tooltip text={t("sidebar.settings")}>
           <Link href="/settings" style={{ textDecoration: "none" }}>
             <div style={{
