@@ -41,13 +41,6 @@ describe("превью для соцсетей у разделов", () => {
   })
 })
 
-describe("превью для соцсетей у разделов", () => {
-  it.each(Object.entries(pages))("%s: есть og:type и картинка с размерами, Twitter с большой картинкой", (_name, m) => {
-    expect(m.openGraph).toMatchObject({ type: "website", images: [{ url: SITE_IMAGE.url, width: 1200, height: 630 }] })
-    expect(m.twitter).toMatchObject({ card: "summary_large_image", images: [SITE_IMAGE.url] })
-  })
-})
-
 describe("общая картинка сайта", () => {
   it("адрес ведет на настоящий файл или маршрут картинки, а не в пустоту", () => {
     const name = SITE_IMAGE.url.replace(/^\//, "")
