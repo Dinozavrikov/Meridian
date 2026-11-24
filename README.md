@@ -109,7 +109,7 @@ Migrations run on start. Open `https://your-domain/api/health` to check. To upda
 
 - At startup the backend prints `[config]` warnings for risky production settings and refuses to start with the placeholder `SECRET_KEY`.
 - The proxy sets `X-Real-IP`, which the backend trusts for country detection and sign-up checks. If you use another proxy, make it overwrite this header with the client address, and never expose the backend port directly.
-- There is no application-level rate limiting for sign-up and login yet: on sign-up Turnstile is the only protection. Keep this in mind for a public instance.
+- Sign-up, sign-in and password reset are rate limited in the application: by client address, and also by user name for sign-in and by e-mail for password reset. The thresholds are the `RATE_LIMIT_*` settings in `backend/app/core/config.py`. The limits count per client address, so the proxy must pass the real address in `X-Real-IP` (see above), and they need Redis: if Redis is down they are skipped and a warning is logged. Turnstile still protects sign-up.
 - Encrypted, restore-tested backups are in `scripts/backup/` (see backend/docs/BACKUP.md, in Russian). You supply your own encryption key.
 - AI features need an Ollama instance reachable from the backend container (see AI features above).
 
@@ -253,7 +253,7 @@ docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build po
 
 - При старте backend печатает предупреждения `[config]` о рискованных настройках продакшена и отказывается запускаться с заглушкой `SECRET_KEY`.
 - Прокси выставляет `X-Real-IP`, которому backend доверяет при определении страны и проверках при регистрации. Если вы используете другой прокси, настройте его так, чтобы он перезаписывал этот заголовок адресом клиента, и никогда не открывайте порт backend наружу.
-- Ограничения частоты запросов на уровне приложения для регистрации и входа пока нет: при регистрации единственная защита это Turnstile. Учитывайте это на публичном экземпляре.
+- Регистрация, вход и восстановление пароля ограничены по частоте на уровне приложения: по адресу клиента, а для входа еще и по имени пользователя, для восстановления пароля по почте. Пороги это настройки `RATE_LIMIT_*` в `backend/app/core/config.py`. Лимиты считаются по адресу клиента, поэтому прокси должен передавать настоящий адрес в `X-Real-IP` (см. выше), и им нужен Redis: если он недоступен, лимиты пропускаются и пишется предупреждение. Регистрацию по-прежнему защищает Turnstile.
 - Зашифрованные резервные копии с проверкой восстановления лежат в `scripts/backup/` (см. backend/docs/BACKUP.md). Ключ шифрования вы задаете свой.
 - Для ИИ-функций нужен Ollama, доступный из контейнера backend (см. раздел про ИИ-функции выше).
 
