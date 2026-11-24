@@ -1,5 +1,5 @@
-import { describe, it, expect, vi, beforeEach } from "vitest"
-import { render, screen, fireEvent, waitFor } from "@testing-library/react"
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
+import { render, screen, fireEvent, waitFor, cleanup } from "@testing-library/react"
 
 vi.mock("next/navigation", () => ({ useRouter: () => ({ push: vi.fn() }) }))
 vi.mock("next/link", () => ({ default: ({ children, ...p }: any) => <a {...p}>{children}</a> }))
@@ -13,6 +13,7 @@ vi.mock("@/lib/i18n/useDynamicT", async () => ({
 
 import { authApi } from "@/lib/api"
 import RegisterPage from "./page"
+import { RATE_LIMITED_MESSAGE } from "@/lib/auth-messages"
 
 beforeEach(() => {
   vi.stubGlobal("turnstile", {
@@ -21,6 +22,8 @@ beforeEach(() => {
   })
   vi.mocked(authApi.register).mockReset()
 })
+
+afterEach(cleanup)
 
 function fill() {
   fireEvent.change(screen.getByPlaceholderText("3–32 символа, буквы, цифры, _ и -, без пробелов"), { target: { value: "Тестовый юзер" } })
@@ -47,5 +50,29 @@ describe("RegisterPage — привязка 422 к полям", () => {
       expect(el.tagName).toBe("SPAN")
       expect(screen.queryByText("Имя пользователя не может содержать пробелы — используйте _ или -", { selector: "p" })).toBeNull()
     })
+  })
+})
+
+async function submitRejected(err: unknown) {
+  vi.mocked(authApi.register).mockRejectedValueOnce(err)
+  render(<RegisterPage />)
+  fill()
+  const btn = await screen.findByRole("button", { name: /Создать аккаунт/ })
+  await waitFor(() => expect((btn as HTMLButtonElement).disabled).toBe(false))
+  fireEvent.click(btn)
+}
+
+describe("RegisterPage — ограничение частоты", () => {
+  it("429 показывает сообщение о лимите, а не общую ошибку регистрации", async () => {
+    // data: {} без detail: на общей ветке (apiErrorMessage) получилась бы "Ошибка регистрации".
+    await submitRejected({ response: { status: 429, data: {} } })
+    await waitFor(() => expect(screen.getByText(RATE_LIMITED_MESSAGE)).toBeTruthy())
+    expect(screen.queryByText("Ошибка регистрации")).toBeNull()
+  })
+
+  it("другая ошибка без detail остается общей, а не сообщением о лимите", async () => {
+    await submitRejected({ response: { status: 500, data: {} } })
+    await waitFor(() => expect(screen.getByText("Ошибка регистрации")).toBeTruthy())
+    expect(screen.queryByText(RATE_LIMITED_MESSAGE)).toBeNull()
   })
 })

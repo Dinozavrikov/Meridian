@@ -30,9 +30,16 @@ describe("строки страниц входа и белый список го
     expect(RATE_LIMITED_MESSAGE).toBe(rate![1])
   })
 
-  it.each(["login", "reset-password", "forgot-password"])("%s: сообщение о лимите переводимо и 429 обрабатывается отдельно", p => {
+  it.each(["login", "register", "reset-password", "forgot-password"])("%s: сообщение о лимите переводимо и 429 обрабатывается отдельно", p => {
     const src = source(p)
     expect(block(src)).toContain("RATE_LIMITED_MESSAGE")
     expect(src).toMatch(/status === 429[\s\S]{0,80}dt\(RATE_LIMITED_MESSAGE\)/)
+  })
+
+  it.each(PAGES)("%s: каждый dt() со строковым литералом объявлен в PAGE_STRINGS", p => {
+    const src = source(p)
+    const declared = new Set(literals(block(src)))
+    const used = [...src.matchAll(/\bdt\(\s*("(?:[^"\\]|\\.)*")/g)].map(m => JSON.parse(m[1]) as string)
+    expect(used.filter(s => !declared.has(s))).toEqual([])
   })
 })

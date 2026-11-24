@@ -12,6 +12,7 @@ import { AuthVisual } from "@/components/auth/auth-visual"
 import { useDynamicTranslate } from "@/lib/i18n/useDynamicT"
 import { collectStrings } from "@/lib/i18n/collect-strings"
 import { apiErrorMessage, apiFieldErrors } from "@/lib/api-error"
+import { RATE_LIMITED_MESSAGE } from "@/lib/auth-messages"
 
 const PAGE_STRINGS = [
   "От догадки — к уверенности",
@@ -27,6 +28,8 @@ const PAGE_STRINGS = [
   "Создание аккаунта...", "Создать аккаунт",
   "Уже есть аккаунт?",
   "Войти",
+  "Подождите проверку и попробуйте снова", "Проверьте введенные данные",
+  RATE_LIMITED_MESSAGE,
 ]
 
 export default function RegisterPage() {
@@ -86,7 +89,9 @@ export default function RegisterPage() {
       if (Object.keys(fields).length > 0) {
         setFieldErrors(fields)
       } else {
-        setError(apiErrorMessage(e, dt("Ошибка регистрации"), dt("Проверьте введенные данные")))
+        setError(e?.response?.status === 429
+          ? dt(RATE_LIMITED_MESSAGE)
+          : apiErrorMessage(e, dt("Ошибка регистрации"), dt("Проверьте введенные данные")))
       }
     } finally {
       setLoading(false)
