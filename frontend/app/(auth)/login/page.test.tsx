@@ -61,3 +61,12 @@ describe("LoginPage: ошибки входа через Google", () => {
     }
   })
 })
+
+describe("LoginPage: логотип", () => {
+  it("логотип ведет на главную", () => {
+    const { container } = render(<LoginPage />)
+    const logo = container.querySelector('a[href="/"]')
+    expect(logo, "логотип").not.toBeNull()
+    expect(logo!.textContent).toContain("MER")
+  })
+})

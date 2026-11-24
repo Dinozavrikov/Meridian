@@ -12,9 +12,9 @@ const ORIGIN = "https://miridin.com"
 const isRecord = (u: string) => u.includes("/feed/discussion/")
 
 describe("sitemap", () => {
-  it("содержит конечные адреса: нет корня, который редиректит, есть /feed и запись", async () => {
+  it("содержит конечные адреса: есть корень, /feed и запись, дублей нет", async () => {
     const urls = (await sitemap()).map(e => e.url)
-    expect(urls).not.toContain(`${ORIGIN}/`)
+    expect(urls).toContain(`${ORIGIN}/`)
     expect(urls).toContain(`${ORIGIN}/feed`)
     expect(urls).toContain(`${ORIGIN}/feed/discussion/question/7`)
     expect(new Set(urls).size).toBe(urls.length)
@@ -26,6 +26,13 @@ describe("sitemap", () => {
     for (const bad of ["/login", "/register", "/profile", "/observations", "/hypotheses", "/predictions", "/worldview"]) {
       expect(pages).not.toContain(bad)
     }
+  })
+
+  it("у корня приоритет выше, чем у остальных страниц", async () => {
+    const all = await sitemap()
+    const prio = (path: string) => all.find(e => e.url === `${ORIGIN}${path}`)?.priority
+    expect(prio("/")).toBe(1)
+    for (const p of PRERENDERED_PATHS.filter(p => p !== "/")) expect(prio(p), p).toBe(0.7)
   })
 
   it("ни один адрес из sitemap не закрыт в robots.txt", async () => {

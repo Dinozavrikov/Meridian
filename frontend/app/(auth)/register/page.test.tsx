@@ -76,3 +76,12 @@ describe("RegisterPage — ограничение частоты", () => {
     expect(screen.queryByText(RATE_LIMITED_MESSAGE)).toBeNull()
   })
 })
+
+describe("RegisterPage: логотип", () => {
+  it("логотип ведет на главную", () => {
+    const { container } = render(<RegisterPage />)
+    const logo = container.querySelector('a[href="/"]')
+    expect(logo, "логотип").not.toBeNull()
+    expect(logo!.textContent).toContain("MER")
+  })
+})

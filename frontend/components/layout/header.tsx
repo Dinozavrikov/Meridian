@@ -70,7 +70,7 @@ export function Header({ titleKey, title: rawTitle, actions, color = "#4A90D9", 
       <div style={{ display: "flex", alignItems: "center", gap: 4, minWidth: 0, flex: isMobile ? "0 0 auto" : 1 }}>
         {isMobile && <MobileNav pathname={pathname} t={t} />}
         {!isMobile && (
-          <Link href={user ? "/dashboard" : "/feed"} style={{
+          <Link href={user ? "/dashboard" : "/"} style={{
             textDecoration: "none", fontSize: 13, fontWeight: 700, letterSpacing: "0.06em",
             color: v2.t1, marginRight: 18, flexShrink: 0, userSelect: "none",
           }}>

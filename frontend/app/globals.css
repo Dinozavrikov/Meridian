@@ -599,3 +599,15 @@ html, body {
 @media (hover: none) and (pointer: coarse) {
   input, textarea, select { font-size: 16px !important; }
 }
+
+/* Публичный сайт (группа (site)): шапка переносится на узких экранах, ссылки уходят второй строкой. */
+.site-header { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; padding: 12px 20px; background: #0b0d14; border-bottom: 1px solid rgba(255,255,255,0.07); position: sticky; top: 0; z-index: 40; }
+.site-nav { display: flex; flex-wrap: wrap; gap: 4px 18px; flex: 1 1 100%; order: 3; }
+.site-nav a { color: #8b92b5; font-size: 14px; text-decoration: none; }
+.site-nav a:hover { color: #f2efe9; }
+.site-header-end { display: flex; align-items: center; gap: 8px; margin-left: auto; }
+.site-btn { display: inline-flex; align-items: center; height: 34px; padding: 0 14px; border-radius: 8px; font-size: 13px; font-weight: 500; text-decoration: none; color: #c9cde0; border: 1px solid rgba(255,255,255,0.13); }
+.site-btn:hover { background: rgba(255,255,255,0.06); }
+.site-btn--primary { background: #f2efe9; border-color: #f2efe9; color: #0b0d14; }
+.site-btn--primary:hover { background: #fff; }
+@media (min-width: 760px) { .site-nav { flex: 1 1 auto; order: 0; } }

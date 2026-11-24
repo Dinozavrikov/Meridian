@@ -27,3 +27,12 @@ describe("Footer: исходный код и поддержка", () => {
     expect(support!.getAttribute("target")).toBeNull()
   })
 })
+
+describe("Footer: ссылка на главную", () => {
+  it("ведет на корень, доступный и гостю, и вошедшему", () => {
+    const { container } = render(<Footer />)
+    const home = container.querySelector('a[href="/"]')
+    expect(home, "ссылка на главную").not.toBeNull()
+    expect(home!.textContent).toBe("footer.link.home")
+  })
+})

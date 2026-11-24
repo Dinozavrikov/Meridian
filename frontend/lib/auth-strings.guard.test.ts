@@ -55,4 +55,11 @@ describe("строки страниц входа и белый список го
     expect(codes.filter(c => !Object.prototype.hasOwnProperty.call(GOOGLE_ERROR_MESSAGES, c))).toEqual([])
     expect(Object.keys(GOOGLE_ERROR_MESSAGES).filter(c => !codes.includes(c))).toEqual([])
   })
+
+  // Проверка по тексту (страницы забывания и сброса пароля поведенческим тестом пока не покрыты: у логина и регистрации он есть).
+  it.each(["login", "register", "forgot-password", "reset-password"])("%s: логотип ведет на главную, а не на ленту", p => {
+    const src = source(p)
+    expect(src).toMatch(/<Link href="\/" /)
+    expect(src).not.toMatch(/<Link href="\/feed"/)
+  })
 })

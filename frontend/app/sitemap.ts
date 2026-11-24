@@ -10,11 +10,11 @@ export const dynamic = "force-dynamic"
 const BASE_URL = "https://miridin.com"
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const paths = PRERENDERED_PATHS   // /feed уже здесь: корень "/" редиректит на него и в sitemap не нужен
+  const paths = PRERENDERED_PATHS   // корень "/" входит в список: главная отдает свой текст и сама себе canonical
   const pages: MetadataRoute.Sitemap = Array.from(new Set(paths)).map(path => ({
     url: `${BASE_URL}${path}`,
     changeFrequency: "weekly" as const,
-    priority: path === "/feed" ? 1 : 0.7,
+    priority: path === "/" ? 1 : 0.7,
   }))
   const records: MetadataRoute.Sitemap = (await fetchSitemapRecords()).map(r => {
     const when = new Date(r.updated_at)

@@ -180,12 +180,13 @@ describe("Header — без украшений", () => {
 })
 
 describe("Header — гость", () => {
-  it("логотип ведёт гостя на ленту: дашборда у гостя нет, ссылка на него была бы мёртвой", () => {
+  it("логотип ведет гостя на главную: дашборда у гостя нет, ссылка на него была бы мертвой", () => {
     state.user = null
     const { container } = render(<Header titleKey="page.feed.title" />)
     const hrefs = hrefsIn(container)
-    expect(hrefs).toContain("/feed")
+    expect(hrefs).toContain("/")
     expect(hrefs).not.toContain("/dashboard")
+    expect((container.querySelector('a[href="/"]') as HTMLElement).textContent).toContain("MER")
   })
 })
 

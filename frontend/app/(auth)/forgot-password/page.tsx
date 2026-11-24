@@ -53,7 +53,7 @@ export default function ForgotPasswordPage() {
       <div className="flex-1 flex items-center justify-center p-4">
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
-          <Link href="/feed" style={{ textDecoration: "none" }}>
+          <Link href="/" style={{ textDecoration: "none" }}>
             <h1 className="text-2xl font-bold tracking-wide transition-opacity hover:opacity-75" style={{ color: v2.t1, fontFamily: "'Space Grotesk', sans-serif" }}>
               MER<span style={{ color: v2.teal }}>I</span>DIAN
             </h1>

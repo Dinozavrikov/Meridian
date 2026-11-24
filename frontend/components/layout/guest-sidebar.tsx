@@ -29,7 +29,7 @@ export function GuestSidebar() {
       background: "#080a10", borderRight: "0.5px solid rgba(255,255,255,0.07)",
       padding: "20px 16px 16px",
     }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 28 }}>
+      <Link href="/" aria-label="Meridian" style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 28, textDecoration: "none" }}>
         <div style={{
           width: 26, height: 26, borderRadius: 7,
           background: "linear-gradient(135deg, #4A90D915, #7070c010)",
@@ -44,7 +44,7 @@ export function GuestSidebar() {
         <div style={{ fontSize: 12, fontWeight: 700, letterSpacing: "0.1em", color: "#e8e8f0" }}>
           MER<span style={{ color: "#1D9E75" }}>I</span>DIAN
         </div>
-      </div>
+      </Link>
 
       <div style={{
         display: "flex", alignItems: "center", gap: 7,

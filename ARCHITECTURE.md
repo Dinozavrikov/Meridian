@@ -1,6 +1,6 @@
 # Meridian — Architecture
 
-> **Status:** living document, last reviewed 2026-11-22.
+> **Status:** living document, last reviewed 2026-11-24.
 > **Scope:** how Meridian is put together — components, responsibilities, invariants, tradeoffs.
 > **Out of scope:** per-endpoint API reference (FastAPI serves it at `/api/docs`), prompt engineering (see `backend/docs/LLM_ROUTING.md`), backup procedures (see `backend/docs/BACKUP.md`), access policy rules (see `backend/docs/ACCESS_POLICY.md`), changelog (see `CHANGELOG.md`).
 > **How to keep this accurate:** see §15.
@@ -189,7 +189,7 @@ Single `Link` table with `from_type/from_id/to_type/to_id`, `link_type`.
 ## 5. Frontend
 
 ### 5.1 Routing
-Next.js 16 App Router. `(app)` and `(auth)`. `GUEST_ALLOWED` and `PRERENDERED_PATHS` in `guest-access.ts`.
+Next.js 16 App Router with three route groups: `(app)` for the signed-in application and its public reading pages, `(auth)` for the sign-in pages, and `(site)` for the public site, whose home page lives at the root address. The site group is wrapped by `SiteShell`, which does not wait for the session: the text of the page and the header links are in the server HTML, and the sign-in buttons are replaced when the session is confirmed. `GUEST_ALLOWED` and `PRERENDERED_PATHS` in `guest-access.ts` list the paths a guest may open and the paths whose text is in the server HTML; the root address is in both, and it is matched only as itself, never as a prefix of other paths.
 
 ### 5.2 State
 Zustand (`store.ts`): user, locale, translations, authGate. TanStack Query: `staleTime: 30s`, `retry: 1`.
@@ -209,6 +209,7 @@ See §3.7.
 ### 5.7 Search and sharing
 
 - The language is not part of the URL: interface language and content language are switched independently, and a record has one canonical address.
+- The home page at the root address is its own canonical address (it used to redirect to the feed) and has the highest sitemap priority. Russian is the only indexed language by decision, not by omission: other languages come from the client translation for a live visitor, and no English traffic is expected.
 - Public pages with server text are listed in `PRERENDERED_PATHS` (`guest-access.ts`). `sitemap.ts` lists exactly those plus public records from `/feed/public/sitemap`. Client-only lists, sign-in pages and pages closed in `robots.ts` are not listed.
 - The discussion page is split in two: `page.tsx` is a server component that fetches the record group with `fetchEntityGroup` and passes it to `discussion-client.tsx` as initial data, so the record text is in the server HTML. The data is anonymous, so it is marked stale and refetched with the rights of the person. A record the guest cannot see gives `null`, and the client loads it itself.
 - `generateMetadata` in the discussion layout builds the title, description and OpenGraph from the record. Only a public record is indexable, and the author is never put into metadata. `articleJsonLd` builds the structured data and `safeJsonLd` is the only serializer allowed inside a script tag.

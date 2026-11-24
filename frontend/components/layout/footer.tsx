@@ -13,6 +13,7 @@ export function Footer() {
   const statusLabel = t("footer.status")
   const LINKS: Record<"product" | "support" | "legal", FooterLink[]> = {
     product: [
+      { label: t("footer.link.home"), href: "/" },
       { label: t("footer.link.features"), href: "/features" },
       { label: t("footer.link.roadmap"), href: "/roadmap" },
     ],
