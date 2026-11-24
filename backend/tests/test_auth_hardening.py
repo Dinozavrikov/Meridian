@@ -242,3 +242,22 @@ async def test_google_callback_with_a_wrong_state_goes_back_to_the_sign_in_page(
     assert "google_error=state_mismatch" in r.headers["location"]
     async with AsyncSessionLocal() as db:
         assert (await db.execute(select(User).where(User.google_id == "g-state"))).scalar_one_or_none() is None
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("google_only", [True, False], ids=["google_only", "with_password"])
+async def test_reset_email_states_the_configured_link_lifetime(client, monkeypatch, google_only):
+    """Срок ссылки в письме берется из настройки, а не из цифры в тексте: срок подменяется, письмо читается целиком (текст и HTML)."""
+    from app.services import privacy_facts
+    monkeypatch.setattr(privacy_facts, "RESET_LINK_MINUTES", 22)
+    sent = _capture_mail(monkeypatch)
+    user = await _make_user("ttl_user", password=None if google_only else "oldpass12345",
+                            google_id="g-ttl" if google_only else None)
+    r = await client.post(FORGOT, json={"email": user.email}, headers=IP)
+    assert r.status_code == 200
+    assert len(sent) == 1
+    mail = sent[0]
+    assert mail.get("html"), "у письма есть HTML-часть"
+    for part in ("body", "html"):
+        assert "22 минуты" in mail[part], f"срок из настройки есть в части {part}"
+        assert "15 минут" not in mail[part], f"старый срок не зашит в части {part}"

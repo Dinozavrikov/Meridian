@@ -40,11 +40,3 @@ def test_minutes_text_agrees_with_number():
     from app.services.privacy_facts import minutes_text
     got = [minutes_text(n) for n in (1, 2, 5, 11, 12, 15, 21, 22, 25)]
     assert got == ["1 минуту", "2 минуты", "5 минут", "11 минут", "12 минут", "15 минут", "21 минуту", "22 минуты", "25 минут"]
-
-
-def test_reset_email_does_not_hardcode_the_ttl():
-    """Срок в письме берется из RESET_LINK_MINUTES, а не из цифры в тексте (иначе он разойдется с настоящим сроком ссылки)."""
-    from pathlib import Path
-    src = (Path(__file__).resolve().parent.parent / "app" / "api" / "v1" / "auth.py").read_text()
-    assert "15 минут" not in src
-    assert src.count("reset_ttl_text()") == 3
