@@ -125,6 +125,7 @@ export const STRINGS: Record<string, string> = {
   "dashboard.section.loops": "Незакрытые петли",
 
   "footer.tagline": "Идеи, проверенные реальностью",
+  "site.description": "Через полгода вы скажете «я всегда это знал». Meridian помнит, на чем держалась уверенность, показывает, что не проверено, и сверяет прогнозы с реальностью.",
   "footer.status": "Все системы работают",
   "footer.link.features": "Функции",
   "footer.link.roadmap": "Дорожная карта",

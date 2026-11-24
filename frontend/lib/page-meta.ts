@@ -12,6 +12,12 @@ export const SITE_IMAGE = { url: "/opengraph-image", ...OG_SIZE, alt: SITE_NAME 
 
 const str = (key: string) => (STRINGS as Record<string, string>)[key] ?? ""
 
+/** Адрес сайта: metadataBase, OpenGraph и JSON-LD берут его отсюда. */
+export const SITE_URL = "https://miridin.com"
+
+/** Одна формулировка позиционирования: description страниц, OpenGraph, Twitter и JSON-LD берут ее отсюда. Текст в strings.ts (site.description). */
+export const SITE_DESCRIPTION = str("site.description")
+
 /** OpenGraph и Twitter страницы раздела: тип, картинка с размерами, адрес. Нужны оба набора целиком:
  *  объект openGraph дочернего layout заменяет родительский, и недостающие теги пропадают. */
 export function shareMetadata(path: string, title: string, description: string): Pick<Metadata, "openGraph" | "twitter"> {

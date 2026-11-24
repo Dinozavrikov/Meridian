@@ -13,6 +13,10 @@ The project is under active development: some features are unfinished and may no
 - Registration is limited by address; after too many attempts a message asks to try again later
 - An account that signs in only through Google can now set a password: "Forgot password" sends a link instead of a refusal
 
+### Changed
+
+- The site description in search results and link previews now names the problem Meridian closes ("in half a year you will say I always knew it") and says what it does about it; the same wording is used in the page tags, the share tags and the structured data
+
 ### Fixed
 
 - An account created in advance with someone else's e-mail no longer stays open to its creator after the owner signs in through Google: the old password is turned off, other sessions end, the owner gets a letter, and the records stay
