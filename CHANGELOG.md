@@ -27,6 +27,7 @@ The project is under active development: some features are unfinished and may no
 - A failed sign-in through Google now explains what went wrong on the sign-in page instead of showing an empty form, and a refusal from a blocked region or an expired Google session comes back to that page instead of a raw error
 - Pinch-to-zoom works again on phones: the page no longer forbids changing the scale, which people with low vision need
 - Text fields use a 16px font on touch screens, so iOS no longer zooms the page in when a field gets focus
+- The drifting network background on the not-found and onboarding pages now stays still when the system asks for reduced motion, and moves at the same pace on 60 Hz and high refresh rate screens.
 
 ## [0.22.19] - 2026-11-23
 
