@@ -11,16 +11,22 @@ const literals = new Set([...src.matchAll(/["'`](sitePage\.[A-Za-z0-9_.]*[A-Za-z
 const templates = [...src.matchAll(/sitePage\.[A-Za-z0-9_.]*\.(?=\$\{)/g)].map(m => m[0])
 const own = Object.keys(STRINGS).filter(k => k.startsWith("sitePage."))
 
+// Основа ключа с формами числа: в коде лежит только она, а в strings.ts ее One, Few и Many.
+const FORMS = ["One", "Few", "Many"]
+const isPluralBase = (l: string) => FORMS.every(f => `${l}${f}` in STRINGS)
+const usedAsBase = (k: string) => FORMS.some(f => k.endsWith(f) && literals.has(k.slice(0, -f.length)))
+
 describe("ключи публичного сайта", () => {
-  it("список файлов не усох", () => expect(files.length).toBeGreaterThanOrEqual(6))
+  it("список файлов не усох", () => expect(files.length).toBeGreaterThanOrEqual(12))
   it("каждый ключ sitePage.* где-то используется", () => {
-    expect(own.length).toBeGreaterThan(10)
-    expect(own.filter(k => !(literals.has(k) || templates.some(p => k.startsWith(p))))).toEqual([])
+    expect(own.length).toBeGreaterThan(60)
+    expect(own.filter(k => !(literals.has(k) || templates.some(p => k.startsWith(p)) || usedAsBase(k)))).toEqual([])
   })
   it("в коде нет ссылок на несуществующие ключи", () => {
-    expect([...literals].filter(l => !(l in STRINGS))).toEqual([])
+    expect([...literals].filter(l => !(l in STRINGS) && !isPluralBase(l))).toEqual([])
   })
   it("данные из lib/site/home.ts имеют тексты", () => {
+    expect(DATA_KEYS.length).toBeGreaterThan(60)
     expect(DATA_KEYS.filter(k => !(k in STRINGS))).toEqual([])
   })
 })

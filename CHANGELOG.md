@@ -10,7 +10,7 @@ The project is under active development: some features are unfinished and may no
 
 ### Added
 
-- A public home page at the root address: it explains the idea in a few lines, has a header with links and a way to sign in or open the app, and every page of the site now has a link back to it; the root address no longer redirects to the feed
+- A public home page at the root address: it explains how the method works, what Meridian computes for you, what a record is, who it is for and what happens to your data, with a sample idea passport, has a header with links and a way to sign in or open the app, and every page of the site now has a link back to it; the root address no longer redirects to the feed
 - Signed-in people get a way back to the home page: an About Meridian icon in the side menu and a row at the end of the mobile menu
 - Registration is limited by address; after too many attempts a message asks to try again later
 - An account that signs in only through Google can now set a password: "Forgot password" sends a link instead of a refusal

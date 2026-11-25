@@ -33,7 +33,7 @@ describe.each([360, 390, 768, 1280])("главная при ширине %i", wi
     await page.viewport(width, 800)
     const { container } = render(<SiteShell><HomeContent /></SiteShell>)
     expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(window.innerWidth)
-    const outside = [...container.querySelectorAll("header a, header button, main h1, main li, footer a")]
+    const outside = [...container.querySelectorAll("header a, header button, main h1, main h2, main h3, main li, main aside, main a, footer a")]
       .filter(el => el.getBoundingClientRect().right > window.innerWidth + 1)
       .map(el => (el.textContent ?? "").trim().slice(0, 30))
     expect(outside).toEqual([])
