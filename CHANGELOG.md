@@ -15,6 +15,7 @@ The project is under active development: some features are unfinished and may no
 - Registration is limited by address; after too many attempts a message asks to try again later
 - An account that signs in only through Google can now set a password: "Forgot password" sends a link instead of a refusal
 - The home page background shows a slowly drifting network of nodes. It stays still when the system asks for reduced motion and pauses while it is scrolled out of view.
+- A sandbox on the home page: write a claim, pick how sure you are, and see which of the source, the refutation criterion and the deadline are still missing. The text stays in the browser, and the result can be downloaded or copied as Markdown.
 
 ### Changed
 

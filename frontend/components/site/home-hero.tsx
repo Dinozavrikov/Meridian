@@ -39,7 +39,7 @@ export function HomeHero() {
             {t(HOME_KEYS.title)}
           </h1>
           <p style={{ margin: "0 0 28px", maxWidth: 640, fontSize: 18, lineHeight: 1.6, color: v2.t2 }}>{t(HOME_KEYS.lead)}</p>
-          <div style={{ margin: "0 0 20px" }}><HomeCta /></div>
+          <div style={{ margin: "0 0 20px" }}><HomeCta sandbox /></div>
           <p style={{ margin: 0, maxWidth: 560, fontSize: 13, lineHeight: 1.6, color: v2.t3 }}>{t(HOME_KEYS.privacy)}</p>
         </div>
         <PassportCard />

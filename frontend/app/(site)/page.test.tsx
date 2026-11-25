@@ -52,7 +52,7 @@ describe("главная страница", () => {
     expect(hrefs(container)).not.toContain("/register")
   })
 
-  it("шесть разделов идут в своем порядке", () => {
+  it("разделы идут в своем порядке", () => {
     render(<HomePage />)
     const titles = screen.getAllByRole("heading", { level: 2 }).map(h => h.textContent)
     expect(titles).toEqual(Object.values(SECTION_KEYS).map(k => S[k.title]))

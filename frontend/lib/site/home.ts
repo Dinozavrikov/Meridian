@@ -1,6 +1,7 @@
 // Главная страница: списки и ключи текстов. Тексты лежат в lib/i18n/strings.ts (sitePage.home.*), числа и списки
 // берутся из единых источников в коде (типы записей, стадии, уровни видимости, влияния на убеждения, модель зрелости).
 import { VISIBILITY_LEVELS } from "@/lib/visibility-levels"
+import { SANDBOX_DATA_KEYS } from "@/lib/site/sandbox"
 
 export const HOME_KEYS = {
   eyebrow: "footer.tagline",
@@ -9,6 +10,7 @@ export const HOME_KEYS = {
   ctaRegister: "sitePage.home.cta.register",
   ctaLogin: "sitePage.home.cta.login",
   ctaApp: "sitePage.home.cta.app",
+  ctaSandbox: "sitePage.home.cta.sandbox",
   privacy: "sitePage.home.privacy",
 } as const
 
@@ -32,6 +34,7 @@ export const PASSPORT_KEYS = {
 export const EXAMPLE = { level: 2, confidence: 70 } as const
 
 export const SECTION_KEYS = {
+  sandbox: { title: "sitePage.home.sandbox.title", lead: "sitePage.home.sandbox.lead" },
   steps: { title: "sitePage.home.steps.title", lead: "sitePage.home.steps.lead" },
   computes: { title: "sitePage.home.computes.title", lead: "sitePage.home.computes.lead" },
   records: { title: "sitePage.home.records.title", lead: "sitePage.home.records.lead" },
@@ -93,6 +96,7 @@ export const DATA_KEYS: string[] = [
   ...Object.values(RECORDS_KEYS),
   ...Object.values(AUDIENCE_KEYS),
   ...Object.values(FINAL_KEYS),
+  ...SANDBOX_DATA_KEYS,
   ...Object.values(SECTION_KEYS).flatMap(k => [k.title, k.lead]),
   ...STEP_IDS.flatMap(id => Object.values(stepKeys(id))),
   ...COMPUTE_IDS.flatMap(id => Object.values(computeKeys(id))),
