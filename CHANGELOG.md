@@ -14,6 +14,7 @@ The project is under active development: some features are unfinished and may no
 - Signed-in people get a way back to the home page: an About Meridian icon in the side menu and a row at the end of the mobile menu
 - Registration is limited by address; after too many attempts a message asks to try again later
 - An account that signs in only through Google can now set a password: "Forgot password" sends a link instead of a refusal
+- The home page background shows a slowly drifting network of nodes. It stays still when the system asks for reduced motion and pauses while it is scrolled out of view.
 
 ### Changed
 
