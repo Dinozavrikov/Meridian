@@ -39,7 +39,7 @@ function setup(reduce: boolean) {
     addEventListener: vi.fn((_type: string, cb: () => void) => { listeners.add(cb) }),
     removeEventListener: vi.fn((_type: string, cb: () => void) => { listeners.delete(cb) }),
   }
-  const matchMedia = vi.fn((_query: string) => mq)
+  const matchMedia = vi.fn<(q: string) => typeof mq>(() => mq)
   vi.stubGlobal("matchMedia", matchMedia)
 
   return {
@@ -132,5 +132,54 @@ describe("DriftNetwork", () => {
     unmount()
     expect(s.pending.size).toBe(0)
     expect(s.listeners.size).toBe(0)
+  })
+})
+
+type IoCb = (entries: { isIntersecting: boolean }[]) => void
+
+function stubObserver() {
+  const made: { cb: IoCb; observe: ReturnType<typeof vi.fn>; disconnect: ReturnType<typeof vi.fn> }[] = []
+  class FakeObserver {
+    observe = vi.fn()
+    disconnect = vi.fn()
+    constructor(cb: IoCb) { made.push({ cb, observe: this.observe, disconnect: this.disconnect }) }
+  }
+  vi.stubGlobal("IntersectionObserver", FakeObserver)
+  return { made, fire: (isIntersecting: boolean) => made[0].cb([{ isIntersecting }]) }
+}
+
+describe("DriftNetwork за пределами экрана", () => {
+  it("пока сеть не видна, кадры не запрашиваются, при возвращении она снова движется", () => {
+    const s = setup(false)
+    const o = stubObserver()
+    render(<DriftNetwork />)
+    expect(o.made).toHaveLength(1)
+    expect(o.made[0].observe).toHaveBeenCalledTimes(1)
+    expect(s.pending.size).toBe(1)
+    o.fire(false)
+    expect(s.pending.size).toBe(0)
+    o.fire(true)
+    expect(s.pending.size).toBe(1)
+    runFor(s, FRAME_60, 2)
+    expect(lastDotX(s) - START_X).toBeGreaterThan(1)
+  })
+
+  it("при размонтировании наблюдатель отключается", () => {
+    setup(false)
+    const o = stubObserver()
+    const { unmount } = render(<DriftNetwork />)
+    expect(o.made[0].disconnect).not.toHaveBeenCalled()
+    unmount()
+    expect(o.made[0].disconnect).toHaveBeenCalledTimes(1)
+  })
+
+  it("за экраном и обратно при уменьшении движения анимация не включается", () => {
+    const s = setup(true)
+    const o = stubObserver()
+    render(<DriftNetwork />)
+    o.fire(false)
+    o.fire(true)
+    expect(s.raf).not.toHaveBeenCalled()
+    expect(s.pending.size).toBe(0)
   })
 })

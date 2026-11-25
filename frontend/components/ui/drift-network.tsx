@@ -6,6 +6,7 @@ import { useEffect, useRef } from "react"
 // и медленный: фон, а не фокус внимания.
 // При настройке системы "уменьшить движение" рисуется один неподвижный кадр,
 // смена настройки на открытой странице подхватывается сразу.
+// Пока холст за пределами экрана, кадры не запрашиваются: фон, которого не видно, не должен греть телефон.
 // Скорость задана на кадр при 60 Гц и пересчитывается по настоящему времени кадра,
 // иначе на экранах 120 и 144 Гц сеть плыла бы в два с лишним раза быстрее.
 const FRAME_MS = 1000 / 60
@@ -79,9 +80,11 @@ export function DriftNetwork() {
       if (raf) cancelAnimationFrame(raf)
       raf = 0
     }
+    let visible = true
     const sync = () => {
       stop()
       if (reduced()) { paint(); return }
+      if (!visible) return
       last = 0
       raf = requestAnimationFrame(tick)
     }
@@ -89,11 +92,19 @@ export function DriftNetwork() {
       resize()
       if (reduced()) paint()
     }
+    const io = typeof IntersectionObserver === "function"
+      ? new IntersectionObserver(entries => {
+        const e = entries[entries.length - 1]
+        if (!e || e.isIntersecting === visible) return
+        visible = e.isIntersecting; sync()
+      })
+      : null
     resize()
     window.addEventListener("resize", onResize)
     reduce?.addEventListener("change", sync)
+    io?.observe(canvas)
     sync()
-    return () => { stop(); window.removeEventListener("resize", onResize); reduce?.removeEventListener("change", sync) }
+    return () => { stop(); io?.disconnect(); window.removeEventListener("resize", onResize); reduce?.removeEventListener("change", sync) }
   }, [])
   return <canvas ref={ref} style={{ position: "absolute", inset: 0, width: "100%", height: "100%" }} />
 }
