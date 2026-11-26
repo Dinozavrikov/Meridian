@@ -3,10 +3,11 @@ import { useEffect, useId, useRef, useState, type ReactNode } from "react"
 import { useT } from "@/lib/i18n/useT"
 import { v2 } from "@/lib/theme"
 import { SECTION_KEYS } from "@/lib/site/home"
-import { GAP_IDS, SANDBOX_ID, SANDBOX_KEYS as K, buildMarkdown, edgeOf, exportFileName, gapKeys, missingGaps, type SandboxDraft } from "@/lib/site/sandbox"
+import { GAP_IDS, SANDBOX_ID, SANDBOX_KEYS as K, buildMarkdown, edgeOf, exportFileName, gapExampleKey, gapKeys, missingGaps, type SandboxDraft } from "@/lib/site/sandbox"
 import { downloadText } from "@/lib/site/download-text"
 import { HomeSection, cardStyle, h3Style, pStyle } from "@/components/site/home-section"
 import { useConfidenceBounds } from "@/components/site/use-confidence-bounds"
+import { HomeExample } from "@/components/site/home-example"
 
 const field = {
   width: "100%", boxSizing: "border-box", padding: "10px 12px", borderRadius: 10, border: `1px solid ${v2.bd2}`,
@@ -115,6 +116,7 @@ export function HomeSandbox() {
                       <div style={{ fontWeight: 600, color: v2.amber }}>{t(g.label)}</div>
                       <div style={{ color: v2.t2, overflowWrap: "anywhere" }}>{t(g.question)}</div>
                       <div style={{ color: v2.t3, overflowWrap: "anywhere" }}>{t(g.note)}</div>
+                      <HomeExample k={gapExampleKey(id)} />
                     </li>
                   )
                 })}

@@ -8,6 +8,9 @@ The project is under active development: some features are unfinished and may no
 
 ## [Unreleased]
 
+### Changed
+- The home page, documentation and features page now describe maturity, source diversity, calibration and undo as the code works, with practical examples.
+
 ### Fixed
 - The server now rejects hypothesis maturity, risk, stability and research load values outside their scales.
 - Linking two records in the opposite direction no longer creates a second link for the same pair.

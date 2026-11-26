@@ -25,9 +25,9 @@ export const recordRoleKey = (k: NodeKey) => `docsPage.record.${k}.role`
 export const PRINCIPLES = ["surprise", "miss", "risk"] as const
 export const FORMULA_TERM_IDS = ["predictions", "observations", "lab", "skill", "risk"] as const
 
-export interface CardSpec { id: string; plural?: boolean }
+export interface CardSpec { id: string; plural?: boolean; example?: boolean }
 export const CALIBRATION_CARDS: readonly CardSpec[] = [{ id: "what" }, { id: "how" }, { id: "scopes" }, { id: "tags", plural: true }, { id: "deletion" }]
-export const DIVERSITY_CARDS: readonly CardSpec[] = [{ id: "what" }, { id: "similarity" }, { id: "confirm" }, { id: "refute" }, { id: "effect" }]
+export const DIVERSITY_CARDS: readonly CardSpec[] = [{ id: "what", example: true }, { id: "similarity" }, { id: "confirm" }, { id: "refute" }, { id: "effect", example: true }]
 export const VISIBILITY_CARDS: readonly CardSpec[] = [{ id: "labs" }, { id: "snapshots" }]
 export const SAFETY_CARDS: readonly CardSpec[] = [{ id: "history" }, { id: "trash" }, { id: "export" }, { id: "account" }]
 export const AI_CARDS: readonly CardSpec[] = [{ id: "where" }, { id: "reads" }, { id: "limits" }]
@@ -67,6 +67,7 @@ export function docsDataKeys(): string[] {
   for (const id of PRINCIPLES) keys.push(`docsPage.principle.${id}.title`, `docsPage.principle.${id}.text`)
   for (const id of FORMULA_TERM_IDS) for (const f of ["name", "eq", "text"]) keys.push(`docsPage.formula.term.${id}.${f}`)
   for (const g of CARD_GROUPS) for (const c of g.cards) keys.push(`docsPage.${g.ns}.${c.id}.title`, ...textKeys(`docsPage.${g.ns}.${c.id}`, !!c.plural))
+  for (const g of CARD_GROUPS) for (const c of g.cards) if (c.example) keys.push(`docsPage.${g.ns}.${c.id}.example`)
   for (const l of VISIBILITY_LEVELS) keys.push(`docsPage.visibility.level.${l.value}.text`)
   for (const e of EXPORT_KEYS) keys.push(`docsPage.export.item.${e}`)
   for (const id of FAQ_IDS) keys.push(...Object.values(faqKeys(id)))

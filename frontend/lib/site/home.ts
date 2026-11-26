@@ -78,6 +78,7 @@ export const AUDIENCE_KEYS = {
   decideExtra: "sitePage.home.audience.decide.extra",
   researchTitle: "sitePage.home.audience.research.title",
   researchText: "sitePage.home.audience.research.text",
+  researchExample: "sitePage.home.audience.research.example",
   note: "sitePage.home.audience.note",
 } as const
 
@@ -86,6 +87,11 @@ export const dataItemKey = (id: (typeof DATA_ITEM_IDS)[number]) => `sitePage.hom
 export const DATA_LINK_KEY = "sitePage.home.data.link"
 
 export const FINAL_KEYS = { docs: "sitePage.home.final.docs" } as const
+
+/** Примеры под текстами есть не у каждого пункта: null значит, что строки нет. */
+const COMPUTE_WITH_EXAMPLE: readonly ComputeId[] = ["maturity", "independence", "calibration"]
+export const computeExampleKey = (id: ComputeId) => (COMPUTE_WITH_EXAMPLE.includes(id) ? `sitePage.home.compute.${id}.example` : null)
+export const stepExampleKey = (id: StepId) => (id === "close" ? `sitePage.home.step.${id}.example` : null)
 
 const FORMS = ["One", "Few", "Many"] as const
 
@@ -103,6 +109,8 @@ export const DATA_KEYS: string[] = [
   MATURITY_PENDING_KEY,
   DATA_LINK_KEY,
   ...DATA_ITEM_IDS.map(dataItemKey),
+  ...[...COMPUTE_IDS.map(computeExampleKey), ...STEP_IDS.map(stepExampleKey)]
+    .filter((k): k is string => k !== null),
   ...Object.values(COUNT_BASES).flatMap(base => FORMS.map(f => `${base}${f}`)),
   ...VISIBILITY_LEVELS.map(l => visKey(l.value)),
 ]

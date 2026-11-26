@@ -11,10 +11,11 @@ import { TYPE_COLORS } from "@/lib/utils"
 import { v2 } from "@/lib/theme"
 import {
   COMPUTE_IDS, COUNT_BASES, MATURITY_PENDING_KEY, RECORDS_KEYS, SECTION_KEYS, STEP_IDS, STEP_TYPE,
-  computeKeys, stepKeys, visKey, type ComputeId,
+  computeExampleKey, computeKeys, stepExampleKey, stepKeys, visKey, type ComputeId,
 } from "@/lib/site/home"
 import { HomeSection, cardStyle, h3Style, pStyle } from "@/components/site/home-section"
 import { useMaturityRange } from "@/components/site/use-maturity-range"
+import { HomeExample } from "@/components/site/home-example"
 
 const COMPUTE_ICON: Record<ComputeId, LucideIcon> = {
   maturity: Gauge, independence: Layers, blind: EyeOff, calibration: Target, contradictions: RefreshCw, patterns: Brain,
@@ -39,6 +40,7 @@ export function HomeSteps() {
               <div style={{ width: 28, height: 28, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 12, fontSize: 13, fontWeight: 700, color, background: `${color}22` }}>{i + 1}</div>
               <h3 style={h3Style}>{t(k.title)}</h3>
               <p style={pStyle}>{t(k.text)}</p>
+              <HomeExample k={stepExampleKey(id)} />
             </li>
           )
         })}
@@ -68,6 +70,7 @@ export function HomeComputes() {
               </div>
               <h3 style={h3Style}>{title(id)}</h3>
               <p style={pStyle}>{t(computeKeys(id).text)}</p>
+              <HomeExample k={computeExampleKey(id)} />
             </li>
           )
         })}

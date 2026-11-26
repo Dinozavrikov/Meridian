@@ -27,6 +27,7 @@ export function DocsCards({ ns, cards, counts, extra, extras, min = 280 }: Props
           <article key={c.id} className="docs-card" style={card}>
             <h3 style={h3}>{d(`${base}.title`)}</h3>
             <p style={body}>{d(key, { n, ...extra })}</p>
+            {c.example && <p style={{ ...body, marginTop: 10, fontSize: 13, opacity: 0.75 }}>{d(`${base}.example`)}</p>}
             {extras?.[c.id]}
           </article>
         )

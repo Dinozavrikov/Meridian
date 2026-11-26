@@ -4,6 +4,7 @@ import { Check } from "lucide-react"
 import { useT } from "@/lib/i18n/useT"
 import { v2 } from "@/lib/theme"
 import { AUDIENCE_KEYS as A, DATA_ITEM_IDS, DATA_LINK_KEY, FINAL_KEYS, SECTION_KEYS, dataItemKey } from "@/lib/site/home"
+import { HomeExample } from "@/components/site/home-example"
 import { HomeSection, cardStyle, h3Style, pStyle } from "@/components/site/home-section"
 import { HomeCta } from "@/components/site/home-cta"
 
@@ -20,6 +21,7 @@ export function HomeAudience() {
         <div style={cardStyle}>
           <h3 style={h3Style}>{t(A.researchTitle)}</h3>
           <p style={pStyle}>{t(A.researchText)}</p>
+          <HomeExample k={A.researchExample} />
         </div>
       </div>
       <p style={{ margin: "12px 0 0", fontSize: 12, color: v2.t3 }}>{t(A.note)}</p>

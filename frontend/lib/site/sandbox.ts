@@ -13,6 +13,8 @@ export const gapKeys = (id: GapId) => ({
   note: `sitePage.home.sandbox.gap.${id}.note`,
 })
 
+export const gapExampleKey = (id: GapId) => (id === "source" ? `sitePage.home.sandbox.gap.${id}.example` : null)
+
 export const SANDBOX_KEYS = {
   claimLabel: "sitePage.home.sandbox.claim.label",
   claimPlaceholder: "sitePage.home.sandbox.claim.placeholder",
@@ -54,6 +56,7 @@ export const SANDBOX_KEYS = {
 export const SANDBOX_DATA_KEYS: string[] = [
   ...Object.values(SANDBOX_KEYS),
   ...GAP_IDS.flatMap(id => Object.values(gapKeys(id))),
+  ...GAP_IDS.map(gapExampleKey).filter((k): k is string => k !== null),
 ]
 
 export interface SandboxDraft {
