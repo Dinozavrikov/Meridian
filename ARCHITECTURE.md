@@ -189,7 +189,7 @@ Single `Link` table with `from_type/from_id/to_type/to_id`, `link_type`.
 ## 5. Frontend
 
 ### 5.1 Routing
-Next.js 16 App Router with three route groups: `(app)` for the signed-in application and its public reading pages, `(auth)` for the sign-in pages, and `(site)` for the public site, whose home page lives at the root address. The site group is wrapped by `SiteShell`, which does not wait for the session: the text of the page and the header links are in the server HTML, and the sign-in buttons are replaced when the session is confirmed. `GUEST_ALLOWED` and `PRERENDERED_PATHS` in `guest-access.ts` list the paths a guest may open and the paths whose text is in the server HTML; the root address is in both, and it is matched only as itself, never as a prefix of other paths.
+Next.js 16 App Router with three route groups: `(app)` for the signed-in application and its public reading pages, `(auth)` for the sign-in pages, and `(site)` for the public site, whose home page lives at the root address. The site group is wrapped by `SiteShell`, which does not wait for the session: the text of the page and the header links are in the server HTML, and the sign-in buttons are replaced when the session is confirmed. `GUEST_ALLOWED` and `PRERENDERED_PATHS` in `guest-access.ts` list the paths a guest may open and the paths whose text is in the server HTML; the root address is in both, and it is matched only as itself, never as a prefix of other paths. The home page holds a sandbox (`HomeSandbox`) that works only in the browser: tests check that nothing typed into it is sent or stored, and the limits of its confidence slider come from the maturity model served by the backend.
 
 ### 5.2 State
 Zustand (`store.ts`): user, locale, translations, authGate. TanStack Query: `staleTime: 30s`, `retry: 1`.
@@ -286,6 +286,7 @@ Backups: `scripts/backup/` with age-encryption. You supply your own age public k
 - **`_ENTITY_MODELS` duplicated** in `recheck_worker.py` and `contradiction_recheck.py`.
 - **`print()` instead of `logger`** in workers.
 - **Translation of record text with links is best effort**: when the model loses a marker, the translation keeps the text and drops the links.
+- **Layout shifts to the right on very wide screens.** Seen in a television browser with a very wide screen, on every page checked, including the signed-in application. The cause is not investigated.
 
 ---
 ## 12. Contributor recipes
