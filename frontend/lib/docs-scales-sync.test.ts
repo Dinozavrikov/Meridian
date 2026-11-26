@@ -22,4 +22,13 @@ describe("шкалы интерфейса совпадают с констант
   it("шкала значимости наблюдения идет до IMPORTANCE_MAX", () => {
     expect(scale("importance", "observation").max).toBe(num("IMPORTANCE_MAX"))
   })
+  it.each([
+    ["stability", "STABILITY_MAX"],
+    ["research_load", "RESEARCH_LOAD_MAX"],
+  ])("шкала %s совпадает с серверной границей", (id, name) => {
+    const src = readFileSync(join(process.cwd(), "..", "backend", "app/schemas/hyp_scales.py"), "utf-8")
+    const max = Number(new RegExp(`^${name} = ([0-9]+)`, "m").exec(src)?.[1])
+    expect(scale(id, "hypothesis").min).toBe(0)
+    expect(scale(id, "hypothesis").max).toBe(max)
+  })
 })
