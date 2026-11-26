@@ -12,6 +12,7 @@ The project is under active development: some features are unfinished and may no
 - The server now rejects hypothesis maturity, risk, stability and research load values outside their scales.
 - Linking two records in the opposite direction no longer creates a second link for the same pair.
 - The evidence signal now reads an author's own links in a stable order.
+- Social preview images now use both bundled PT Serif files, so Latin letters, digits and punctuation no longer depend on a font downloaded at render time.
 
 ## [0.23.0] - 2026-11-26
 

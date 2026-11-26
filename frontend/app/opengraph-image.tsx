@@ -1,5 +1,5 @@
 import { ImageResponse } from "next/og"
-import { ogFonts } from "@/lib/og-fonts"
+import { OG_FONT_FAMILY, ogFonts } from "@/lib/og-fonts"
 import { OG_SIZE, SITE_NAME } from "@/lib/page-meta"
 
 export const alt = SITE_NAME
@@ -12,7 +12,7 @@ export default async function OGImage() {
       <div style={{
         width: "100%", height: "100%", display: "flex", flexDirection: "column",
         alignItems: "center", justifyContent: "center",
-        background: "#0b0d14", position: "relative", fontFamily: "PT Serif",
+        background: "#0b0d14", position: "relative", fontFamily: OG_FONT_FAMILY,
       }}>
         <div style={{
           position: "absolute", inset: 0,

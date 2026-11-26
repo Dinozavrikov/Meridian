@@ -1,7 +1,7 @@
 import { ImageResponse } from "next/og"
 import { OG_SIZE, SITE_NAME } from "@/lib/page-meta"
 import type { OgCard } from "@/lib/og-card"
-import { ogFonts } from "@/lib/og-fonts"
+import { OG_FONT_FAMILY, ogFonts } from "@/lib/og-fonts"
 
 /** Отрисовка карточки для соцсетей. Одна на картинку записи и общую картинку сайта. */
 export async function renderOgCard(c: OgCard) {
@@ -9,7 +9,7 @@ export async function renderOgCard(c: OgCard) {
     (
       <div style={{
         width: "100%", height: "100%", display: "flex", flexDirection: "column", justifyContent: "space-between",
-        padding: "64px 72px", background: "#0F1218", color: "#F2F4F8", fontFamily: "PT Serif",
+        padding: "64px 72px", background: "#0F1218", color: "#F2F4F8", fontFamily: OG_FONT_FAMILY,
         borderLeft: `14px solid ${c.color}`,
       }}>
         <div style={{ display: "flex", fontSize: 32, color: c.color }}>{c.label || " "}</div>
