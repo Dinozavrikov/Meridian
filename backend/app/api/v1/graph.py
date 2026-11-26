@@ -236,14 +236,22 @@ async def add_link(
                 to_type=to_type, to_id=to_id, link_type=link_type)
     # Дубль связи (IntegrityError) откатывает только savepoint: строка согласия (record_shares), выбранная этим запросом, остаётся.
     from sqlalchemy.exc import IntegrityError
-    created = True
-    try:
-        async with db.begin_nested():
-            db.add(lnk)
-            await emit_event(db, type="linked", actor_id=user.id, entity_type=from_type,
-                      entity_id=from_id, related_type=to_type, related_id=to_id,
-                      lab_id=ev_lab_id, visibility=ev_visibility, meta={"link_type": link_type})
-    except IntegrityError:
+    # Пара записей не направлена (так ее меняют и удаляют), а уникальный ключ таблицы учитывает направление:
+    # зеркальную связь отсекаем здесь и отвечаем как на прямой дубль. Два одновременных запроса это не закрывает.
+    mirrored = await db.scalar(select(Link.id).where(
+        Link.user_id == user.id, Link.from_type == to_type, Link.from_id == to_id,
+        Link.to_type == from_type, Link.to_id == from_id).limit(1))
+    if mirrored is None:
+        created = True
+        try:
+            async with db.begin_nested():
+                db.add(lnk)
+                await emit_event(db, type="linked", actor_id=user.id, entity_type=from_type,
+                          entity_id=from_id, related_type=to_type, related_id=to_id,
+                          lab_id=ev_lab_id, visibility=ev_visibility, meta={"link_type": link_type})
+        except IntegrityError:
+            created = False
+    else:
         created = False
     try:
         await db.commit()

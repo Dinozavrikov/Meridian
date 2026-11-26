@@ -139,7 +139,7 @@ async def _observation_evidence_query(db: AsyncSession, user_id: int, hypothesis
             ) | (
                 (Link.to_type == "observation") & (Link.from_type == "hypothesis") & (Link.from_id == hypothesis_id)
             ),
-        )
+        ).order_by(Link.id)
     )).scalars().all()
     signs = link_signs(rows)
     if not signs:
