@@ -4,6 +4,7 @@ from datetime import datetime
 from app.schemas._strict import (
     StrictIn, Short32, Short64, Short128, Short255, LongText, DateStr, Visibility, Int32, Tags, HttpUrlStr, NonEmpty255, RichRequired,
 )
+from app.schemas.hyp_scales import MaturityLevel, ResearchLoadScore, RiskScore, StabilityScore
 
 cfg = {"from_attributes": True}
 
@@ -58,10 +59,10 @@ class HypCreate(StrictIn):
     falsification_criteria: LongText = ""
     date_created: DateStr
     status: HypothesisStatus = "идея"
-    stability: Int32 = 5
-    research_load: Int32 = 5
-    maturity: Int32 = 0
-    risk: Int32 = 5
+    stability: StabilityScore = 5
+    research_load: ResearchLoadScore = 5
+    maturity: MaturityLevel = 0
+    risk: RiskScore = 5
     visibility: Visibility = "private"
     lab_id: Optional[Int32] = None
     tags: Tags = []

@@ -8,6 +8,9 @@ The project is under active development: some features are unfinished and may no
 
 ## [Unreleased]
 
+### Fixed
+- The server now rejects hypothesis maturity, risk, stability and research load values outside their scales.
+
 ## [0.23.0] - 2026-11-26
 
 ### Added
