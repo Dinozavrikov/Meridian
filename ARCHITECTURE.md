@@ -287,6 +287,7 @@ Backups: `scripts/backup/` with age-encryption. You supply your own age public k
 - **`print()` instead of `logger`** in workers.
 - **Translation of record text with links is best effort**: when the model loses a marker, the translation keeps the text and drops the links.
 - **Layout shifts to the right on very wide screens.** Seen in a television browser with a very wide screen, on every page checked, including the signed-in application. The cause is not investigated.
+- **Reverse link race.** `add_link` looks for a mirrored link before the insert, while the unique constraint on `links` respects direction, so two concurrent requests can still create both rows. Closing this needs a database constraint and a migration.
 
 ---
 ## 12. Contributor recipes
