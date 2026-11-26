@@ -8,6 +8,8 @@ The project is under active development: some features are unfinished and may no
 
 ## [Unreleased]
 
+## [0.23.0] - 2026-11-26
+
 ### Added
 
 - A public home page at the root address: it explains how the method works, what Meridian computes for you, what a record is, who it is for and what happens to your data, with a sample idea passport, has a header with links and a way to sign in or open the app, and every page of the site now has a link back to it; the root address no longer redirects to the feed
