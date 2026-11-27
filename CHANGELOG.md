@@ -8,6 +8,8 @@ The project is under active development: some features are unfinished and may no
 
 ## [Unreleased]
 
+## [0.23.1] - 2026-11-28
+
 ### Changed
 - The home page, documentation and features page now describe maturity, source diversity, calibration and undo as the code works, with practical examples.
 
