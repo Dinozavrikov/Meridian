@@ -16,6 +16,7 @@ The project is under active development: some features are unfinished and may no
 - Linking two records in the opposite direction no longer creates a second link for the same pair.
 - The evidence signal now reads an author's own links in a stable order.
 - Social preview images now use both bundled PT Serif files, so Latin letters, digits and punctuation no longer depend on a font downloaded at render time.
+- The idea check export buttons now say next to them why they are inactive, and stay reachable from the keyboard.
 
 ## [0.23.0] - 2026-11-26
 

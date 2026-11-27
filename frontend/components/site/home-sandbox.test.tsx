@@ -141,13 +141,32 @@ describe("песочница на главной", () => {
     expect(screen.queryByText(S[K.gapsTitle])).toBeNull()
   })
 
-  it("без утверждения скачать и скопировать нельзя", () => {
+  it("без утверждения кнопки неактивны, объяснены и ничего не делают", async () => {
+    const cap = captureDownload()
+    const writeText = stubClipboard()
     render(<HomeSandbox />)
-    expect([button(K.download).disabled, button(K.copy).disabled]).toEqual([true, true])
-    enter(K.claimLabel, "   ")
-    expect([button(K.download).disabled, button(K.copy).disabled]).toEqual([true, true])
+    for (const claim of ["", "   "]) {
+      enter(K.claimLabel, claim)
+      for (const key of [K.download, K.copy]) {
+        const b = button(key)
+        expect(b.disabled).toBe(false)
+        expect(b.getAttribute("aria-disabled")).toBe("true")
+        const reason = document.getElementById(b.getAttribute("aria-describedby") ?? "")
+        expect(reason?.textContent).toBe(S[K.claimFirst])
+        fireEvent.click(b)
+      }
+    }
+    await Promise.resolve()
+    expect(cap.blobs).toHaveLength(0)
+    expect(cap.clicks).toHaveLength(0)
+    expect(writeText).not.toHaveBeenCalled()
+    expect(screen.queryByText(S[K.copied])).toBeNull()
     enter(K.claimLabel, CLAIM)
-    expect([button(K.download).disabled, button(K.copy).disabled]).toEqual([false, false])
+    for (const key of [K.download, K.copy]) {
+      expect(button(key).getAttribute("aria-disabled")).toBeNull()
+      expect(button(key).getAttribute("aria-describedby")).toBeNull()
+    }
+    expect(screen.queryByText(S[K.claimFirst])).toBeNull()
   })
 
   it("скачанный файл содержит введенное и дату по местному времени", () => {

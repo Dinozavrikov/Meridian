@@ -50,10 +50,12 @@ export function HomeSandbox() {
   const hint = !bounds ? "" : confidence === null ? t(K.confidenceHelp) : edge === "low" ? t(K.edgeLow) : edge === "high" ? t(K.edgeHigh) : ""
 
   const onDownload = () => {
+    if (!hasClaim) return
     const now = new Date()
     downloadText(exportFileName(now), buildMarkdown(draft, t, now))
   }
   const onCopy = async () => {
+    if (!hasClaim) return
     const text = buildMarkdown(draft, t, new Date())
     try {
       await navigator.clipboard.writeText(text)
@@ -64,6 +66,9 @@ export function HomeSandbox() {
     if (timer.current) clearTimeout(timer.current)
     timer.current = setTimeout(() => setStatus(""), 2500)
   }
+  // Not the native disabled: the button must stay focusable, so that a keyboard or screen reader user reaches the reason.
+  const reasonId = `${uid}-reason`
+  const blocked = hasClaim ? {} : ({ "aria-disabled": true, "aria-describedby": reasonId } as const)
   const btn = { cursor: hasClaim ? "pointer" : "not-allowed", opacity: hasClaim ? 1 : 0.45, fontFamily: "inherit" } as const
 
   return (
@@ -102,7 +107,6 @@ export function HomeSandbox() {
               {GAP_IDS.map((id, i) => <span key={id} style={{ flex: 1, height: 8, borderRadius: 4, background: i < done ? v2.teal : "rgba(255,255,255,0.08)" }} />)}
             </div>
           </div>
-          {!hasClaim && <p style={pStyle}>{t(K.claimFirst)}</p>}
           {missing.length === 0 ? (
             <p style={pStyle}>{t(K.allFilled)}</p>
           ) : (
@@ -125,9 +129,10 @@ export function HomeSandbox() {
           )}
           <p style={small}>{t(K.explain)}</p>
           <div style={{ display: "flex", gap: 10, flexWrap: "wrap", paddingTop: 14, borderTop: `1px solid ${v2.bd}` }}>
-            <button type="button" className="feat-cta feat-cta--primary" disabled={!hasClaim} onClick={onDownload} style={btn}>{t(K.download)}</button>
-            <button type="button" className="feat-cta" disabled={!hasClaim} onClick={onCopy} style={{ ...btn, background: "transparent" }}>{t(K.copy)}</button>
+            <button type="button" className="feat-cta feat-cta--primary" {...blocked} onClick={onDownload} style={btn}>{t(K.download)}</button>
+            <button type="button" className="feat-cta" {...blocked} onClick={onCopy} style={{ ...btn, background: "transparent" }}>{t(K.copy)}</button>
           </div>
+          {!hasClaim && <p id={reasonId} style={{ ...small, color: v2.amber }}>{t(K.claimFirst)}</p>}
           {status && <p role="status" style={{ ...small, color: status === "copied" ? v2.teal : v2.amber }}>{status === "copied" ? t(K.copied) : t(K.copyFailed)}</p>}
         </div>
       </div>
