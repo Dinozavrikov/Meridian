@@ -4,7 +4,7 @@ import { uiCacheKey, dynCacheKey, legacyCacheKeys } from "@/lib/i18n/cache-keys"
 
 describe("ключи кэша переводов", () => {
   it("версионированы и не пересекаются со старыми", () => {
-    expect(uiCacheKey("en")).toBe("i18n-cache:v2:en")
+    expect(uiCacheKey("en")).toBe("i18n-cache:v3:en")
     expect(dynCacheKey("en")).toBe("dyn-i18n-cache:v2:en")
     for (const legacy of legacyCacheKeys("en")) {
       expect([uiCacheKey("en"), dynCacheKey("en")]).not.toContain(legacy)

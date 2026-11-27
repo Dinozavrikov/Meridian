@@ -16,13 +16,13 @@ This version has breaking changes — APIs, conventions, and file structure may 
 
 Русская база — `lib/i18n/strings.ts`; другие языки переводит локальная модель на бэкенде
 (`/api/v1/i18n/ensure/{locale}`), результат кэшируется в БД и в `localStorage`
-(ключи `i18n-cache:v2:*` и `dyn-i18n-cache:v2:*`, см. `lib/i18n/cache-keys.ts`).
+(ключи `i18n-cache:v3:*` с отпечатком русского оригинала и `dyn-i18n-cache:v2:*`, см. `lib/i18n/cache-keys.ts`).
 
 - Модель отвечает по очереди, поэтому пачки (30 ключей) грузятся ПОСЛЕДОВАТЕЛЬНО
   (`lib/i18n/chunked-loader.ts`); nginx на проде обрывает запрос через 60 с.
 - Строки, которые сервер не смог перевести, приходят в поле `missing`; русский оригинал НИКОГДА не
   выдаётся за перевод и не кэшируется — иначе строка навсегда остаётся русской в браузере.
-- Новый язык прогревают заранее: `cat allkeys.json | python3 scripts/warm_i18n.py <locale>` в контейнере backend.
+- Новый язык прогревают заранее: `cat allkeys.json | env PYTHONPATH=/app python3 scripts/warm_i18n.py <locale>` в контейнере backend.
 - При смене формата кэша меняйте версию в `cache-keys.ts` (`v2` → `v3`): старые данные отбросятся сами.
 
 Статусы и другие тексты, которые задаёт система (приходят с API по-русски), переводятся

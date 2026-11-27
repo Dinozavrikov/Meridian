@@ -17,6 +17,7 @@ The project is under active development: some features are unfinished and may no
 - The evidence signal now reads an author's own links in a stable order.
 - Social preview images now use both bundled PT Serif files, so Latin letters, digits and punctuation no longer depend on a font downloaded at render time.
 - The idea check export buttons now say next to them why they are inactive, and stay reachable from the keyboard.
+- Interface translations cached in the browser are dropped once their Russian source changes, and switching the language no longer leaves strings of the previous one on screen. Older interface caches are discarded once.
 
 ## [0.23.0] - 2026-11-26
 

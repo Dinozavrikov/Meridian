@@ -3,7 +3,8 @@ import { useEffect, useCallback } from "react"
 import { useStore } from "@/lib/store"
 import { api } from "@/lib/api"
 import { STRINGS } from "./strings"
-import { loadTranslationsChunked, dropUntranslated, type EnsureReply } from "./chunked-loader"
+import { loadTranslationsChunked, type EnsureReply } from "./chunked-loader"
+import { packUiCache, readUiCache } from "./ui-cache"
 import { uiCacheKey, dynCacheKey } from "./cache-keys"
 import { migrateLegacyCaches } from "./cache-migrate"
 
@@ -36,22 +37,12 @@ export function useTranslationsLoader() {
 
     // Кэш прежнего формата (без версии) не выбрасываем целиком: хорошие переводы переносятся в v2,
     // «отравленные» (русский оригинал вместо перевода) отбрасываются.
-    if (typeof window !== "undefined") migrateLegacyCaches(locale, STRINGS)
+    if (typeof window !== "undefined") migrateLegacyCaches(locale)
 
     const cacheKey = uiCacheKey(locale)
-    let baseline: Record<string, string> = {}
-    const cached = typeof window !== "undefined" ? localStorage.getItem(cacheKey) : null
-    if (cached && cached !== "undefined") {
-      try {
-        const parsed = JSON.parse(cached)
-        if (parsed && typeof parsed === "object") {
-          baseline = dropUntranslated(parsed, STRINGS)
-          setTranslations(baseline)
-        }
-      } catch {
-        localStorage.removeItem(cacheKey)
-      }
-    }
+    const baseline = readUiCache(typeof window !== "undefined" ? localStorage.getItem(cacheKey) : null, STRINGS)
+    // Всегда, даже пустым: иначе, пока идет загрузка, на экране остаются строки прежнего языка.
+    setTranslations(baseline)
 
     // Гидратация кэша динамических переводов (useDynamicT) — чтобы уже готовый перевод
     // был виден сразу после загрузки, без ожидания сети.
@@ -86,7 +77,7 @@ export function useTranslationsLoader() {
       if (cancelled) return
       const complete = { ...baseline, ...finalDict }
       setTranslations(complete)
-      if (typeof window !== "undefined") localStorage.setItem(cacheKey, JSON.stringify(complete))
+      if (typeof window !== "undefined") localStorage.setItem(cacheKey, JSON.stringify(packUiCache(complete, STRINGS)))
     }).catch(err => {
       console.error("Не удалось загрузить переводы:", err)
     })
